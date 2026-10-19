@@ -1,0 +1,48 @@
+erDiagram
+    direction LR
+    PRODUCT {
+        Text barcode PK
+    }
+    DOCUMENT {
+        ID document_id PK
+    }
+    DOC_LINE {
+        ID line_id PK
+    }
+    PROMOTION {
+        ID promotion_id PK
+        Enum kind
+        Decimal pay_percent
+        Money threshold
+        Money reduction
+        Integer priority
+        Time starts_at
+        Time ends_at
+    }
+    PROMOTION_SCOPE {
+        ID promotion_id PK,FK
+        Text barcode PK,FK
+    }
+    SALE {
+        ID document_id PK,FK
+        ID selected_promotion_id FK
+        Record promotion_snapshot
+        Money gross_total
+        Money discount_total
+        Money paid_total
+        Boolean paid_confirmed
+    }
+    SALE_LINE {
+        ID line_id PK,FK
+        Text product_name_snapshot
+        Money unit_price_snapshot
+        Money gross_amount
+        Record promotion_snapshot
+        Money discount_amount
+        Money paid_amount
+    }
+    PROMOTION ||--o{ PROMOTION_SCOPE : "promotion_id"
+    PRODUCT ||--o{ PROMOTION_SCOPE : "barcode"
+    DOCUMENT ||--o| SALE : "document_id"
+    PROMOTION o|--o{ SALE : "selected_promotion_id"
+    DOC_LINE ||--o| SALE_LINE : "line_id"

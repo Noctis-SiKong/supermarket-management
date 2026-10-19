@@ -1,0 +1,58 @@
+erDiagram
+    direction LR
+    ACCOUNT {
+        ID account_id PK
+        Text username UK
+        Text password_hash
+        Enum role
+    }
+    PRODUCT {
+        Text barcode PK
+        Text name
+        Text unit
+        Money selling_price
+        Text zero_price_note
+    }
+    DOCUMENT {
+        ID document_id PK
+        Enum kind
+        Enum status
+        Text request_key UK
+        Text request_fingerprint
+        ID created_by FK
+        Time created_at
+        ID confirmed_by FK
+        Time confirmed_at
+        Text reason
+        Integer version
+    }
+    DOC_EVENT {
+        ID event_id PK
+        ID document_id FK
+        Integer version
+        Enum action
+        ID actor_id FK
+        Time occurred_at
+        Record detail_snapshot
+    }
+    DOC_LINE {
+        ID line_id PK
+        ID document_id FK
+        Enum line_kind
+        Text barcode FK
+        Quantity quantity
+    }
+    REVERSAL {
+        ID document_id PK,FK
+        ID target_document_id FK,UK
+        ID authorized_by FK
+    }
+    ACCOUNT ||--o{ DOCUMENT : "created_by"
+    ACCOUNT o|--o{ DOCUMENT : "confirmed_by"
+    DOCUMENT ||--o{ DOC_EVENT : "document_id"
+    ACCOUNT ||--o{ DOC_EVENT : "actor_id"
+    DOCUMENT ||--o{ DOC_LINE : "document_id"
+    PRODUCT ||--o{ DOC_LINE : "barcode"
+    DOCUMENT ||--o| REVERSAL : "document_id"
+    DOCUMENT ||--o| REVERSAL : "target_document_id"
+    ACCOUNT ||--o{ REVERSAL : "authorized_by"

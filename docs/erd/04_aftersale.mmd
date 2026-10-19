@@ -1,0 +1,69 @@
+erDiagram
+    direction LR
+    ACCOUNT {
+        ID account_id PK
+    }
+    DOCUMENT {
+        ID document_id PK
+    }
+    DOC_LINE {
+        ID line_id PK
+    }
+    SALE_LINE {
+        ID line_id PK,FK
+    }
+    AFTERSALE {
+        ID document_id PK,FK
+        Boolean opened
+        Boolean quality_problem
+        ID exception_authorized_by FK
+        Text exception_reason
+        Enum exchange_kind
+    }
+    REDEMPTION {
+        ID redemption_id PK
+        ID source_line_id FK,UK
+        ID aftersale_id FK
+        ID original_sale_line_id FK
+        Enum kind
+        Enum effect
+        Money amount
+        ID reverse_of_id FK,UK
+        Text request_key UK
+    }
+    REPLACEMENT {
+        ID line_id PK,FK
+        ID aftersale_id FK
+        Text product_name_snapshot
+        Money unit_price_snapshot
+        Money replacement_amount
+    }
+    MONEY_ENTRY {
+        ID money_entry_id PK
+        ID document_id FK
+        SignedMoney amount_signed
+        Text request_key UK
+        ID reverse_of_id FK,UK
+    }
+    QUOTA_VIEW {
+        ID sale_line_id PK,FK
+        Quantity original_quantity
+        Money original_paid
+        Integer returned_quantity
+        Money returned_amount
+        Integer exchanged_quantity
+        Money exchanged_amount
+        Integer remaining_quantity
+        Money remaining_amount
+    }
+    DOCUMENT ||--o| AFTERSALE : "document_id"
+    ACCOUNT o|--o{ AFTERSALE : "exception_authorized_by"
+    DOC_LINE ||--o| REDEMPTION : "source_line_id"
+    AFTERSALE ||--o{ REDEMPTION : "aftersale_id"
+    SALE_LINE ||--o{ REDEMPTION : "original_sale_line_id"
+    REDEMPTION o|--o| REDEMPTION : "reverse_of_id"
+    DOC_LINE ||--o| REPLACEMENT : "line_id"
+    AFTERSALE ||--o{ REPLACEMENT : "aftersale_id"
+    DOCUMENT ||--o{ MONEY_ENTRY : "document_id"
+    MONEY_ENTRY o|--o| MONEY_ENTRY : "reverse_of_id"
+    SALE_LINE ||--o| QUOTA_VIEW : "sale_line_id"

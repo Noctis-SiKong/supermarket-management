@@ -1,0 +1,76 @@
+erDiagram
+    direction LR
+    ACCOUNT {
+        ID account_id PK
+    }
+    PRODUCT {
+        Text barcode PK
+    }
+    DOCUMENT {
+        ID document_id PK
+    }
+    DOC_LINE {
+        ID line_id PK
+    }
+    RECEIPT {
+        ID document_id PK,FK
+        Enum review_state
+    }
+    RECEIPT_REVIEW {
+        ID review_id PK
+        ID receipt_id FK
+        ID reviewer_id FK
+        Enum decision
+        Integer reviewed_version
+        Time reviewed_at
+        Text opinion
+    }
+    ATTACHMENT {
+        ID attachment_id PK
+        ID receipt_id FK
+        Text relative_path UK
+        Text content_hash
+        Enum format
+        Integer size_bytes
+    }
+    STOCK_ENTRY {
+        ID stock_entry_id PK
+        ID source_line_id FK
+        Enum position
+        SignedInteger quantity_delta
+        Text event_key UK
+        ID receipt_review_id FK
+        ID reverse_of_id FK,UK
+        Text transfer_key
+    }
+    LOSS_RECORD {
+        ID loss_id PK
+        ID source_line_id FK
+        Enum origin
+        Enum source_position
+        Text disposition
+        Text disposition_state
+    }
+    LOSS_CORRECTION {
+        ID document_id PK,FK
+        ID loss_id FK
+        Integer correction_version
+        SignedInteger quantity_difference
+        Record before_after_snapshot
+    }
+    STOCK_VIEW {
+        Text barcode PK,FK
+        Enum position PK
+        Integer quantity
+    }
+    DOCUMENT ||--o| RECEIPT : "document_id"
+    RECEIPT ||--o{ RECEIPT_REVIEW : "receipt_id"
+    ACCOUNT ||--o{ RECEIPT_REVIEW : "reviewer_id"
+    RECEIPT ||--o{ ATTACHMENT : "receipt_id"
+    DOC_LINE ||--o{ STOCK_ENTRY : "source_line_id"
+    RECEIPT_REVIEW o|--o{ STOCK_ENTRY : "receipt_review_id"
+    STOCK_ENTRY o|--o| STOCK_ENTRY : "reverse_of_id"
+    DOC_LINE ||--o{ LOSS_RECORD : "source_line_id"
+    DOCUMENT ||--o| LOSS_CORRECTION : "document_id"
+    LOSS_RECORD ||--o{ LOSS_CORRECTION : "loss_id"
+    PRODUCT ||--o{ STOCK_VIEW : "barcode"
