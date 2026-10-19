@@ -4,9 +4,9 @@
 
 ## 阅读顺序
 
-1. [Spec：需求和业务规则基线](./docs/Project_Spec.md)（v0.5）。
-2. [PRD：功能需求和验收映射](./docs/Project_PRD.md)（v0.5）。
-3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（待人工审阅草稿）。
+1. [Spec：需求和业务规则基线](./docs/Project_Spec.md)（v0.7，已冻结为需求基线）。
+2. [PRD：功能需求和验收映射](./docs/Project_PRD.md)（v0.7，已冻结为需求基线）。
+3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
 
 ERD核心审阅事项见其第8节；具体两人工作包暂缓，尚未形成最终分工。
 

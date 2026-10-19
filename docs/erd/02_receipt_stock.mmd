@@ -35,6 +35,7 @@ erDiagram
     }
     STOCK_ENTRY {
         ID stock_entry_id PK
+        Integer commit_ordinal
         ID source_line_id FK
         Enum position
         SignedInteger quantity_delta

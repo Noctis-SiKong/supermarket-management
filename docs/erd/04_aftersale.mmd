@@ -14,14 +14,13 @@ erDiagram
     }
     AFTERSALE {
         ID document_id PK,FK
-        Boolean opened
-        Boolean quality_problem
         ID exception_authorized_by FK
         Text exception_reason
-        Enum exchange_kind
     }
     REDEMPTION {
         ID redemption_id PK
+        Boolean opened
+        Boolean quality_problem
         ID source_line_id FK,UK
         ID aftersale_id FK
         ID original_sale_line_id FK
@@ -37,6 +36,8 @@ erDiagram
         Text product_name_snapshot
         Money unit_price_snapshot
         Money replacement_amount
+        Enum exchange_kind
+        ID quality_redemption_id FK,UK
     }
     MONEY_ENTRY {
         ID money_entry_id PK
@@ -67,3 +68,4 @@ erDiagram
     DOCUMENT ||--o{ MONEY_ENTRY : "document_id"
     MONEY_ENTRY o|--o| MONEY_ENTRY : "reverse_of_id"
     SALE_LINE ||--o| QUOTA_VIEW : "sale_line_id"
+    REDEMPTION o|--o| REPLACEMENT : "quality_redemption_id"
