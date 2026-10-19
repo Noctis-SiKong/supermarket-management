@@ -1,24 +1,35 @@
-# Compiled class file
-*.class
+# Java build output (root-scoped; keep report evidence and intentional samples)
+/target/
+/build/
+/.gradle/
+/*.class
+/*.jar
+/*.war
+/*.nar
+/*.ear
+/hs_err_pid*.log
+/replay_pid*.log
 
-# Log file
-*.log
+# Defensive guards for accidental runtime output in the repository.
+# DATA_ROOT is not approved yet; these patterns do not choose a runtime location.
+/data/
+/runtime/
+/attachments/
+/logs/
+/tmp/
+/backups/
+/.local/
+/.codex/
+/.env
+/.env.*
+!/.env.example
+/local-settings.properties
 
-# BlueJ files
-*.ctxt
+# Known non-distributed course originals: exact names, not all PDF/DOCX files.
+Projects1and2.pdf
+Projects1and2_中文翻译.pdf
+Assignment1_Report_Template_CJLU2026.docx
+Assignment1_报告模板_CJLU2026_中文.docx
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# No global *.json, image, *.log, *.zip, PDF or DOCX exclusions.
+# docs/, Mermaid sources, report evidence and intentional samples remain visible.
