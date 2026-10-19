@@ -88,12 +88,16 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ## 构建与运行
 
-尚无`pom.xml`和Java实现，目前没有可执行的构建/运行命令。待后续获准开发并验证后补充，不把计划中的Maven命令当作当前可运行步骤。
+已有最小Maven工程底座（`pom.xml`、Wrapper、JUnit/Jackson冒烟测试），但没有业务主类或业务实现，不能`java -jar`启动超市系统；构建与测试说明见下文“Maven框架与构建”。
 
 ## 两人协作建议
 
-参与者：A1moss、CGwal。分工/接口边界见第4项清单；设计分工内容可确认，框架尚未放行，不在本README重复分配工作或贡献比例。
+参与者：A1moss、CGwal。分工/接口边界见第4项清单；设计分工内容可确认，框架已进入交付提交，但业务代码仍待设计与接口前置，不在本README重复分配工作或贡献比例。
 
 建议使用短期分支和Pull Request，交叉检查业务规则、数据约束、链接及真实证据后合并`main`。这是协作建议，不表示已配置分支保护或协作者权限。避免未检查就执行`git add .`；优先暂存本次实际修改的明确文件，并在提交前检查差异。
 
 文档历史由Git记录，本文档不定义仓库外备份位置；运行数据备份遵循`DATA_ROOT`（仓库根`data/`）内待定的子布局，不能混用。课程交付仍以PDF、模板和Canvas要求为准。
+
+## Maven框架与构建
+
+工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架已进入交付提交，B可拉取后按交接包§4.2复现；本地构建通过不等于B已复现或业务模块可开工。
