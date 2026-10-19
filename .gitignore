@@ -11,7 +11,7 @@
 /replay_pid*.log
 
 # Defensive guards for accidental runtime output in the repository.
-# DATA_ROOT is not approved yet; these patterns do not choose a runtime location.
+# DATA_ROOT is repository-root data/; these patterns guard runtime output.
 /data/
 /runtime/
 /attachments/
