@@ -101,3 +101,5 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 ## Maven框架与构建
 
 工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架已进入交付提交，B可拉取后按交接包§4.2复现；复现和接受交接不阻塞B现在做设计，只阻塞业务代码开工。
+
+不想每次手动设置`JAVA_HOME`时，可复制`.env.example`为`.env.local`（已被Git忽略），填入本机JDK17安装根，然后在仓库根运行`.\scripts\build.cmd`；它默认执行`clean verify`，也可追加Maven参数。`.env`本身不会被Maven自动读取，脚本只把`JAVA_HOME`注入当前子进程，不修改系统环境，也不提交本机路径。

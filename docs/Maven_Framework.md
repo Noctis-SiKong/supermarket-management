@@ -23,6 +23,8 @@
 
 Linux/macOS计划用法为`sh ./mvnw --batch-mode --no-transfer-progress clean verify`，本轮未在这些平台执行。首次Wrapper及依赖下载需网络；核心业务离线约束不代表首次工程依赖可凭空获得。缓存齐全后Windows可用`./mvnw.cmd --offline --batch-mode --no-transfer-progress clean verify`。
 
+可选的项目本地配置：复制`.env.example`为`.env.local`（Git忽略），把`JAVA_HOME`设为本机JDK17根，然后在仓库根运行`.\scripts\build.cmd`。该脚本读取`.env.local`，只对子进程设置`JAVA_HOME`，校验Java主版本为17后调用`mvnw.cmd`；不带参数时默认执行`--batch-mode --no-transfer-progress clean verify`，也可追加Maven参数。`.env`本身不会被Maven自动读取，不能把`.env.local`或本机路径提交到仓库。
+
 默认终端若是Java8，不代表项目改用Java8；应选择JDK17。构建文件明确强制JDK17。资源/源码UTF-8与测试JVM文件编码在工程设置，不依赖Windows默认编码。
 
 ## 验证与交接状态
