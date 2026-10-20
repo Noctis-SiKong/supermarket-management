@@ -105,6 +105,9 @@ direction TB
         class AftersaleCommand {
             -String requestKey
             -String customerVoucher
+            -String exceptionAuthorizedBy
+            -String exceptionReason
+            -String relaxedRule
             -List~AftersaleCommandLine~ lines
         }
         class AftersaleCommandLine {
@@ -373,6 +376,7 @@ direction TB
     AftersaleService ..> CustomerReturnLossRecorder
     AftersaleService ..> OriginalSaleReader
     AftersaleService ..> ProductReader
+    AftersaleService ..> Session : 资格例外授权校验
     AftersaleAssembler *-- "0..*" Redemption
     AftersaleAssembler *-- "0..*" Replacement
     AftersaleAssembler *-- "0..*" MoneyEntry
