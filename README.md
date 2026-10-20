@@ -9,7 +9,7 @@
 3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
 4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
 
-5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.02正式版；公共契约与实现交付分开，IF-11局部事项见规范）。
+5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.02／v1.0.2正式版；公共契约与实现交付分开，IF-11局部事项见规范）。
 
 ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
 
@@ -70,11 +70,11 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 运行数据根已定为仓库根`data/`；忽略规则只覆盖仓库内路径，根解析/子布局定稿后仍须复查。当前针对仓库内误生成数据保留窄范围防线：根目录`data/`、`runtime/`、`attachments/`、`logs/`、`tmp/`、`backups/`、`.local/`，以及构建产物和明确的本机设置。课程源文件只按已知文件名防误拷贝，不全局忽略PDF/DOCX。样例请放明确跟踪的`docs/examples/`或后续测试样例位置，使用虚构/脱敏数据；目前没有这些样例文件。不要在真实运行数据目录中保存需要跟踪的唯一证据。
 
-发布前检查Git diff、待提交清单、相对链接、路径/个人信息和数据文件；`.gitignore`不是敏感信息扫描器，改动不会自动上传GitHub。本轮改动是否提交/推送以实际`git status`和`git log`为准，本文不预设已推送。
+发布前检查Git diff、待提交清单、相对链接、路径/个人信息和数据文件；`.gitignore`不是敏感信息扫描器，改动不会自动上传GitHub。本轮v1.02发布后勘误提交的最终状态，以`git status`、`git log`和`git ls-remote`核验为准。
 
 ### 本轮Git核验记录
 
-v1.02勘误前，本地main与远端main均为`51a453f3e626919943a37c9f15f3f78b1de76fc7`，工作区干净；B设计成果及正式共享规范已发布，本轮不重复合并。后续最新提交及推送状态以实际`git status`、`git log`和远端main为准。
+v1.02已发布：main提交`4d7b1f28c6d9caa0473092e77ab27aa1e724b983`，`git ls-remote origin refs/heads/main`返回同一提交，工作区干净；B设计成果及正式共享规范均已包含。本次发布后勘误提交以Git历史定位，不改变上述发布回执。
 
 ## 课程资料引用档案（不分发原文）
 
