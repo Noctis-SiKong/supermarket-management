@@ -244,3 +244,5 @@ A首批交付最小可编译的WorkingCopy/增量ChangeSet/结果载体、IF-04�
 发布后勘误（2026-10-20）：将`lookupResult`返回集合统一为SUCCESS/NOT_FOUND/REJECTED（REQUEST_KEY_CONFLICT）/FAILED，消除“仅返回三种结果”与“不匹配返回REJECTED”的矛盾；补v1.02发布回执、IF-05表格结果集合和版本号口径。仅文档修正，不改变业务规则，也不改变v1.02发布提交`4d7b1f2`的回执。
 
 修订记录v1.0.3（2026-10-20）：按用户明确答复同步Spec CR07-11：追溯成功后才返回最少数据；已保存读取追溯的未完成售后草稿取消为CANCELLED并保留三方关联，无退款/库存/额度影响；无追溯草稿仍按原规则删，已完成售后不适用。补AC-88–90，保留未实现/未审计/未联调状态。未推送、未修改Java签名。
+
+修订记录v1.0.4（2026-10-21）：新增§5.2.1，落实草稿整组删除与统一赋时两项技术方向。IF-05在锁内只取一次`acceptedAt`，按字段矩阵赋予新DOCUMENT.createdAt、新确认/审核通过的confirmedAt、新DOC_EVENT.occurredAt及RECEIPT_REVIEW.reviewedAt；提交复核器改为六参并接收该时刻；草稿删除改用`AFTERSALE_DRAFT_DELETE`（B提供主责校验，A检查DRAFT状态、版本、闭合组及引用红线），RECEIPT_CORRECT未入账行删除沿用；JsonStore新增可注入`Supplier<Instant>`构造器；新增拒绝码INVALID_DELETION_GROUP、DRAFT_HAS_READ_TRACE、DRAFT_HAS_EFFECTS；恢复不再使用活动起始日兜底，不自动修补旧数据。不改Spec/PRD/ERD业务规则，不新增IF编号，不声明B已适配、真实联调或AC通过。
