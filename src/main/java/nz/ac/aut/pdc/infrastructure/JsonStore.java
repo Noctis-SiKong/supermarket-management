@@ -29,6 +29,7 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
     private final Map<String, CommitValidator> validators;
     private final IntegrityValidator domainIntegrity;
     private final BeforeReplace beforeReplace;
+    private final java.util.function.Supplier<java.time.Instant> businessTime;
     private final FileChannel lockChannel;
     private final FileLock writerLock;
     private final Map<String, Handle> handles = new HashMap<>();
@@ -41,6 +42,10 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
         this(root, identities, validators, domainIntegrity, p -> {});
     }
     public JsonStore(DataRoot root, IdentityResolver identities, Map<String, CommitValidator> validators,
+                     IntegrityValidator domainIntegrity, java.util.function.Supplier<java.time.Instant> businessTime) throws IOException {
+        this(root, identities, validators, domainIntegrity, p -> {}, RecoveryMode.CURRENT, List.of(), businessTime);
+    }
+    public JsonStore(DataRoot root, IdentityResolver identities, Map<String, CommitValidator> validators,
                      IntegrityValidator domainIntegrity, BeforeReplace beforeReplace) throws IOException {
         this(root, identities, validators, domainIntegrity, beforeReplace, RecoveryMode.CURRENT, List.of());
     }
@@ -49,9 +54,15 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
     public JsonStore(DataRoot root, IdentityResolver identities, Map<String, CommitValidator> validators,
                      IntegrityValidator domainIntegrity, BeforeReplace beforeReplace, RecoveryMode recovery,
                      List<Credential> preconfiguredAccounts) throws IOException {
+        this(root,identities,validators,domainIntegrity,beforeReplace,recovery,preconfiguredAccounts,java.time.Instant::now);
+    }
+    public JsonStore(DataRoot root, IdentityResolver identities, Map<String, CommitValidator> validators,
+                     IntegrityValidator domainIntegrity, BeforeReplace beforeReplace, RecoveryMode recovery,
+                     List<Credential> preconfiguredAccounts, java.util.function.Supplier<java.time.Instant> businessTime) throws IOException {
         this.root = Objects.requireNonNull(root); this.identities = Objects.requireNonNull(identities);
         this.validators = Map.copyOf(validators); this.domainIntegrity = Objects.requireNonNull(domainIntegrity);
         this.beforeReplace = Objects.requireNonNull(beforeReplace);
+        this.businessTime = Objects.requireNonNull(businessTime);
         lockChannel = FileChannel.open(root.resolve("writer.lock"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         FileLock acquired;
         try { acquired = lockChannel.tryLock(); }
@@ -124,10 +135,15 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
                 return Result.rejected("STALE_WORKING_COPY", "Reopen and rebuild with the original request/key");
             CommitValidator validator = validators.get(op.operation());
             if (validator == null) return Result.failed("VALIDATOR_UNAVAILABLE", "Business owner validator not connected");
-            if (changes == null || changes.inserts().isEmpty() && changes.patches().isEmpty())
+            if (changes == null || changes.inserts().isEmpty() && changes.patches().isEmpty() && changes.removals().isEmpty())
                 return Result.rejected("INVALID_INPUT", "Empty submission");
-            Result<Void> check = validator.validate(op, actor.value(), request, wc, changes);
+            // One lock-held acceptance time, after replay/stale checks and before owner validation.
+            java.time.Instant acceptedAt = Objects.requireNonNull(businessTime.get());
+            changes = SubmissionTime.assign(wc,changes,acceptedAt);
+            Result<Void> check = validator.validate(op, actor.value(), request, wc, changes, acceptedAt);
             if (!check.hasValue()) return check.failure();
+            boolean draftDeletion = op.operation().equals(DraftDeletion.OPERATION);
+            if (draftDeletion) DraftDeletionGuard.check(op,request,wc,changes);
             long next = Math.addExact(state.lastCommitOrdinal(), 1);
             List<RecordData> assigned = new ArrayList<>();
             for (RecordData record : changes.inserts()) {
@@ -151,6 +167,7 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
                 }
             }
             for (ChangeSet.Removal r : changes.removals()) {
+                if (draftDeletion) continue; // Exact group/version/reference guard has already run.
                 if (!op.operation().equals("RECEIPT_CORRECT") || !r.table().equals("DOC_LINE"))
                     return Result.rejected("INVALID_INPUT", "Posted facts cannot be removed");
                 RecordData line = wc.find("DOC_LINE",r.id()).orElseThrow();
@@ -170,7 +187,7 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
             state = snapshot; handles.clear();
             return new Result<>(Result.Status.SUCCESS, receipt, null, null, null, null);
         } catch (IllegalArgumentException e) {
-            String code = Set.of("EVENT_CONFLICT", "STALE_WORKING_COPY").contains(e.getMessage()) ? e.getMessage() : "INVALID_INPUT";
+            String code = Set.of("EVENT_CONFLICT", "STALE_WORKING_COPY", "REFERENCE_INVALID", "INVALID_DELETION_GROUP", "DRAFT_HAS_READ_TRACE", "DRAFT_HAS_EFFECTS").contains(e.getMessage()) ? e.getMessage() : "INVALID_INPUT";
             return Result.rejected(code, "Invalid request, reference or candidate");
         } catch (IOException | RuntimeException e) {
             return Result.failed("PERSISTENCE_FAILED", "No commit installed; retain original request and query result before retry");

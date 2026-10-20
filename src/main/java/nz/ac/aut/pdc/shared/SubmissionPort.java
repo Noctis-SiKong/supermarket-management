@@ -4,7 +4,7 @@ import java.util.List;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext.ActorContext;
 
-/** v1.0.2: provider A, consumer A/B coordinators only. */
+/** v1.0.4: provider A, consumer A/B coordinators only. */
 public interface SubmissionPort {
     Result<WorkingCopy> open(OperationContext op);
     Result<CommitReceipt> submit(OperationContext op, BusinessRequest request, WorkingCopy wc, ChangeSet changes);
@@ -16,6 +16,6 @@ public interface SubmissionPort {
     /** Owner validates authorization and request/effect consistency under the single writer lock. */
     @FunctionalInterface interface CommitValidator {
         Result<Void> validate(OperationContext op, ActorContext actor, BusinessRequest request,
-                              WorkingCopy baseline, ChangeSet changes);
+                              WorkingCopy baseline, ChangeSet changes, java.time.Instant acceptedAt);
     }
 }

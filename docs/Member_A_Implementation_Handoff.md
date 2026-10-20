@@ -32,7 +32,7 @@ Result<CommitReceipt> SubmissionPort.submit(
 Result<CommitReceipt> SubmissionPort.lookupResult(OperationContext op, BusinessRequest original);
 
 Result<Void> CommitValidator.validate(OperationContext op, ActorContext actor,
-    BusinessRequest original, WorkingCopy baseline, ChangeSet completeChanges);
+    BusinessRequest original, WorkingCopy baseline, ChangeSet completeChanges, Instant acceptedAt);
 
 Result<AOperations.Prepared> AOperations.prepare(
     SubmissionPort store, OperationContext op, BusinessRequest original);
@@ -63,3 +63,5 @@ IF-11批准更新（2026-10-20）：两项业务裁决已关闭，现行规则�
 ## 推送补记（2026-10-20）
 
 用户随后明确允许推送代码。A 源码、测试、本交接及证据已提交到 `member-a/p1-implementation` 并推送 `origin`；合并 `main` 仍需单独决定。此前“未推送/未提交”的记录保留为交接形成时点的历史；CR07-11 文档使用单独提交，未混入 A 代码提交。
+
+2026-10-21修复交接（共享契约v1.0.4）：B的CommitValidator增加末尾Instant acceptedAt，必须使用锁内唯一业务时刻；JsonStore可注入IdClock::now。已移除AOperations的生成时间缓存和恢复活动日期兜底。新AFTERSALE_DRAFT_DELETE使用DraftDeletion(documentId,expectedVersion)及完整removals，由B校验售后可删性、A检查版本/闭合组/引用红线并原子保存；不支持任意表删除。详细兼容影响以正式共享规范§5.2.1为准。本次不改Spec/PRD/ERD，不实现B售后/认证/库存，也不启用真实IF-11专用读取。B须以本次最新本地修复提交审计/适配，不只采用293d3b6；真实联调待其实现交付。

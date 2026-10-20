@@ -48,8 +48,6 @@ public final class AOperations implements CommitValidator {
     private final IdClock ids;
     private final IdentityResolver identities;
     private final StockDependency stock;
-    private final Map<String, String> generatedTimes = new java.util.concurrent.ConcurrentHashMap<>();
-    private final Map<String, Instant> pricingTimes = new java.util.concurrent.ConcurrentHashMap<>();
     public AOperations(IdClock ids, IdentityResolver identities, StockDependency stock) {
         this.ids = Objects.requireNonNull(ids); this.identities = Objects.requireNonNull(identities); this.stock = Objects.requireNonNull(stock);
     }
@@ -90,9 +88,8 @@ public final class AOperations implements CommitValidator {
         if (!actor.hasValue()) return actor.failure();
         Result<WorkingCopy> opened = store.open(op); if (!opened.hasValue()) return opened.failure();
         try {
-            synchronized (generatedTimes) { generatedTimes.computeIfAbsent(op.requestKey(), key -> ids.now().toString()); }
-            pricingTimes.put(op.requestKey(), ids.now());
-            ChangeSet expected = assemble(op, actor.value(), request, opened.value(), generatedTimes.get(op.requestKey()));
+            // Preview only: IF-05 assigns the authoritative time under its submit lock.
+            ChangeSet expected = assemble(op, actor.value(), request, opened.value(), ids.now().toString());
             List<StockEntry> group = expected.inserts().stream().filter(r -> r.table().equals("STOCK_ENTRY")).map(r -> r.as(StockEntry.class)).toList();
             ChangeSet nonStock = new ChangeSet(expected.inserts().stream().filter(r -> !r.table().equals("STOCK_ENTRY")).toList(), expected.patches(), expected.removals());
             if (!group.isEmpty()) {
@@ -106,19 +103,17 @@ public final class AOperations implements CommitValidator {
         catch (IllegalArgumentException | ArithmeticException e) { return Result.rejected("INVALID_INPUT", "Invalid business input"); }
         catch (RuntimeException e) { return Result.failed("DEPENDENCY_FAILED", "Business dependency unavailable"); }
     }
-    @Override public Result<Void> validate(OperationContext op, ActorContext actor, BusinessRequest request, WorkingCopy wc, ChangeSet changes) {
+    @Override public Result<Void> validate(OperationContext op, ActorContext actor, BusinessRequest request, WorkingCopy wc, ChangeSet changes, Instant acceptedAt) {
         try {
-            String time = generatedTimes.get(op.requestKey());
-            if (time == null) return Result.rejected("REFERENCE_INVALID", "Prepare this operation before submission");
-            // Effective time is checked again at commit; an expired promotion must be repriced.
-            if (op.operation().equals("SALE")) {
-                Pricing.Quote prepared = quote(request.as(Sale.class), wc, op, pricingTimes.get(op.requestKey()));
-                Pricing.Quote current = quote(request.as(Sale.class), wc, op, ids.now());
-                if (!JsonCodec.write(prepared).equals(JsonCodec.write(current)))
-                    return Result.rejected("STALE_PRICE", "Promotion eligibility changed; rebuild with the original request");
+            ChangeSet expected = assemble(op, actor, request, wc, acceptedAt.toString());
+            if (!equivalent(expected, changes)) {
+                var priced = expected.inserts().stream().filter(r -> r.table().equals("SALE")).findFirst();
+                var supplied = changes.inserts().stream().filter(r -> r.table().equals("SALE")).findFirst();
+                boolean priceChanged = priced.isPresent() && supplied.isPresent()
+                    && !priced.get().data().path("quote").equals(supplied.get().data().path("quote"));
+                return Result.rejected(priceChanged ? "STALE_PRICE" : "REFERENCE_INVALID",
+                    "Candidate effects do not match original intent at the accepted business time; rebuild with the same request/key");
             }
-            ChangeSet expected = assemble(op, actor, request, wc, time);
-            if (!equivalent(expected, changes)) return Result.rejected("REFERENCE_INVALID", "Candidate effects do not implement original request");
             if (changes.inserts().stream().anyMatch(r -> r.table().equals("STOCK_ENTRY"))) return stock.review(wc, request, changes);
             return Result.value(null);
         } catch (RuleFailure e) { return Result.rejected(e.code, e.getMessage()); }
@@ -205,7 +200,7 @@ public final class AOperations implements CommitValidator {
             case "SALE" -> {
                 Sale sale = request.as(Sale.class); require(sale.paymentCompleted(), "PAYMENT_INCOMPLETE", "Confirm simulated payment completed first");
                 List<Pricing.Line> lines = saleLines(sale, wc, op);
-                Pricing.Quote quote = quote(sale, wc, op, pricingTimes.get(op.requestKey()));
+                Pricing.Quote quote = quote(sale, wc, op, Instant.parse(time));
                 header(out, op, actor, request, documentId, "SALE", "CONFIRMED", null, time);
                 out.add(RecordData.of("SALE", documentId, new SaleRecord(documentId, quote.promotion() == null ? null : quote.promotion().promotionId(), quote, true)));
                 for (Pricing.Line l : lines) {
@@ -320,12 +315,6 @@ public final class AOperations implements CommitValidator {
                 }
                 require(gross.compareTo(quote.grossTotal()) == 0 && discount.compareTo(quote.discountTotal()) == 0 && paid.compareTo(quote.paidTotal()) == 0, "INVALID_INPUT", "Sale totals inconsistent");
                 Pricing.Quote rebuilt = new Pricing().quote(storedLines,quote.promotion() == null ? List.of() : List.of(quote.promotion()),Instant.parse(saleHeader.confirmedAt()));
-                // Pricing eligibility was checked at confirmation, which may follow a preserved first-operation timestamp.
-                // Use stored activity date for arithmetic verification when a request was rebuilt across midnight.
-                if (quote.promotion() != null && !quote.promotion().active(Instant.parse(saleHeader.confirmedAt()))) {
-                    Instant activityTime = java.time.LocalDate.parse(quote.promotion().startsOn()).atStartOfDay(IdClock.BUSINESS_ZONE).toInstant();
-                    rebuilt = new Pricing().quote(storedLines,List.of(quote.promotion()),activityTime);
-                }
                 require(rebuilt.equals(quote),"INVALID_INPUT","Stored sale pricing snapshot inconsistent");
                 List<MoneyEntry> payments = view.records("MONEY_ENTRY").stream().map(m -> m.as(MoneyEntry.class)).filter(m -> m.documentId().equals(r.id()) && m.reverseOfId() == null).toList();
                 require(payments.size() == 1 && payments.get(0).amountSigned().compareTo(quote.paidTotal()) == 0,"REFERENCE_INVALID","Sale payment missing/mismatched");

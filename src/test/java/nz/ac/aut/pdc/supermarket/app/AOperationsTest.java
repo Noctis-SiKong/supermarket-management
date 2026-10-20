@@ -24,7 +24,7 @@ public class AOperationsTest {
         deps = new FictionalDependencies(); ids = new IdClock(Clock.fixed(Instant.parse("2026-10-20T12:00:00Z"),ZoneOffset.UTC));
         a = new AOperations(ids,deps,deps);
         Path project = temp.newFolder().toPath(); Files.writeString(project.resolve("README.md"), "fixture"); Files.writeString(project.resolve("pom.xml"), "fixture"); Files.createDirectory(project.resolve("docs"));
-        root = DataRoot.forProject(project); store = new JsonStore(root,deps,a.validators(),a::validateRecovered);
+        root = DataRoot.forProject(project); store = new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now);
     }
     @After public void stop() throws Exception { if (store != null) store.close(); }
     OperationContext op(String kind,Object identity) { return new OperationContext(identity,ids.newRequestKey(),kind,null); }
@@ -78,7 +78,7 @@ public class AOperationsTest {
         assertEquals(new BigDecimal("9.99"),line.paidAmount());
         assertEquals(Result.Status.SUCCESS,execute(op("PRODUCT_PUT",deps.manager),new ProductPut(new Product("00123456","虚构新名称","盒",new BigDecimal("4.00"),null),1)).status());
         assertEquals(line,state().records("SALE_LINE").get(0).as(Pricing.SaleLineSnapshot.class));
-        store.close(); store = new JsonStore(root,deps,a.validators(),a::validateRecovered);
+        store.close(); store = new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now);
         assertEquals(line,state().records("SALE_LINE").get(0).as(Pricing.SaleLineSnapshot.class));
         assertEquals(4,state().baseLast());
     }
@@ -127,7 +127,7 @@ public class AOperationsTest {
             public Instant instant() { return instant; }
         }
         MutableClock clock = new MutableClock();
-        store.close(); ids = new IdClock(clock); a = new AOperations(ids,deps,deps); store = new JsonStore(root,deps,a.validators(),a::validateRecovered);
+        store.close(); ids = new IdClock(clock); a = new AOperations(ids,deps,deps); store = new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now);
         product(); execute(op("OPENING",deps.manager),new Opening(new Item("00123456",5),Position.S,"虚构期初"));
         var promotion = new nz.ac.aut.pdc.supermarket.promotion.Promotion("p",nz.ac.aut.pdc.supermarket.promotion.Promotion.Kind.PERCENT,
             new BigDecimal("50"),null,null,null,"2026-10-20","2026-10-20",Set.of("00123456"));
@@ -150,16 +150,16 @@ public class AOperationsTest {
         assertEquals(Result.Status.SUCCESS,execute(op("RECEIPT_REVIEW",deps.manager),new ReceiptReview(doc,1,true,"虚构文件",List.of())).status());
         store.close(); byte[] saved = Files.readAllBytes(root.resolve(attachment.relativePath()));
         byte[] corrupted = saved.clone(); corrupted[corrupted.length-1] ^= 1; Files.write(root.resolve(attachment.relativePath()),corrupted);
-        try { new JsonStore(root,deps,a.validators(),a::validateRecovered).close(); fail(); }
+        try { new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now).close(); fail(); }
         catch (java.io.IOException expected) { assertTrue(expected.getMessage().contains("RECOVERY_WRITE_BLOCKED")); }
         Files.write(root.resolve(attachment.relativePath()),saved);
         String snapshot = Files.readString(root.resolve("snapshot.json"));
         assertTrue(snapshot.contains("\"last_commit_ordinal\":3"));
         Files.writeString(root.resolve("snapshot.json"),snapshot.replace("\"last_commit_ordinal\":3","\"last_commit_ordinal\":2"));
-        try { new JsonStore(root,deps,a.validators(),a::validateRecovered).close(); fail(); }
+        try { new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now).close(); fail(); }
         catch (java.io.IOException expected) { assertTrue(expected.getMessage().contains("RECOVERY_WRITE_BLOCKED")); }
         Files.writeString(root.resolve("snapshot.json"),snapshot);
-        store = new JsonStore(root,deps,a.validators(),a::validateRecovered); assertEquals(3,state().baseLast());
+        store = new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now); assertEquals(3,state().baseLast());
     }
     @Test public void promotedSaleKeepsOriginalActivityAndAllocationAfterActivityEditAndRestart() throws Exception {
         product(); execute(op("OPENING",deps.manager),new Opening(new Item("00123456",5),Position.S,"虚构期初"));
@@ -174,7 +174,7 @@ public class AOperationsTest {
         var edited = new nz.ac.aut.pdc.supermarket.promotion.Promotion("p",nz.ac.aut.pdc.supermarket.promotion.Promotion.Kind.PERCENT,
             new BigDecimal("50"),null,null,1,"2026-10-20","2026-10-20",Set.of("00123456"));
         assertEquals(Result.Status.SUCCESS,execute(op("PROMOTION_PUT",deps.manager),new PromotionPut(edited,1)).status());
-        store.close(); store = new JsonStore(root,deps,a.validators(),a::validateRecovered);
+        store.close(); store = new JsonStore(root,deps,a.validators(),a::validateRecovered,ids::now);
         assertEquals(snapshot,state().find("SALE_LINE",line).orElseThrow().as(Pricing.SaleLineSnapshot.class));
         assertEquals(0,new BigDecimal("90").compareTo(snapshot.promotionSnapshot().payPercent()));
     }

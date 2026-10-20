@@ -22,7 +22,7 @@ public class StoreTest {
     private JsonStore store(DataRoot root) throws Exception { return store(root, p -> {}); }
     private JsonStore store(DataRoot root, JsonStore.BeforeReplace fault) throws Exception {
         // Generic fixture validator permits TEST records only; no production business validation is claimed.
-        return new JsonStore(root, dependencies, Map.of("TEST", (op,a,r,w,c) ->
+        return new JsonStore(root, dependencies, Map.of("TEST", (op,a,r,w,c,time) ->
             c.patches().isEmpty() && c.inserts().stream().allMatch(x -> x.table().equals("TEST"))
             ? Result.value(null) : Result.rejected("INVALID_INPUT", "test only")), w -> {}, fault);
     }
@@ -89,7 +89,7 @@ public class StoreTest {
             store.submit(second,original,store.open(second).value(),delta("two"));
         }
         Files.writeString(root.resolve("snapshot.json"),"{corrupt");
-        var fixtureValidator = Map.<String,CommitValidator>of("TEST",(op,a,r,w,c) -> Result.value(null));
+        var fixtureValidator = Map.<String,CommitValidator>of("TEST",(op,a,r,w,c,time) -> Result.value(null));
         try (JsonStore recovered = new JsonStore(root,dependencies,fixtureValidator,w -> {},p -> {},JsonStore.RecoveryMode.PREVIOUS,List.of())) {
             assertEquals(1,recovered.open(first).value().baseLast());
             assertEquals(Result.Status.SUCCESS,recovered.lookupResult(first,original).status());

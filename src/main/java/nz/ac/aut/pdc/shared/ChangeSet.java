@@ -6,7 +6,7 @@ import java.util.*;
 public record ChangeSet(List<RecordData> inserts, List<Patch> patches, List<Removal> removals) {
     public ChangeSet { inserts = List.copyOf(inserts); patches = List.copyOf(patches); removals = List.copyOf(removals); }
     public ChangeSet(List<RecordData> inserts, List<Patch> patches) { this(inserts, patches, List.of()); }
-    /** Only unposted receipt correction lines may be removed by the A coordinator in this delivery. */
+    /** Operation-scoped: receipt correction lines or a complete B-validated aftersale draft group. */
     public record Removal(String table, String id, long expectedVersion) {
         public String key() { return table + ":" + id; }
     }
