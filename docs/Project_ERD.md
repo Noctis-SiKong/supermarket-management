@@ -48,7 +48,7 @@ Money为RMB十进制两位，HALF_UP；中间值四位和逐行落分沿用S §7
 
 必填按可成立的完整记录定义；“确认时”字段允许草稿为空，但生效前必须齐全。“条件”见该行约束。PK/UK/FK是逻辑完整性；复合PK组成字段不能各自误设单列唯一。图中`||`=恰好1，`o`加竖线=0或1，`o{`=0..N；同图只画主要依赖，所有外键均在分视图及§4关系登记。条件必填画为可选，在状态规则中收紧。
 
-公共DOCUMENT.status设计词汇：DRAFT、PENDING_REVIEW、NEEDS_CORRECTION、APPROVED、CONFIRMED、VOIDED；收货沿审核路径，其他单据不强加审核；生效销售/售后等为CONFIRMED。原业务VOIDED同时必须有反向事实，不能只变状态。收货RECEIPT.review_state与公共头状态为同一事实投影，不许两个独立状态自由组合。内部枚举是设计表达，不扩大用户审批流程。
+公共DOCUMENT.status设计词汇：DRAFT、PENDING_REVIEW、NEEDS_CORRECTION、APPROVED、CONFIRMED、VOIDED、CANCELLED；CANCELLED仅适用于已成功保存IF-11读取追溯且尚未完成的售后草稿，取消无退款/库存/额度影响；收货沿审核路径，其他单据不强加审核；生效销售/售后等为CONFIRMED。原业务VOIDED同时必须有反向事实，不能只变状态。收货RECEIPT.review_state与公共头状态为同一事实投影，不许两个独立状态自由组合。内部枚举是设计表达，不扩大用户审批流程。
 
 ## 3 实体关系图
 
@@ -445,7 +445,7 @@ R-17原为ACCOUNT→AFTERSALE的店长资格授权关系，CR07-10已撤销；�
 | event_id | ID | 是 | PK | 事件标识 | 不可变 |
 | document_id | ID | 是 | FK:DOCUMENT.document_id | 所属单据 | 与版本组成UK |
 | version | Integer | 是 | - | 事件版本 | UK(document_id,version) |
-| action | Enum | 是 | - | 动作 | 创建/提交/补正/审核/确认/冲销/处置/修正 |
+| action | Enum | 是 | - | 动作 | 创建/提交/补正/审核/确认/冲销/处置/修正/READ_FOR_AFTERSALE/CANCEL_AFTERSALE（后两项仅按CR07-11的读取及草稿取消条件使用） |
 | actor_id | ID | 是 | FK:ACCOUNT.account_id | 经办人 | 与动作权限相符 |
 | occurred_at | Time | 是 | - | 发生时间 | 真实业务时间 |
 | detail_snapshot | Record | 是 | - | 变化前后及原因快照 | 记录必要状态/字段差异；不可覆盖旧事件 |
@@ -743,13 +743,13 @@ exchange_kind移至REPLACEMENT。特殊同款同数量质量零差额换货通�
 
 字段定义见§5，配对关系R-37见§4；此处为本ERD售后顺序、拆分结清和质量配对的唯一规范说明。
 
-售后读取关联的业务边界已按Spec §17 SYNC-02同步：店员经售后专用凭证定位可读他人原单最少字段；普通历史店员本人、店长/管理员全部不变。业务记录需连经办人/原销售/售后，但已有核销原行FK和建单经办并不自动表达实际读取人及只读后取消事实。可评审方案优先复用DOCUMENT/DOC_EVENT明细快照/已有事件时间；动作枚举、读取保存时点、失败返回和取消/删除/崩溃闭合引用尚未定，现图/字典不擅加实体/字段。IF-11提供方交可审计方案后使用方集中审计；独立留存或查询准入变化先交负责人批准，不宣称追溯存储设计已完成。
+售后读取关联按Spec §17 SYNC-02及CR07-11：IF-11 追溯经 IF-05 可靠保存成功后，才返回办理售后所需的最少原销售数据；保存失败暂不返回。已成功保存读取追溯的售后草稿取消时进入 CANCELLED，保留实际读取经办人—原销售单—目标售后单关联，不物理删除；无读取追溯的草稿仍按原规则删除。取消不产生退款、库存或额度变化，已完成售后不适用此取消流程。复用DOCUMENT/AFTERSALE/DOC_EVENT，不新增实体。DOC_EVENT.document_id指向目标售后，actor_id为真实读取人，occurred_at为读取时间，action=READ_FOR_AFTERSALE，detail_snapshot存原销售ID及被返回行ID。取消以CANCEL_AFTERSALE事件及DOCUMENT.status=CANCELLED同次保存，保留读取事件和闭合引用；已完成售后仍执行既有整单冲销规则。字段/事务实现交付后由B集中审计，AC-87–90均未执行。
 
 ### 6.5 幂等、反向审计和文件恢复
 
 DOCUMENT.request_key保护整单，核销/款项/库存的唯一事件键保护具体生效记录；相同键相同内容返回既有结果，相同键不同内容拒绝。指纹只是设计手段，不是新增用户认证功能。正向核销source_line_id唯一；审核入库还要按原收货行/首次有效通过限制，不能简单用“新审核ID”作为再入库理由。
 
-草稿按S BR-16可删除；不得删除已确认单据或被生效事实引用的行，草稿清理也不得产生悬空引用。
+草稿按S BR-16通常可删除；CR07-11局部例外：已成功保存IF-11读取追溯的未完成售后草稿取消进入CANCELLED，保留经办人/原销售/目标售后及事件，不物理删除，不产生退款/库存/额度影响。无读取追溯草稿仍按原规则删除；不得删除已确认单据或被生效事实引用的行，清理不得留下悬空引用。
 
 冲销先确认授权、原销售售后关联和D1同商品/位置/后提交有效负流水检查通过，REVERSAL.target_document_id唯一；生成反向DOC_LINE、STOCK_ENTRY、MONEY_ENTRY和REDEMPTION RELEASE，各自reference指向原记录。不得物删已确认单，也不能仅置VOIDED或只释放数量不释放金额。反向事件须与目标原记录数量/金额一一相反，唯一reverse_of_id防止二次释放；禁止自引用或形成循环引用；正反向角色须一致。对反向单进一步操作的业务流程未在基线明确，本ERD不自行批准或禁止，只建模已确认的原单及反向审计。
 
@@ -838,3 +838,5 @@ ERD建模时四份只读输入的历史SHA-256（非当前路径治理后文件�
 A1moss、CGwal后续共同审阅v0.7整体一致性及Spec §17剩余设计项。按本轮指令，D1/D2已获用户明确批准，文档冻结为需求基线，但不启动正式分工；不划定开发工作包。本稿修订后提交并推送；无业务/测试代码、SQL或数据库实施。
 
 本轮定点受控同步追踪：Spec §17.4 SYNC-01→期初权限/AC-86；SYNC-02→售后原销售/经办关联语义及技术缺口/AC-87；SYNC-03/04→DATA_ROOT与ATTACHMENT路径/独立ID/字节上限、AC-40/53；SYNC-05→REPLACEMENT.aftersale_id字典勘误/AC-82。仅文字和契约同步，图源实体/字段/关系不变；v0.7冻结状态不变，未实施数据库或代码。
+
+受控补充CR07-11（2026-10-20）：仅增加既有DOCUMENT状态CANCELLED和DOC_EVENT动作/明细映射，明确先保存追溯后返回及局部草稿取消留存；不增加实体/外键，不改变已完成售后的冲销算法。来源Spec §17.1/17.5，验收AC-87–90，均未执行。
