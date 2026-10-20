@@ -1,5 +1,7 @@
 # 成员B（CGwal）设计与工作记录
 
+> **CR07-10（2026-10-20）**：CR07-09的店长资格个案例外已撤销。以下涉及`exception_authorized_by`、`exception_reason`、CR07-09授权例外的段落仅保留历史记录，不是现行实现依据；V2应删除AFTERSALE授权字段，改由REDEMPTION.reason_text记录“其他原因”，资格仍按质量/30天/开封规则判定。
+
 版本/日期：v0.1，2026-10-20（Asia/Shanghai）
 依据：交接包 v0.4、Spec/PRD/ERD v0.7、分工与接口清单 v0.3、交付提交 `f554cc2`
 性质：B 侧工作记录与依赖登记。不修改冻结需求；不代替设计评审证据或测试结果。

@@ -18,8 +18,8 @@
 |---|---|---|
 | C：`Projects1and2.pdf` | 15页全文提取；阅读器页码与各页印刷1–15一致。p3 §1.1/1.2，p4–6 §1.3/1.4及评分，p7–10 P2，p11–13通用/提交，p14–15附录 | p4–5要求Java CUI、OOP/SOLID、集合与File I/O、标准Maven/Gradle；未要求P1关系数据库或ERD交付；p3要求用例/类图与至少两次真实设计迭代，ERD不能替代这些图 |
 | T：`Assignment1_Report_Template_CJLU2026.docx` | 读取OOXML正文/全部13表及页脚、脚注/尾注（如存在）；按章节/字段引用，不宣称打印分页已渲染验证 | §2.2表ID/Requirement/Description-acceptance/Priority；§3.2范围约束，§3.3 Figure2初版类图，§3.4评审表，§3.5 Figure3最终类图，§3.6演化表；§2.6/3.7反思必须本人写并签署；附录A/B日志/贡献 |
-| S：`docs/Project_Spec.md` | 完整读取571行；重点§4 FR-01–15、§5权限、§7.1/7.3/7.4、§8 BR-01–29、§9/9.1 ERD-C01–10、§10/11/13/14/15/16 | 已确认范围/金额算法是需求依据；FR-14、BR-23撤销记录不是有效功能 |
-| P：`docs/Project_PRD.md` | 完整读取377行；重点§3、PRD-03–09/12/13/15、§5.1/5.2、§6/7、§8/12 | §5.2引用S §9.1，售后公式/快照与S一致；只做追踪，不另建业务问题状态表 |
+| S：`docs/Project_Spec.md` | 完整读取710行；重点§4 FR-01–15、§5权限、§7.1/7.3/7.4、§8 BR-01–29、§9/9.1 ERD-C01–10、§10/11/13/14/15/16 | 已确认范围/金额算法是需求依据；FR-14、BR-23撤销记录不是有效功能 |
+| P：`docs/Project_PRD.md` | 完整读取302行；重点§3、PRD-03–09/12/13/15、§5.1/5.2、§6/7、§8/12 | §5.2引用S §9.1，售后公式/快照与S一致；只做追踪，不另建业务问题状态表 |
 | U：本轮用户消息 | §III–VIII及两人昵称 | 只做中文逻辑模型；P1无商品日期/批次；P2预留措辞与S/P有差异，见§8 R1，不改S/P |
 
 四份资料读取成功。PDF文本提取器提示若干对象偏移修复，但15页均提取出连续内容，本次关键条款可读取；未把提取器警告当作资料缺失，也不宣称检查了PDF视觉排版。无外部行业流程引用。
@@ -279,13 +279,12 @@ erDiagram
     }
     AFTERSALE {
         ID document_id PK,FK
-        ID exception_authorized_by FK
-        Text exception_reason
     }
     REDEMPTION {
         ID redemption_id PK
         Boolean opened
         Boolean quality_problem
+        Text reason_text
         ID source_line_id FK,UK
         ID aftersale_id FK
         ID original_sale_line_id FK
@@ -323,7 +322,6 @@ erDiagram
         Money remaining_amount
     }
     DOCUMENT ||--o| AFTERSALE : "document_id"
-    ACCOUNT o|--o{ AFTERSALE : "exception_authorized_by"
     DOC_LINE ||--o| REDEMPTION : "source_line_id"
     AFTERSALE ||--o{ REDEMPTION : "aftersale_id"
     SALE_LINE ||--o{ REDEMPTION : "original_sale_line_id"
@@ -358,7 +356,6 @@ erDiagram
 | R-14 | PROMOTION.promotion_id | SALE.selected_promotion_id | 0..1（条件时必填） | 0..N |
 | R-15 | DOC_LINE.line_id | SALE_LINE.line_id | 1（必须存在） | 0..1 |
 | R-16 | DOCUMENT.document_id | AFTERSALE.document_id | 1（必须存在） | 0..1 |
-| R-17 | ACCOUNT.account_id | AFTERSALE.exception_authorized_by | 0..1（条件时必填） | 0..N |
 | R-18 | DOC_LINE.line_id | REDEMPTION.source_line_id | 1（必须存在） | 0..1 |
 | R-19 | AFTERSALE.document_id | REDEMPTION.aftersale_id | 1（必须存在） | 0..N |
 | R-20 | SALE_LINE.line_id | REDEMPTION.original_sale_line_id | 1（必须存在） | 0..N |
@@ -380,6 +377,8 @@ erDiagram
 | R-36 | SALE_LINE.line_id | QUOTA_VIEW.sale_line_id | 1（必须存在） | 0..1 |
 | R-37 | REDEMPTION.redemption_id | REPLACEMENT.quality_redemption_id | 0..1（特殊配对必填） | 0..1 |
 
+R-17原为ACCOUNT→AFTERSALE的店长资格授权关系，CR07-10已撤销；编号保留、不复用，图中不再有该关系。
+
 补充结构约束：
 
 - DOCUMENT可有0..N行以容纳草稿；提交收货及确认销售/退换/补货/报损须至少一行，冲销须覆盖原单全部生效影响。DOC_LINE只属于一个DOCUMENT。
@@ -390,7 +389,7 @@ erDiagram
 - 普通替换通过AFTERSALE关联；本轮授权的特殊同款同数量质量零差另以quality_redemption_id显式一对一配对。核销类别按明细记录，同单允许混合退换。
 - STOCK_ENTRY商品由DOC_LINE.barcode确定；不另存可漂移的商品FK。库存余额按该条码和position汇总，单条流水绝不能同时属于两个位置。
 - 复合PK：PROMOTION_SCOPE(promotion_id,barcode)、STOCK_VIEW(barcode,position)；复合UK：DOC_EVENT(document_id,version)、LOSS_CORRECTION(loss_id,correction_version)。单列UK标在图和字段表。STOCK_ENTRY审核入库还须保证同收货行只生效入账一次，不能只靠不同review_id防重。
-- ACCOUNT的多种关系分别表示建单、确认、审核、授权；人员可相同，自审不被外键或唯一性禁止。普通退换不要求exception_authorized_by；仅店长授权的资格例外（含超期质量及CR07-09个案例外）需记录授权人与原因。
+- ACCOUNT的多种关系分别表示建单、确认、审核、授权；人员可相同，自审不被外键或唯一性禁止。普通退换不设店长资格例外；退换资格按每条REDEMPTION的opened/quality_problem判断，其他原因只记录reason_text，不构成资格例外。
 
 ## 5 数据字典
 
@@ -558,8 +557,6 @@ erDiagram
 | 字段 | 逻辑类型 | 必填 | 键/引用 | 含义 | 约束/一致性 |
 |---|---|---|---|---|---|
 | document_id | ID | 是 | PK,FK:DOCUMENT.document_id | 售后单据 | kind为退货、换货或混合售后；资格按核销明细判断 |
-| exception_authorized_by | ID | 条件 | FK:ACCOUNT.account_id | 店长授权资格例外 | 普通合规售后不需要；CR07-09个案例外必填 |
-| exception_reason | Text | 条件 | - | 例外原因及所放宽规则 | 店长授权资格例外时必填 |
 
 ### REDEMPTION — 售后原行额度核销及反向记录
 
@@ -569,7 +566,8 @@ erDiagram
 |---|---|---|---|---|---|
 | redemption_id | ID | 是 | PK | 核销事件标识 | 不可变 |
 | opened | Boolean | 是 | - | 是否开封 | 与quality_problem一起判断资格 |
-| quality_problem | Boolean | 是 | - | 是否商品质量原因 | 不免库存校验 |
+| quality_problem | Boolean | 是 | - | 是否商品质量原因 | true为质量；false为其他/非质量原因，不免库存校验 |
+| reason_text | Text | 条件 | - | 其他原因说明 | quality_problem=false时必填且不得为空白；只作记录，不改变30天、开封/质量或数量/金额/库存校验 |
 | source_line_id | ID | 是 | UK,FK:DOC_LINE.line_id | 来源售后或冲销业务行 | UK确保同业务行不重复生效 |
 | aftersale_id | ID | 是 | FK:AFTERSALE.document_id | 原售后单 | 反向事件也保留原售后关联 |
 | original_sale_line_id | ID | 是 | FK:SALE_LINE.line_id | 原成交行 | 每条核销只关联一个原行 |
@@ -737,7 +735,7 @@ Qremain=Q−Qr−Qx；Premain=P−Mr−Mx；必须同时≥0。未结清时占�
 
 每次确认在同一提交边界检查两个余额并写入原核销、款项、损耗去向及替换品流水。QUOTA_VIEW是可重算投影；不能让售后模块各自维护一套独立“可退金额”。
 
-本轮新增独立业务规则（CR07-04）：同一张售后单提交时，先计算全部换货核销，再计算退款，与界面录入顺序无关；历史已确认占额不重算。资格opened、quality_problem逐REDEMPTION记录，不再放单头。允许同单不同资格、不同换货类型；头部既有店长授权资格例外（含超期质量及CR07-09个案例外）/原因仅保留审计归属，不替代每条资格事实。
+本轮新增独立业务规则（CR07-04）：同一张售后单提交时，先计算全部换货核销，再计算退款，与界面录入顺序无关；历史已确认占额不重算。资格opened、quality_problem及reason_text逐REDEMPTION记录，不再放单头。允许同单不同资格、不同换货类型；单头不再保留店长授权资格例外/原因；其他原因必须填写reason_text，但不替代每条资格事实。
 
 按原销售行分别计算，沿用本节既有P×q/Q、HALF_UP及剩余额度公式。当前提交内同类别拆分明细按稳定redemption_id升序处理；不能用标价、采购价或现价。只有当前提交的明细合计恰好结清该原行当时全部剩余数量时，当前提交内按上述次序最后结清的明细承接剩余分值。非结清明细用min(HALF_UP(P×q/Q,2),当时剩余金额)。未来售后不得回写当前已确认金额。
 

@@ -1,5 +1,7 @@
 # B 范围类图 V1→V2 设计演进记录
 
+> **CR07-10（2026-10-20）**：CR07-09的店长资格个案例外已撤销；本文涉及CR07-09、exception字段、店长授权例外的内容仅保留历史记录，不是现行实现依据。V2应删除AFTERSALE.exception_*，在REDEMPTION使用reason_text，按质量/30天/开封规则判定资格。
+
 版本/日期：v1，2026-10-20（Asia/Shanghai）
 依据：`docs/evidence/member_b/design_review.md` §7 的 B 本人逐条决定（29 条）、V1 类图 `docs/design/member_b/class_v1.mmd`
 产物：`docs/design/member_b/class_v2.mmd`（V2 源文件）；报告用分图由 B 渲染（8 张，`aftersale` 详情与总体图需按 CR07-09 / R-06 修正后重渲染）
