@@ -76,3 +76,7 @@
 - CR07-09 对 B 的影响：售后默认拒绝 → 店长授权个案例外 → 记录授权人/原因/所放宽规则（复用 `AFTERSALE.exception_authorized_by/exception_reason`，不新增实体）；只放宽资格，数量/金额/库存校验不变。V2 已在 `AftersaleCommand` 增 exception 字段，`AftersaleService` 依赖 `Session` 做授权校验。
 - B 待办：评审 A 的 P1 用例图；重渲染总体图/售后详情两张分图；推送设计分支并与 A 同步。
 - 既有设计决定不变：R-04 仍不抽策略类；以简单资格校验 + 例外记录实现 CR07-09。
+- 2026-10-20 晚：B 拉取 A 审核后的最新 main（`04abd6a`）。A 已把 B 设计分支合入 main，并发布 **`docs/Shared_Boundaries_and_Interface_Spec.md` v1.02**（正式共享契约）与 README 入口。
+- 共享规范对 B 的主要约束：IF-01 返回不可伪造 `SessionRef`；IF-04 用 `open(op)` 取得不可变 `WorkingCopy`；IF-05 用 `businessRequest`+requestKey+指纹+四态结果，并提供 `lookupResult`；IF-07 改为 `balances(wc, overlay, barcodes)` / `check(wc, overlay, changes)`，**删除"收货行→可用数量"的来源可用量**；IF-11 用 `readForAftersale(op, wc, voucher, aftersaleRef)`；公共类型由 A 在 `src/main/java/nz/ac/aut/pdc/shared/` 维护，B 只适配不复制。
+- B 下一步（P0）：确认并记录 R-04/R-29 口径（系统默认资格校验 + CR07-09 例外 + 留痕；内部简单校验，不抽策略类）；修订 IF-07 契约 v0.3 对齐 §5.3；V2 局部适配（SessionRef/WorkingCopy/三态结果；不重画整套）；从 main 开 `member-b/implementation` 分支，先做 auth/cui + stock 骨架与替身测试。
+- 编码门：V2 不要求整体冻结；受 R-04/R-29 影响的售后资格/编排待 B 本人确认；IF-11 真实跨人读取待 A 方案；其余接口明确模块可开始实现/自测。

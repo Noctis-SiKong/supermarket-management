@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4）/ max（#5） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7）/ max（#5–#6） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -19,7 +19,8 @@
 | 3 | 设计-IF-07 基础契约 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 按要求起草 IF-07 基础契约，注意文档要点，先交稳定契约供 A 确认调用边界 | IF-07 契约 v0.1 草案（同次上下文/基线、S-W 变动组、来源与转移关联、候选输出、拒绝语义、统一保存边界、幂等、共享数据、A 确认清单、未定项）；按审计要求升级为 v0.2（每节标注来源、标记本文补充） | 让契约草案每一节都标注来源，从而让A 审计时能直接逐条对回原文；不引入原文之外的新规则; 提升文档的可读性便于A审计 |
 | 4 | 设计-类图 V1 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 按要求起草 B 范围类图 V1；按本人要求补 SnapshotAccess、拆 QuotaCalculator/QuotaView、继续细化拆分、修正 Mermaid 语法与布局 | 18 框简化版与 32 框拆分版 Mermaid 代码、包分组、接口/组合关系、渲染图 | 本人选择 Mermaid 而非手绘；删除 AI 底稿中的非法注释行（SubmissionsPortNote）；要求加 SnapshotAccess（uses IF-04）、Object 改为待 A 契约的具体类型、拆出 QuotaCalculator/QuotaView 并细化拆分；自行渲染并调整布局 |
 | 5 | 设计-类图 V1 真实 AI 评审 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 以资深从业者视角评审 V1，重点业务逻辑合理性与落地可行性，逐条意见写入 `docs/evidence/member_b/design_review.md` | 29 条评审意见（8 项 P0、11 项 P1、8 项 P2、2 项 P3）+ 最小修复集 + AC 覆盖风险表 | B 于 2026-10-20 完成逐条审批：20 采纳、7 修改后采纳、2 拒绝（R-04 售后资格策略类、R-27 图面排版）；逐条理由见 `design_review.md` §7；V2 按决定修改 |
-| 6 | 设计-类图 V2 修订 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按已完成的审批决定修改 V2 类图，并记录 V1→V2 演进与裁决 | `class_v2.mmd`（约 50 类：BusinessTransaction 模板、AftersaleCommand/Assembler、QuotaLedgerReader/ViewBuilder、Effect/RedemptionKind、SubmissionRequest、cui/auth、DependencyResult 等）；`design_evolution.md`（27 项变化、裁决记录、待 A 输入） | [待 B 审核 V2 后确认；R-04/R-29 冲突按 R-04 优先处理，待 B 确认] |
+| 6 | 设计-类图 V2 修订 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按已完成的审批决定修改 V2 类图，并记录 V1→V2 演进与裁决 | `class_v2.mmd`（约 50 类：BusinessTransaction 模板、AftersaleCommand/Assembler、QuotaLedgerReader/ViewBuilder、Effect/RedemptionKind、SubmissionRequest、cui/auth、DependencyResult 等）；`design_evolution.md`（27 项变化、裁决记录、待 A 输入） | A 已审核并合入 main（`7216724`→`04abd6a`）；R-04/R-29 仍待 B 正式记录 |
+| 7 | 交接-共享规范 v1.02 同步 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 拉取 A 审核后的最新分支，核对共享接口规范 v1.02 并同步项目最新进展 | 识别 main `04abd6a` 新增 `docs/Shared_Boundaries_and_Interface_Spec.md` v1.02 与 README；列出 B 需适配的契约差异（IF-01/04/05/07/11、SessionRef/WorkingCopy/ChangeSet/三态结果、R-04/R-29、编码门、代码位置）；给出 B 下一步 P0/P1 与时间风险 | 要求本步同步必须留痕并记入 AI 日志；确认前不开始编码（R-04/R-29 口径仍待确认） |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -28,6 +29,7 @@
 - #4 `docs/design/member_b/class_v1.mmd`、`class_v1.png`（2026-10-20，v1）
 - #5 `docs/evidence/member_b/design_review.md`（2026-10-20）
 - #6 `docs/design/member_b/class_v2.mmd`、`docs/evidence/member_b/design_evolution.md`（2026-10-20）
+- #7 `docs/Shared_Boundaries_and_Interface_Spec.md`（v1.02）、`docs/design/member_b/design_notes.md` §8（2026-10-20 同步）
 
 ## 待补（按阶段追加，不预先填写）
 
