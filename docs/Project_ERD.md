@@ -390,7 +390,7 @@ erDiagram
 - 普通替换通过AFTERSALE关联；本轮授权的特殊同款同数量质量零差另以quality_redemption_id显式一对一配对。核销类别按明细记录，同单允许混合退换。
 - STOCK_ENTRY商品由DOC_LINE.barcode确定；不另存可漂移的商品FK。库存余额按该条码和position汇总，单条流水绝不能同时属于两个位置。
 - 复合PK：PROMOTION_SCOPE(promotion_id,barcode)、STOCK_VIEW(barcode,position)；复合UK：DOC_EVENT(document_id,version)、LOSS_CORRECTION(loss_id,correction_version)。单列UK标在图和字段表。STOCK_ENTRY审核入库还须保证同收货行只生效入账一次，不能只靠不同review_id防重。
-- ACCOUNT的多种关系分别表示建单、确认、审核、授权；人员可相同，自审不被外键或唯一性禁止。普通退换不要求exception_authorized_by；仅超期质量例外需店长。
+- ACCOUNT的多种关系分别表示建单、确认、审核、授权；人员可相同，自审不被外键或唯一性禁止。普通退换不要求exception_authorized_by；仅店长授权的资格例外（含超期质量及CR07-09个案例外）需记录授权人与原因。
 
 ## 5 数据字典
 
@@ -558,8 +558,8 @@ erDiagram
 | 字段 | 逻辑类型 | 必填 | 键/引用 | 含义 | 约束/一致性 |
 |---|---|---|---|---|---|
 | document_id | ID | 是 | PK,FK:DOCUMENT.document_id | 售后单据 | kind为退货、换货或混合售后；资格按核销明细判断 |
-| exception_authorized_by | ID | 条件 | FK:ACCOUNT.account_id | 超期质量例外店长 | 普通合规售后不需要 |
-| exception_reason | Text | 条件 | - | 例外原因 | 超期质量例外时必填 |
+| exception_authorized_by | ID | 条件 | FK:ACCOUNT.account_id | 店长授权资格例外 | 普通合规售后不需要；CR07-09个案例外必填 |
+| exception_reason | Text | 条件 | - | 例外原因及所放宽规则 | 店长授权资格例外时必填 |
 
 ### REDEMPTION — 售后原行额度核销及反向记录
 
@@ -737,7 +737,7 @@ Qremain=Q−Qr−Qx；Premain=P−Mr−Mx；必须同时≥0。未结清时占�
 
 每次确认在同一提交边界检查两个余额并写入原核销、款项、损耗去向及替换品流水。QUOTA_VIEW是可重算投影；不能让售后模块各自维护一套独立“可退金额”。
 
-本轮新增独立业务规则（CR07-04）：同一张售后单提交时，先计算全部换货核销，再计算退款，与界面录入顺序无关；历史已确认占额不重算。资格opened、quality_problem逐REDEMPTION记录，不再放单头。允许同单不同资格、不同换货类型；头部既有超期例外授权/原因仅保留审计归属，不替代每条资格事实。
+本轮新增独立业务规则（CR07-04）：同一张售后单提交时，先计算全部换货核销，再计算退款，与界面录入顺序无关；历史已确认占额不重算。资格opened、quality_problem逐REDEMPTION记录，不再放单头。允许同单不同资格、不同换货类型；头部既有店长授权资格例外（含超期质量及CR07-09个案例外）/原因仅保留审计归属，不替代每条资格事实。
 
 按原销售行分别计算，沿用本节既有P×q/Q、HALF_UP及剩余额度公式。当前提交内同类别拆分明细按稳定redemption_id升序处理；不能用标价、采购价或现价。只有当前提交的明细合计恰好结清该原行当时全部剩余数量时，当前提交内按上述次序最后结清的明细承接剩余分值。非结清明细用min(HALF_UP(P×q/Q,2),当时剩余金额)。未来售后不得回写当前已确认金额。
 
