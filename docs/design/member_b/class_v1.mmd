@@ -1,0 +1,225 @@
+---
+config:
+  theme: base
+  layout: elk
+  themeVariables:
+    fontSize: 20px
+  class:
+    hideEmptyMembersBox: false
+---
+classDiagram
+direction TB
+    namespace stock {
+        class StockService {
+            +check(ctx: StockChangeContext, lines: List~StockChangeLine~) StockCheckResult
+        }
+        class StockBalanceReader {
+            +balances(barcodes: List~String~) Map
+        }
+        class StockValidator {
+            +validate(lines: List~StockChangeLine~, balances: Map) Rejection
+        }
+        class StockChangeContext {
+            -long baseLast
+            -String requestKey
+            -String operatorId
+        }
+        class StockChangeLine {
+            -String barcode
+            -Position position
+            -int delta
+            -String sourceLineId
+            -String transferKey
+            -String reverseOfId
+        }
+        class StockCheckResult {
+            -List~StockEntry~ entries
+            -Rejection rejection
+            -Map~String,Integer~ balancesAfter
+        }
+        class Rejection {
+            -String code
+            -String detail
+        }
+        class StockEntry {
+            -String id
+            -String barcode
+            -Position position
+            -int delta
+            -String eventKey
+            -String transferKey
+            -String sourceLineId
+        }
+        class Position {
+            S
+            W
+        }
+        class ReplenishmentService {
+            +replenish(barcode, qty, requestKey) StockCheckResult
+        }
+        class LossService {
+            +recordLoss(barcode, position, qty, reason, requestKey)
+        }
+        class LossCorrectionService {
+            +correct(lossId, diff, reason, requestKey)
+        }
+        class LossRecord {
+            -String lossId
+            -String barcode
+            -Position position
+            -int quantity
+            -String origin
+            -String disposition
+        }
+        class LossCorrection {
+            -String correctionId
+            -String lossId
+            -int version
+            -int diff
+        }
+    }
+    namespace aftersale {
+        class AftersaleService {
+            +returnItems(saleLineId, qty, opened, qualityProblem, requestKey)
+            +exchange(saleLineId, qty, newBarcode, newQty, qualityPair, requestKey)
+        }
+        class QuotaCalculator {
+            +allocate(qty, view) BigDecimal
+        }
+        class QuotaView {
+            -String saleLineId
+            -int originalQty
+            -BigDecimal originalPaid
+            -int returnedQty
+            -BigDecimal returnedAmount
+            -int exchangedQty
+            -BigDecimal exchangedAmount
+        }
+        class QualityPairValidator {
+            +validate(redemption, replacement) boolean
+        }
+        class Redemption {
+            -String redemptionId
+            -String originalSaleLineId
+            -String aftersaleId
+            -String kind
+            -int quantity
+            -BigDecimal amount
+            -String requestKey
+            -String reverseOfId
+            -boolean opened
+            -boolean qualityProblem
+        }
+        class Replacement {
+            -String lineId
+            -String aftersaleId
+            -String barcode
+            -BigDecimal replacementAmount
+            -String exchangeKind
+            -String qualityRedemptionId
+        }
+        class MoneyEntry {
+            -String moneyEntryId
+            -BigDecimal amountSigned
+            -String requestKey
+            -String reverseOfId
+        }
+    }
+    namespace query {
+        class RecordQueryService {
+            +query(scope, filter) List~RecordView~
+        }
+        class QueryScope {
+            SELF
+            ALL
+        }
+        class RecordView {
+            -String recordId
+            -String kind
+            -String summary
+        }
+    }
+    namespace reversal {
+        class ReversalService {
+            +reverse(documentId, reason) ReversalPlan
+        }
+        class DependencyChecker {
+            +hasLaterNegative(originalEntries, laterEntries) boolean
+        }
+        class ReversalPlan {
+            -List~StockEntry~ reverseEntries
+            -List~MoneyEntry~ reverseMoney
+            -List~Redemption~ releases
+        }
+    }
+    namespace external {
+        class SubmissionPort {
+            +submit(changeSet) SubmitResult
+        }
+        class SnapshotAccess {
+            +current() CommittedState
+        }
+        class ProductReader {
+            +findByBarcode(barcode) ProductSnapshot
+        }
+        class OriginalSaleReader {
+            +readLine(saleLineId) SaleLineSnapshot
+        }
+        class IdClock {
+            +newId(prefix) String
+            +now() Instant
+        }
+    }
+
+    <<enumeration>> Position
+    <<enumeration>> QueryScope
+    <<interface>> SubmissionPort
+    <<interface>> SnapshotAccess
+    <<interface>> ProductReader
+    <<interface>> OriginalSaleReader
+    <<interface>> IdClock
+
+    StockService ..> StockBalanceReader
+    StockService ..> StockValidator
+    StockService ..> StockChangeContext
+    StockService ..> StockChangeLine
+    StockService --> StockCheckResult
+    StockCheckResult o-- "0..*" StockEntry
+    StockCheckResult --> Rejection
+    StockChangeLine ..> Position
+    StockEntry ..> Position
+    ReplenishmentService ..> StockService
+    ReplenishmentService ..> SubmissionPort : uses IF-05
+    ReplenishmentService ..> ProductReader : uses IF-06
+    ReplenishmentService ..> IdClock : uses IF-03
+    LossService ..> StockService
+    LossService *-- "0..*" LossRecord
+    LossService ..> SubmissionPort : uses IF-05
+    LossCorrectionService ..> StockService
+    LossCorrectionService *-- "0..*" LossCorrection
+    LossCorrection --> LossRecord
+    LossCorrectionService ..> SubmissionPort : uses IF-05
+    AftersaleService ..> OriginalSaleReader : uses IF-11
+    AftersaleService ..> ProductReader : uses IF-06
+    AftersaleService ..> QuotaCalculator
+    AftersaleService ..> QualityPairValidator
+    AftersaleService *-- "0..*" Redemption
+    AftersaleService *-- "0..*" Replacement
+    AftersaleService *-- "0..*" MoneyEntry
+    AftersaleService ..> LossService : customer-return loss
+    AftersaleService ..> SubmissionPort : uses IF-05
+    AftersaleService ..> IdClock : uses IF-03
+    Redemption "0..1" -- "0..1" Replacement : qualityPair
+    QuotaCalculator --> QuotaView
+    RecordQueryService ..> SnapshotAccess : uses IF-04
+    RecordQueryService ..> QueryScope
+    RecordQueryService --> RecordView
+    ReversalService ..> SnapshotAccess : uses IF-04
+    ReversalService ..> DependencyChecker
+    ReversalService --> ReversalPlan
+    ReversalService ..> SubmissionPort : uses IF-05
+    ReversalPlan o-- "0..*" StockEntry
+    ReversalPlan o-- "0..*" MoneyEntry
+    ReversalPlan o-- "0..*" Redemption
+    DependencyChecker ..> StockEntry
+%% class_v1 / 2026-10-20 / B scope / pre-review（源文件由 B 在 2026-10-20 定稿提供）
