@@ -72,7 +72,7 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 ## 4. 风险提示（需 B 确认）
 
 - **R-04 口径（CR07-09 后）**：基线现要求"默认拒绝 + 店长授权资格个案例外 + 记录授权人/原因/放宽规则"（FR-07/08、BR-22/26、AC-19/33/47），且只放宽资格、不改数量/金额/库存校验。V2 采用简单资格校验 + 例外字段/授权校验，不抽策略类；若 B 本意是"售后完全人工、系统不判定资格"，则与 CR07-09 冲突，需按 Spec §17 处理。
-- **渲染图集**：B 已渲染 8 张分图；其中"总体关系图"（customer-return 应指向 `CustomerReturnLossRecorder`）与"售后模块详情"（CR07-09 例外字段/Session）需修正后重渲染；其余模块图不受影响。
+- **渲染图集**：8 张分图已按修正重渲染并入库 `docs/design/member_b/v2/rendered/`（00 总体图的 customer-return 指向 `CustomerReturnLossRecorder`；02 售后详情含 CR07-09 例外字段与 Session 授权校验）。
 - **V2 规模**：约 50 个类/接口/枚举，单图较宽；报告可横向整页或用分图集；图面可读性（R-27）已拒绝，不再改图。
 
 ## 5. 待 A 提供/确认的输入（不阻塞 V2 设计，阻塞编码）
@@ -90,11 +90,11 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 
 ## 6. 下一步
 
-1. B 按 CR07-09/R-06 修正后重渲染两张分图（总体关系图、售后模块详情）；其余 6 张可用。
+1. 已完成：8 张分图按 CR07-09/R-06 修正并入库 `docs/design/member_b/v2/rendered/`。
 2. B 评审 A 新增的 P1 用例图（`docs/P1用例图.svg`，A 提交 `0f3a6fe`），记录评审意见。
-3. 提交并推送分支 `member-b/design-v1-v2`（已 rebase 至 `7216724`）；A 确认 IF-07 §10 与 §5 的 A 侧输入。
+3. 已推送分支 `member-b/design-v1-v2`（rebase 至 `7216724`，含 CR07-09 同步）；待开 PR 并由 A 确认 IF-07 §10 与 §5 的 A 侧输入。
 4. V2 冻结后进入 G-06 模块实现（B 三包先纯计算，再接 CUI/认证）；按交接包 §8 交 A 集中审计。
-5. 报告 §3.5/§3.6 使用 V2 + 本演进表。
+5. 报告 §3.5/§3.6 使用 V2 + 本演进表；报告正文建议用图集 00 总体图，模块详情放附录/支撑材料。
 
 ## 7. 变更记录
 
