@@ -1,15 +1,17 @@
 # 超市管理系统 · Supermarket Management
 
-单店实体超市的课程项目。当前仓库仅包含需求、逻辑设计与预备分工文档，尚无业务代码、数据库实现或可运行程序。
+单店实体超市的课程项目。当前仓库包含需求、设计、分工及最小Maven框架，尚无业务代码、数据库实现或可运行的业务程序。
 
 ## 阅读顺序
 
 1. [Spec：需求和业务规则基线](./docs/Project_Spec.md)（v0.7，已冻结为需求基线）。
 2. [PRD：功能需求和验收映射](./docs/Project_PRD.md)（v0.7，已冻结为需求基线）。
 3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
-4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，草案；设计分工内容可确认，框架未放行）。
+4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
 
-ERD核心审阅事项见其第8节；分工/接口边界见第4项清单。
+5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.0正式版；公共契约与实现交付分开，IF-11局部事项见规范）。
+
+ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
 
 ## 范围与技术边界
 
