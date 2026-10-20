@@ -1,0 +1,414 @@
+---
+config:
+  theme: base
+  layout: elk
+  themeVariables:
+    fontSize: 18px
+  class:
+    hideEmptyMembersBox: false
+---
+classDiagram
+direction TB
+    namespace stock {
+        class StockService {
+            +check(ctx: StockChangeContext, lines: List~StockChangeLine~) StockCheckResult
+        }
+        class StockValidator {
+            +validate(lines: List~StockChangeLine~, balances: List) Rejection
+        }
+        class StockBalanceReader {
+            +balances(barcodes) List~StockBalance~
+        }
+        class StockChangeContext {
+            -long baseLast
+            -String requestKey
+            -String operatorId
+        }
+        class StockChangeLine {
+            -String barcode
+            -Position position
+            -int delta
+            -String sourceLineId
+            -String transferKey
+            -String reverseOfId
+        }
+        class StockCheckResult {
+            -List~StockBalance~ balances
+            -List~StockEntry~ entries
+            -Rejection rejection
+            -Map~String,Integer~ totalsAfter
+        }
+        class StockBalance {
+            -String barcode
+            -Position position
+            -int quantity
+        }
+        class Rejection {
+            -String code
+            -String detail
+            -String field
+        }
+        class StockEntry {
+            -String id
+            -String barcode
+            -Position position
+            -int delta
+            -String eventKey
+            -String transferKey
+            -String sourceLineId
+            -int commitOrdinal
+            -String reverseOfId
+            -String receiptReviewId
+        }
+        class Position {
+            <<enumeration>>
+            S
+            W
+        }
+        class ReplenishmentService {
+            +replenish(barcode, qty, requestKey) OperationResult
+        }
+        class LossService {
+            +recordLoss(barcode, position, qty, reason, requestKey) OperationResult
+        }
+        class LossCorrectionService {
+            +correct(lossId, diff, reason, requestKey) OperationResult
+        }
+        class CustomerReturnLossRecorder {
+            +recordReturned(barcode, qty, reason, requestKey) OperationResult
+        }
+        class LossRecord {
+            -String lossId
+            -String sourceLineId
+            -String barcode
+            -Position position
+            -int quantity
+            -String origin
+            -String disposition
+            -String dispositionState
+        }
+        class LossCorrection {
+            -String correctionId
+            -String documentId
+            -String lossId
+            -int version
+            -int diff
+            -Record beforeAfter
+            -String operatorId
+            -Instant occurredAt
+        }
+    }
+    namespace aftersale {
+        class AftersaleService {
+            +apply(cmd: AftersaleCommand) OperationResult
+        }
+        class AftersaleCommand {
+            -String requestKey
+            -String customerVoucher
+            -List~AftersaleCommandLine~ lines
+        }
+        class AftersaleCommandLine {
+            -String saleLineId
+            -String kind
+            -int quantity
+            -boolean opened
+            -boolean qualityProblem
+            -String replacementBarcode
+            -int replacementQty
+            -boolean qualityPair
+        }
+        class AftersaleAssembler {
+            +assemble(cmd, views) List
+        }
+        class QuotaLedgerReader {
+            <<interface>>
+            +effectiveFor(saleLineId) List~Redemption~
+        }
+        class QuotaViewBuilder {
+            +build(line, history) QuotaView
+        }
+        class QuotaView {
+            -String saleLineId
+            -int originalQty
+            -BigDecimal originalPaid
+            -int returnedQty
+            -BigDecimal returnedAmount
+            -int exchangedQty
+            -BigDecimal exchangedAmount
+            -int remainingQty
+            -BigDecimal remainingAmount
+        }
+        class QuotaCalculator {
+            +allocate(qty, settle: SettlementContext, view: QuotaView) BigDecimal
+        }
+        class SettlementContext {
+            -boolean settlesRemaining
+            -BigDecimal remainingAmount
+            -List~String~ redemptionOrder
+        }
+        class QualityPairValidator {
+            +validate(originalBarcode, redemption, replacement) boolean
+        }
+        class Redemption {
+            -String redemptionId
+            -String sourceLineId
+            -String originalSaleLineId
+            -String originalBarcode
+            -String aftersaleId
+            -RedemptionKind kind
+            -Effect effect
+            -int quantity
+            -BigDecimal amount
+            -String requestKey
+            -String reverseOfId
+            -boolean opened
+            -boolean qualityProblem
+        }
+        class Replacement {
+            -String lineId
+            -String aftersaleId
+            -String redemptionId
+            -String barcode
+            -int quantity
+            -String productNameSnapshot
+            -BigDecimal unitPriceSnapshot
+            -BigDecimal replacementAmount
+            -String exchangeKind
+            -String qualityRedemptionId
+        }
+        class MoneyEntry {
+            -String moneyEntryId
+            -String documentId
+            -BigDecimal amountSigned
+            -String requestKey
+            -String reverseOfId
+        }
+        class RedemptionKind {
+            <<enumeration>>
+            RETURN
+            EXCHANGE
+        }
+        class Effect {
+            <<enumeration>>
+            CONSUME
+            RELEASE
+        }
+    }
+    namespace query {
+        class RecordQueryService {
+            +query(filter, session: Session) List~RecordView~
+        }
+        class QueryScope {
+            <<enumeration>>
+            SELF
+            ALL
+        }
+        class RecordView {
+            -String recordId
+            -String kind
+            -String summary
+        }
+    }
+    namespace reversal {
+        class ReversalService {
+            +reverse(documentId, reason, session: Session) OperationResult
+        }
+        class DependencyChecker {
+            +check(originalDocument, committedState) DependencyResult
+        }
+        class DependencyResult {
+            -boolean blocked
+            -List~Rejection~ blockers
+        }
+        class ReversalPlan {
+            -List~StockEntry~ reverseEntries
+            -List~MoneyEntry~ reverseMoney
+            -List~Redemption~ releases
+        }
+        class AftersaleLinkReader {
+            <<interface>>
+            +unresolvedFor(documentId) boolean
+        }
+        class Reversal {
+            -String reversalId
+            -String targetDocumentId
+            -String authorizedBy
+            -String reason
+            -Instant occurredAt
+        }
+    }
+    namespace cui {
+        class CuiApp {
+            +run()
+        }
+        class InputValidator {
+            +parseQty(text) int
+            +parseMoney(text) BigDecimal
+        }
+    }
+    namespace auth {
+        class AuthService {
+            +login(username, password) Session
+        }
+        class Session {
+            -String accountId
+            -Role role
+        }
+        class Role {
+            <<enumeration>>
+            ADMIN
+            MANAGER
+            CLERK
+        }
+    }
+    namespace shared {
+        class BusinessTransaction {
+            <<abstract>>
+            +execute(request: SubmissionRequest) OperationResult
+            #validate()
+            #assemble()
+            #submit()
+        }
+        class OperationResult {
+            -boolean success
+            -Rejection rejection
+        }
+        class SubmissionRequest {
+            -String requestKey
+            -long baseLast
+            -String operatorId
+            -String fingerprint
+            -ChangeSet changeSet
+        }
+        class ChangeSet {
+            -List~StockEntry~ stockEntries
+            -List~Redemption~ redemptions
+            -List~MoneyEntry~ moneyEntries
+            -List~DocumentHeader~ documents
+            -List~DocumentLine~ documentLines
+        }
+        class DocumentHeader {
+            -String documentId
+            -String kind
+            -String requestKey
+            -String status
+        }
+        class DocumentLine {
+            -String lineId
+            -String documentId
+            -String barcode
+            -int quantity
+        }
+    }
+    namespace external {
+        class SubmissionPort {
+            <<interface>>
+            +submit(request: SubmissionRequest) OperationResult
+        }
+        class SnapshotAccess {
+            <<interface>>
+            +current() CommittedState
+        }
+        class ProductReader {
+            <<interface>>
+            +findByBarcode(barcode) ProductSnapshot
+        }
+        class OriginalSaleReader {
+            <<interface>>
+            +readLine(saleLineId) SaleLineSnapshot
+            +locateByReceipt(voucher) SaleLineSnapshot
+        }
+        class IdClock {
+            <<interface>>
+            +newId(prefix) String
+            +now() Instant
+        }
+    }
+
+    ReplenishmentService --|> BusinessTransaction
+    LossService --|> BusinessTransaction
+    LossCorrectionService --|> BusinessTransaction
+    CustomerReturnLossRecorder --|> BusinessTransaction
+    AftersaleService --|> BusinessTransaction
+    ReversalService --|> BusinessTransaction
+
+    BusinessTransaction ..> SubmissionPort
+    BusinessTransaction ..> SubmissionRequest
+    BusinessTransaction ..> OperationResult
+    OperationResult --> Rejection
+    SubmissionRequest o-- ChangeSet
+    ChangeSet o-- "0..*" StockEntry
+    ChangeSet o-- "0..*" Redemption
+    ChangeSet o-- "0..*" MoneyEntry
+    ChangeSet o-- "0..*" DocumentHeader
+    ChangeSet o-- "0..*" DocumentLine
+
+    StockService ..> StockValidator
+    StockService ..> StockBalanceReader : 只读余额
+    StockService ..> StockChangeContext
+    StockService ..> StockChangeLine
+    StockService --> StockCheckResult
+    StockCheckResult o-- "0..*" StockBalance
+    StockCheckResult o-- "0..*" StockEntry
+    StockCheckResult --> Rejection
+    StockChangeLine ..> Position
+    StockEntry ..> Position
+
+    ReplenishmentService ..> StockService
+    LossService ..> StockService
+    LossCorrectionService ..> StockService
+    LossService *-- "0..*" LossRecord
+    CustomerReturnLossRecorder *-- "0..*" LossRecord
+    LossCorrectionService *-- "0..*" LossCorrection
+    LossCorrection --> LossRecord
+
+    AftersaleService ..> AftersaleCommand
+    AftersaleCommand o-- "1..*" AftersaleCommandLine
+    AftersaleService ..> AftersaleAssembler
+    AftersaleService ..> QuotaLedgerReader
+    AftersaleService ..> QuotaViewBuilder
+    AftersaleService ..> QuotaCalculator
+    AftersaleService ..> QualityPairValidator
+    AftersaleService ..> StockService
+    AftersaleService ..> CustomerReturnLossRecorder
+    AftersaleService ..> OriginalSaleReader
+    AftersaleService ..> ProductReader
+    AftersaleAssembler *-- "0..*" Redemption
+    AftersaleAssembler *-- "0..*" Replacement
+    AftersaleAssembler *-- "0..*" MoneyEntry
+    QuotaLedgerReader ..> Redemption
+    QuotaViewBuilder --> QuotaView
+    QuotaCalculator ..> QuotaView
+    QuotaCalculator ..> SettlementContext
+    QualityPairValidator ..> Redemption
+    QualityPairValidator ..> Replacement
+    Redemption --> RedemptionKind
+    Redemption --> Effect
+    Replacement "0..1" -- "0..1" Redemption : qualityPair
+
+    RecordQueryService ..> SnapshotAccess
+    RecordQueryService ..> Session
+    RecordQueryService ..> QueryScope
+    RecordQueryService --> RecordView
+
+    ReversalService ..> SnapshotAccess
+    ReversalService ..> DependencyChecker
+    ReversalService ..> AftersaleLinkReader
+    ReversalService --> ReversalPlan
+    ReversalService *-- Reversal
+    DependencyChecker ..> StockEntry
+    DependencyResult --> Rejection
+
+    CuiApp ..> AuthService
+    CuiApp ..> Session
+    CuiApp ..> InputValidator
+    CuiApp ..> ReplenishmentService
+    CuiApp ..> LossService
+    CuiApp ..> AftersaleService
+    CuiApp ..> RecordQueryService
+    CuiApp ..> ReversalService
+    AuthService --> Session
+    Session --> Role
+
+    SubmissionPort ..> SubmissionRequest
+%% class_v2 / 2026-10-20 / B scope / post-review（依据 design_review.md §7 决定）
