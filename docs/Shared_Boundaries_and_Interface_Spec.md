@@ -10,7 +10,11 @@
 
 正式规范在`main`维护。编写前实际核验：本地main HEAD为`1deaf4814eff4501d97c67c567e72375a32a5a79`，B设计分支同HEAD，已为main祖先，不重复合并；本地main领先远端7个仅设计/证据提交，远端main实际为`7216724269e1e4126c66fe46674f8a8287c675be`，工作区仅有未跟踪的本规范草稿。用户本轮明确审计通过B成果合入主线并授权提交/推送；接受设计交付物不等于代B决定内部技术选择。
 
-本轮发布包括原有7个设计提交、正式规范及README入口；不包含额外业务代码、基线修改或无关改动。发布提交由`git log -1 --format=fuller -- docs/Shared_Boundaries_and_Interface_Spec.md`定位，正式发布及远端核验回执见本节后续记录。推送完成前不可仅凭本地main宣称双方可拉取。未改远端/可见性/分支策略，未联系成员。
+本轮发布包括原有7个设计提交、正式规范及README入口；不包含额外业务代码、基线修改或无关改动。发布提交由`git log -1 --format=fuller -- docs/Shared_Boundaries_and_Interface_Spec.md`定位，正式发布及远端核验回执见本节下方。推送完成前不可仅凭本地main宣称双方可拉取。未改远端/可见性/分支策略，未联系成员。
+
+### 正式发布回执
+
+2026-10-20，正式规范v1.0及README入口发布于main提交`0af6d6ed312e5ff23173cc67d483814124c58adf`（`docs: finalize shared interface specification v1.0`）。该提交包含B设计HEAD `1deaf4814eff4501d97c67c567e72375a32a5a79`。本轮执行普通`git push origin main`成功，随后`git ls-remote origin refs/heads/main`返回同一`0af6d6e…`；因此双方可从现有origin/main取得正式规范和已审计设计材料。未强推、未改远端/可见性/分支策略。本回执是发布后的文档记录，其自身提交可由本文件Git历史定位，不将内容发布号冒称为永久最新HEAD。B拉取后核对HEAD包含上述发布提交；未来更新以实际Git状态为准。
 
 本轮读取V1/V2源文件、[真实AI评审](./evidence/member_b/design_review.md)§7、[演进记录](./evidence/member_b/design_evolution.md)§0/3/4/5和[IF-07草案v0.2](./design/member_b/if07_contract.md)。原渲染图仍保留，不重新绘制B整套类图。
 
