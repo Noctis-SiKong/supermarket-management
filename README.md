@@ -1,6 +1,6 @@
 # 超市管理系统 · Supermarket Management
 
-单店实体超市的课程项目。当前仓库包含需求、设计、分工及最小Maven框架，尚无业务代码、数据库实现或可运行的业务程序。
+单店实体超市的课程项目。当前仓库包含需求、B的V1/V2设计与评审材料、分工及最小Maven框架，当前按正式共享边界与接口规范推进开发；经本轮核对，尚无业务代码、数据库实现或可运行的业务程序。
 
 ## 阅读顺序
 
@@ -9,7 +9,7 @@
 3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
 4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
 
-5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.0.1正式修订版；公共契约与实现交付分开，IF-11局部事项见规范）。
+5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.02正式版；公共契约与实现交付分开，IF-11局部事项见规范）。
 
 ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
 
@@ -48,7 +48,7 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ### 计划路径与报告安排
 
-文档中代码样式的`docs/evidence/...`、`docs/design/...`、`docs/decisions.md`或`docs/decisions/...`均为**仓库相对路径**。现在存在的是Spec/PRD/ERD/分工清单四个文档及`docs/erd/`四个图源；`docs/evidence/`、`docs/design/`、`docs/decisions/`和`docs/decisions.md`均为计划位置，尚未创建。不为了让计划“看起来完成”而创建空证据文件；也不新建重复路径治理记录。
+文档中代码样式的`docs/evidence/...`、`docs/design/...`、`docs/decisions.md`或`docs/decisions/...`均为**仓库相对路径**。现有文档包括Spec/PRD/ERD/分工清单/共享规范，`docs/erd/`四个图源以及已创建的`docs/design/member_b/`和`docs/evidence/member_b/`（含B的V1/V2、AI评审、设计演进和框架复现记录）；仅`docs/decisions/`和`docs/decisions.md`仍为尚未创建的计划位置。不为了让计划“看起来完成”而创建空证据文件；也不新建重复路径治理记录。
 
 工作阶段以仓库`docs/`的中文Spec/PRD/ERD为协作主副本；提交前将最终报告转为英文，并从提交包/最终交付目录移除中文工作稿，中文稿不作为并行最终报告。中文工作稿不是提交报告，不设正式§2.6/§3.7声明；正式声明只在英文最终报告中由本人按模板要求完成并签署，中文工作稿不替代声明。英文最终报告使用仓库根目录下的英文报告存放位置；最终文件名在报告装配时确定，本轮不新增报告子目录或改变Canvas安排；仓库根目录可包含中英文工作文档、代码和构建文件。
 
@@ -74,7 +74,7 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ### 本轮Git核验记录
 
-本轮提交前工作区含Spec/PRD/ERD修改及未跟踪的分工清单；提交/推送状态以`git status`和`git log`为准，不以本文的修订说明替代实际Git记录。
+v1.02勘误前，本地main与远端main均为`51a453f3e626919943a37c9f15f3f78b1de76fc7`，工作区干净；B设计成果及正式共享规范已发布，本轮不重复合并。后续最新提交及推送状态以实际`git status`、`git log`和远端main为准。
 
 ## 课程资料引用档案（不分发原文）
 
@@ -94,7 +94,7 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ## 两人协作建议
 
-参与者：A1moss、CGwal。分工/接口边界见第4项清单；设计分工内容可确认。B现在即可开始依赖登记、IF-07基础契约和类图V1；框架已进入交付提交，业务代码待B复现并接受交接、用例图和类图V1→评审→V2完成、必要接口明确后按模块开工。不在本README重复分配工作或贡献比例。
+参与者：A1moss、CGwal。既定分工见第4项清单，当前跨模块协作按第5项正式共享规范推进。B的V1/V2、真实AI评审、设计演进和框架复现记录已合入main；不重新安排B从V1开始。双方按明确接口和各自职责实现、自测，未交付接口使用约定替身；IF-11仅局部阻塞真实跨人读取接入。不在本README重复分配工作或贡献比例。
 
 建议使用短期分支和Pull Request，交叉检查业务规则、数据约束、链接及真实证据后合并`main`。这是协作建议，不表示已配置分支保护或协作者权限。避免未检查就执行`git add .`；优先暂存本次实际修改的明确文件，并在提交前检查差异。
 
@@ -102,4 +102,4 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ## Maven框架与构建
 
-工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架已进入交付提交，B可拉取后按交接包§4.2复现；复现和接受交接不阻塞B现在做设计，只阻塞业务代码开工。
+工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架及B的复现记录已进入main；历史实际命令和结果见`docs/evidence/member_b/framework_repro.md`，本轮未重新运行构建。后续实现/联调按正式共享规范和各模块前置推进，不把框架存在或历史冒烟测试等同业务实现完成。

@@ -1,16 +1,16 @@
 # 共享边界与接口规范
 
-版本：**v1.0.1（正式修订版）**｜日期：2026-10-20（Asia/Shanghai）｜状态：共享边界与协作约定定稿；接口实现、真实联调和验收分别交付，不改变需求基线v0.7。IF-11局部事项及B个人设计决定见§8/9，其余契约可据此实现。
+版本：**v1.02（正式版）**｜日期：2026-10-20（Asia/Shanghai）｜状态：共享边界与协作约定定稿；接口实现、真实联调和验收分别交付，不改变需求基线v0.7。IF-11局部事项及B个人设计决定见§8/9，其余契约可据此实现。
 
 ## 1. 状态、来源与共享位置
 
-需求基线为[Spec](./Project_Spec.md)、[PRD](./Project_PRD.md)、[ERD](./Project_ERD.md) v0.7；批准/待决以Spec §17为来源，SYNC详情§17.4，包含已批准CR07-08/09。工作包/资产依据[分工清单v0.3](./P1_Preliminary_Work_Distribution_and_Interface_List.md)§2–4。本文件是当前跨模块调用契约的唯一维护位置；业务规则仍以基线为准。原IF草案、类图仅保留设计演进，不形成并行公共契约，发现差异按§9/10处理。
+需求基线为[Spec](./Project_Spec.md)、[PRD](./Project_PRD.md)、[ERD](./Project_ERD.md) v0.7；批准/待决以Spec §17为来源；CR07-08、CR07-09定位于Spec §17.1，SYNC-01至SYNC-05定位于Spec §17.4。工作包/资产依据[分工清单v0.3](./P1_Preliminary_Work_Distribution_and_Interface_List.md)§2–4。本文件是当前跨模块调用契约的唯一维护位置；业务规则仍以基线为准。原IF草案、类图仅保留设计演进，不形成并行公共契约，发现差异按§9/10处理。
 
 ### 共享分支与提交依据
 
-正式规范在`main`维护。编写前实际核验：本地main HEAD为`1deaf4814eff4501d97c67c567e72375a32a5a79`，B设计分支同HEAD，已为main祖先，不重复合并；本地main领先远端7个仅设计/证据提交，远端main实际为`7216724269e1e4126c66fe46674f8a8287c675be`，工作区仅有未跟踪的本规范草稿。用户本轮明确审计通过B成果合入主线并授权提交/推送；接受设计交付物不等于代B决定内部技术选择。
+正式规范在`main`维护。本轮v1.02修订前实际核验：本地main与远端main均为`51a453f3e626919943a37c9f15f3f78b1de76fc7`，工作区干净，无未跟踪文件；B设计HEAD `1deaf4814eff4501d97c67c567e72375a32a5a79`已为main祖先，不重复合并。当前只修订本文件与README，不改业务代码或需求基线。
 
-本轮发布包括原有7个设计提交、正式规范及README入口；不包含额外业务代码、基线修改或无关改动。发布提交由`git log -1 --format=fuller -- docs/Shared_Boundaries_and_Interface_Spec.md`定位，正式发布及远端核验回执见本节下方。推送完成前不可仅凭本地main宣称双方可拉取。未改远端/可见性/分支策略，未联系成员。
+首次发布提交已通过`git show --format=fuller 0af6d6e`及该提交的文件变更核实为`0af6d6ed312e5ff23173cc67d483814124c58adf`：首次新增本规范v1.0并在README添加入口。修订前最新文档提交为`51a453f3e626919943a37c9f15f3f78b1de76fc7`。`git log -1 --format=fuller -- docs/Shared_Boundaries_and_Interface_Spec.md`仅定位后续最新文档提交，不能证明首次发布；v1.02补丁提交和推送结果以该历史及实际远端main核验，不预设本地修改已经发布。
 
 ### v1.0历史发布回执
 
@@ -70,7 +70,7 @@ A提供不可变`WorkingCopy`句柄：`workingCopyId:String`、`baseLast:long`�
 | 操作/业务校验主责 | 本次必需记录 | 条件记录与排除 |
 |---|---|---|
 | 商品/期初（A，FR-02/04） | 新建/允许更新的商品；期初时来源单/行及指定位置库存流水 | 商品维护本身不强制入库流水；期初权限按AC-86 |
-| 实收到货/审核（A，FR-03/15） | 到货单/行或补正版本、审核时审核事件及对应状态变更 | 首次审核通过才有在仓+流水；待审/补正无库存；附件0–3张非必需 |
+| 实收到货/审核（A，FR-03/15） | 到货单/行或补正版本、审核时审核事件及对应状态变更；首次审核通过必须在同一次提交中生成W+流水 | 待审和补正不生成库存流水；附件0–3张非必需 |
 | 补货（B，FR-12） | 业务单/行、同商品transferKey关联的W−/S+流水 | 不产生销售收款/核销；两腿同次保存 |
 | 销售（A，FR-05/06） | 销售单/行实付快照、已收款记录、在售出库流水 | 促销适用/分摊快照按实际活动；没有活动不强造促销记录 |
 | 退货/换货/混合（B，FR-07/08） | 售后单/行、原行关联和对应核销、交回品损耗/去向；AC-87关联按IF-11方案接入 | 退货有相应退款；换货才有替换品/在售出库及实际补退差记录；普通合规售后无强制例外授权；资格例外才存既有授权字段/原因/放宽规则；特殊质量配对才必需quality_redemption_id |
@@ -83,7 +83,7 @@ A提供不可变`WorkingCopy`句柄：`workingCopyId:String`、`baseLast:long`�
 |---|---|---|---|---|
 | IF-01 | B | CUI、A/B业务入口 | 登录/解析SessionRef | 边界已定，可实现认证及测试替身 |
 | IF-04 | A | A/B业务协调者、B受限查询/冲销 | `open(op)`→`ReadResult<WorkingCopy>` | 契约足以开始A设计/实现；真实提供方待交付 |
-| IF-05 | A | 全部写业务协调者 | `submit(op, businessRequest, wc, changeSet)`→`CommitResult` | A可落实统一提交，不授权B复制保存器；真实实现待交付 |
+| IF-05 | A | 全部写业务协调者 | 统一提交→CommitResult及lookupResult只读结果查询；见§5.2，查询须同时匹配key/操作种类/经办身份/原指纹 | A可落实统一提交，不授权B复制保存器；真实实现待交付 |
 | IF-07 | B | WP-01–06经协调者调用 | `balances(wc, overlay, barcodes)`及`check(wc, overlay, changes)` | 接口边界已定，可实现/自测及做替身；仅实际业务冲突局部等待 |
 | IF-11 | A | WP-05及按授权目的调用的WP-06 | `readForAftersale(op, wc, voucher, aftersaleRef)` | 只读快照形态可设计/替身；真实专用读取追溯接入局部阻塞 |
 
@@ -97,7 +97,7 @@ A提供不可变`WorkingCopy`句柄：`workingCopyId:String`、`baseLast:long`�
 
 普通读取返回`ReadResult<T>`的VALUE/REJECTED/FAILED；候选校验返回`CandidateResult<T>`的PREPARED/REJECTED/FAILED。PREPARED/VALUE均非业务SUCCESS、不分配提交序号。V2的`OperationResult.success:boolean`不足以区分三态，作为技术适配项；不改业务预期。
 
-稳定错误码本规范选定：`AUTH_REQUIRED`、`FORBIDDEN`、`INVALID_INPUT`、`NOT_FOUND`、`REFERENCE_INVALID`、`INSUFFICIENT_STOCK`（含barcode/position/available/requested）、`TRANSFER_UNBALANCED`、`EVENT_CONFLICT`、`REQUEST_KEY_CONFLICT`、`STALE_WORKING_COPY`属于REJECTED；`SNAPSHOT_UNAVAILABLE`、`RECOVERY_WRITE_BLOCKED`、`PERSISTENCE_FAILED`属于FAILED。代码不依赖detail字符串。资格/双额度等由业务提供方按基线添加稳定细分码并通知调用者，不改拒绝条件。
+稳定错误码本规范选定：`INVALID_CREDENTIALS`、`AUTH_REQUIRED`、`FORBIDDEN`、`INVALID_INPUT`、`NOT_FOUND`、`REFERENCE_INVALID`、`INSUFFICIENT_STOCK`（含barcode/position/available/requested）、`TRANSFER_UNBALANCED`、`EVENT_CONFLICT`、`REQUEST_KEY_CONFLICT`、`STALE_WORKING_COPY`属于REJECTED；`AUTH_TECHNICAL_FAILURE`、`SNAPSHOT_UNAVAILABLE`、`RECOVERY_WRITE_BLOCKED`、`PERSISTENCE_FAILED`属于FAILED。代码不依赖detail字符串。资格/双额度等由业务提供方按基线添加稳定细分码并通知调用者，不改拒绝条件。
 
 ## 5. 四项详细契约
 
@@ -115,9 +115,11 @@ A负责快照读取、D2恢复校验及句柄生命周期；B认证端口验证�
 
 A统一计算/复核`SHA-256(UTF-8规范化业务请求)`，不相信客户端自报fingerprint。规范化协议v1绑定：操作种类、经认证操作者accountId、原单/原行引用、业务输入数量/金额/位置、稳定输入行标识或保持顺序的行序号、资格事实、替换品、实际促销输入（适用时）、有效授权人/原因/放宽规则及影响业务的其他显式输入。JSON属性按名称排序，数组保留已约定业务顺序，BigDecimal按相应字段基线精度规范化为十进制文本；不将有业务意义的行序打乱。
 
-服务端生成的结果记录ID、计算结果/候选流水、生成时间、commitOrdinal、wc句柄/baseLast、会话令牌不进入业务请求指纹；若时间/稳定行ID已是本次用户请求的实际业务输入则保留，不能与结果生成值混淆。首次分配的结果ID/业务时间在该次操作中稳定；若生成ID参与基线要求的稳定行排序，重试保留该操作的稳定行标识，不因重建wc重排行；期限/活动有效性仍按基线规定的业务校验时点核验，不以旧生成时间绕过资格校验。真正修改了业务意图的请求在确认旧结果后作为新的业务操作处理，不以旧key覆盖，已成功重试直接返回保存结果，不重新分配或用重算产物判断同一意图。B消费IF-03/提交结果，不擅改规范化。未取得结果时先调用IF-05的只读`lookupResult(op, requestKey)`：可信身份必须满足原记录的全部/本人范围；原操作者可查询自己的结果，店长/管理员仅在基线允许的全部查询范围内读取。仅持同角色或知道requestKey不能读取另一店员结果；结果访问权限不等于可代原操作者重放写请求。结果仅为已提交原SUCCESS、确认无已提交记录（NOT_FOUND）或读取技术失败（FAILED，不据此判定未提交）。先以原key查询IF-05结果，若已有成功则复用；确认未提交后才以原key和原内容重建重试，读取失败则保留未知状态，不换新key重复提交。
+服务端生成的结果记录ID、计算结果/候选流水、生成时间、commitOrdinal、wc句柄/baseLast、会话令牌不进入业务请求指纹；若时间/稳定行ID已是本次用户请求的实际业务输入则保留，不能与结果生成值混淆。首次分配的结果ID/业务时间在该次操作中稳定；若生成ID参与基线要求的稳定行排序，重试保留该操作的稳定行标识，不因重建wc重排行；期限/活动有效性仍按基线规定的业务校验时点核验，不以旧生成时间绕过资格校验。真正修改了业务意图的请求在确认旧结果后作为新的业务操作处理，不以旧key覆盖，已成功重试直接返回保存结果，不重新分配或用重算产物判断同一意图。B消费IF-03/提交结果，不擅改规范化。未取得结果时先调用IF-05的只读`lookupResult`，必要输入为原requestKey、原操作种类、经认证的经办身份和原始businessRequest（由A计算/复核原请求内容指纹）；具体Java签名由A在代码落实，不在本文规定构造器。只有requestKey、操作种类、经办身份和原请求内容指纹**全部匹配**已提交记录，才能返回并复用原SUCCESS。key已存在但操作种类、身份或内容指纹不匹配，返回REJECTED / REQUEST_KEY_CONFLICT，不返回原成功数据或冒充本次成功；没有有效身份仍先按IF-01拒绝。店长/管理员查看他人业务记录使用基线允许的普通查询，不通过lookupResult将他人的提交结果复用为自己的成功。
 
-A唯一维护提交协调者。单写者锁内先通过IF-01解析可信身份、校验本次操作/结果访问范围，再查requestKey（幂等检查先于旧wc版本拒绝，但不先于身份检查）：经授权同键同内容已有成功，返回原SUCCESS，不因旧baseLast二次扣款/库存；同键异内容REJECTED。新请求再校验wc.baseLast/单据版本、权限、引用、业务不变量；业务校验能力由对应主责模块提供并维护；A在提交锁内调用该能力对最新同版基线和完整changes复核，另外执行身份、引用、版本、变更组完整性等公共检查，不能只相信调用方“已通过”，也不得另写B的库存或售后算法。提交复核校验器接收原始businessRequest、只读基线及完整changes，以只读候选视图执行校验，不再次合并/生成同一变更，不调用submit或写文件；首次候选组装仍由业务协调者完成。无冲突后给候选`last+1`，将全部业务/款项/核销/流水及幂等结果与计数纳入同一JSON快照原子保存，成功后发布内存结果；同次流水同commitOrdinal，无库存的成功提交也推进计数（Spec §10.2）。
+查询不写记录、不保存快照、不推进commitOrdinal；仅返回匹配的原SUCCESS、确认没有该key已提交记录（NOT_FOUND）或技术读取失败（FAILED，不能据此判定未提交）。确认未提交后才以原key和原内容重建重试，读取失败保留未知状态，不换新key重复提交。
+
+A唯一维护提交协调者。单写者锁内先通过IF-01解析可信身份、校验本次操作/结果访问范围，再查requestKey（幂等检查先于旧wc版本拒绝，但不先于身份检查）：经授权且key、操作种类、经办身份及原请求指纹全部匹配已有成功，返回原SUCCESS，不因旧baseLast二次扣款/库存；同键异内容REJECTED。新请求再校验wc.baseLast/单据版本、权限、引用、业务不变量；业务校验能力由对应主责模块提供并维护；A在提交锁内调用该能力对最新同版基线和完整changes复核，另外执行身份、引用、版本、变更组完整性等公共检查，不能只相信调用方“已通过”，也不得另写B的库存或售后算法。提交复核校验器接收原始businessRequest、只读基线及完整changes，以只读候选视图执行校验，不再次合并/生成同一变更，不调用submit或写文件；首次候选组装仍由业务协调者完成。无冲突后给候选`last+1`，将全部业务/款项/核销/流水及幂等结果与计数纳入同一JSON快照原子保存，成功后发布内存结果；同次流水同commitOrdinal，无库存的成功提交也推进计数（Spec §10.2）。
 
 B协调者组装自身业务，IF-07、核销、损耗记录器/构建器只能返回候选，不嵌套submit。特别是V2中`CustomerReturnLossRecorder`虽继承`BusinessTransaction`，作为售后子调用时只能使用候选组装能力，不能调用会submit的execute/模板入口；B可局部调整内部继承或方法，不要求重画整套V2。售后协调者持唯一ChangeSetBuilder并提交一次，记录损耗成功不能提前显示整笔售后成功。保存失败返回FAILED，旧快照/计数不变，不保留半笔业务。已原子替换后响应前崩溃属于已提交，调用方没有结果不能猜测失败并换键重做；重启校验后用原请求键查询/重试返回原SUCCESS。若进程中断无法返回，不构造FAILED证明“肯定未提交”。恢复异常阻写，按基线完整恢复，不拼版本。
 
@@ -139,7 +141,7 @@ A/B调用者均传同wc与**调用前已合并的overlay**。`balances`输入商
 
 输入：认证op（不得只operatorId）、同wc、顾客原销售凭证精确定位信息及`aftersaleRef`（目标售后单/草稿）。输出最少不可变SaleLineSnapshot：原销售/稳定行ID、条码/名称、原单价/促销/分摊优惠/行实付、原数量、原销售时间等办理必要字段；不提供一般跨人列表。历史核销从同wc视图构建，不混另一版本。普通查询用权限过滤路径，不借此特权读取。
 
-A负责定位、权限复核、只读快照投影及追溯候选/IF-05保存接入；B只传售后上下文并使用结果。**AC-87最低关联是必需项：实际读取经办人—原销售单—售后单。** 仅有原销售FK/售后建单人不当然证明实际读取者。如复用DOC_EVENT，其`occurred_at`记录本次读取发生时间，关联原销售和目标售后引用；原销售时间只用于原单事实/资格计算，不代替读取时间。不新增强制独立时间字段或审计实体。
+A负责定位、权限复核、只读快照投影及追溯候选/IF-05保存接入；B只传售后上下文并使用结果。**AC-87最低关联是必需项：实际读取经办人—原销售单—售后单。** 依据为Spec §5、Spec §17 SYNC-02（详情§17.4）及AC-87；读取追溯已有Spec依据，不是本轮新增业务要求。 仅有原销售FK/售后建单人不当然证明实际读取者。如复用DOC_EVENT，其`occurred_at`记录本次读取发生时间，关联原销售和目标售后引用；原销售时间只用于原单事实/资格计算，不代替读取时间。不新增强制独立时间字段或审计实体。
 
 追溯必须由IF-05同一持久化机制保存，不得旁路日志文件或独立保存器。当前Spec §17.4、ERD §6.4尚未批准“失败是否返回数据”与取消/删除留存的具体策略，故以下是A提供方待交付的局部方案，**不得用于真实售后读取接入**：
 
@@ -178,7 +180,7 @@ J-01只核启动/存储边界，不单独证明AC-23。IF-07先基础契约→�
 
 已有唯一Maven框架：`pom.xml`、Wrapper、标准src目录及框架测试已在共享基线main `7216724…`的历史中。本轮核实文件存在，并读取`docs/Maven_Framework.md`及B的`framework_repro.md`历史验证记录；未重新运行构建，不声称本轮可构建测试通过。B需在自己的同版副本复现实际命令；记录中的Windows命令为`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`，本轮仅引用既有证据。
 
-A首批交付最小可编译的WorkingCopy/增量ChangeSet/结果载体、IF-04统一读取入口及IF-05统一提交入口，再按职责交付相关共享实现。代码位置统一约定为仓库相对`src/main/java/nz/ac/aut/pdc/shared/`（A唯一维护公共载体与入口契约），A内部共享实现置于`src/main/java/nz/ac/aut/pdc/infrastructure/`；测试位于对应`src/test/java/`包。公共代码契约版本对应本文v1.0.1，实际最小字段/构造器/签名由A首批可编译代码交付，不在Markdown预先填满。IF-03仍是稳定ID/业务时间，不是公共类型接口；IF-06仍是A商品维护与读取能力，不能改称审计事件接口。B据A提交适配，不复制公共类型。IF-04/05技术边界已足以开始A侧设计实现；业务域设计/实现仍需各自满足已有门，不从底座预建全部领域/16个空接口。IF-11单独形成方案，业务准入/留存变化按Spec报批。实际实现完成后给B提交位置、文件/接口版本及实际验证命令；目前不能声称IF-04/05/11已实现。
+A首批交付最小可编译的WorkingCopy/增量ChangeSet/结果载体、IF-04统一读取入口及IF-05统一提交入口，再按职责交付相关共享实现。代码位置统一约定为仓库相对`src/main/java/nz/ac/aut/pdc/shared/`（A唯一维护公共载体与入口契约），A内部共享实现置于`src/main/java/nz/ac/aut/pdc/infrastructure/`；测试位于对应`src/test/java/`包。公共代码契约版本对应本文v1.02，实际最小字段/构造器/签名由A首批可编译代码交付，不在Markdown预先填满。IF-03仍是稳定ID/业务时间，不是公共类型接口；IF-06仍是A商品维护与读取能力，不能改称审计事件接口。B据A提交适配，不复制公共类型。IF-04/05技术边界已足以开始A侧设计实现；业务域设计/实现仍需各自满足已有门，不从底座预建全部领域/16个空接口。IF-11单独形成方案，业务准入/留存变化按Spec报批。实际实现完成后给B提交位置、文件/接口版本及实际验证命令；目前不能声称IF-04/05/11已实现。
 
 ### B
 
@@ -213,3 +215,5 @@ A首批交付最小可编译的WorkingCopy/增量ChangeSet/结果载体、IF-04�
 修订依据：v1.0.1从main `d4a98c17af76974920b8ed28b0b36fa972bc44ea`修订，发布提交以本文件历史中`docs: fix shared contract request and overlay boundaries`定位；上方v1.0回执不代表本次修订已经推送，本次实际推送结果以远端main和交付报告核验。
 
 修订记录v1.0.1：修复IF-05缺少原始businessRequest导致指纹输入不闭合；明确业务意图与changes一致性、认证先于幂等结果访问；补齐IF-07 overlay/check只叠加一次；禁止V2损耗子记录器通过提交模板嵌套保存；明确IF-11方案应交付的步骤及两个局部未决。仅修正文档契约，不修改需求基线、源码或B本人设计决定。
+
+修订记录v1.02（2026-10-20）：仅勘误IF-05结果查询四项匹配、首次审核通过同次W+必需措辞、认证错误码、首次/最新提交及Spec来源索引，并同步README真实目录和开发阶段状态；不修改业务基线、源码、overlay/原请求载体或已确认分工。
