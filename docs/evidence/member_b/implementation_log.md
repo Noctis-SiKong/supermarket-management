@@ -44,3 +44,10 @@
 2. 实现 `aftersale` 纯计算（QuotaCalculator/QuotaViewBuilder/QualityPairValidator）与编排骨架。
 3. 接 CUI 菜单（登录后分派到各 Operations 接口）。
 4. A 交付 `shared/` 后适配真实 WorkingCopy/ChangeSet/IF-05，再做 J-01–J-07 联调与 AC 证据。
+
+## 6. 2026-10-21 增补：stock 用例服务
+
+- 新增：`ReplenishmentService`（补货 W−q/S+q 候选）、`LossService`（店内报损扣来源位置 + LossRecord 候选）、`ReplenishmentResult`、`LossResult`、`LossRecord`、`LossOrigin`、`LossState`。
+- 测试：`ReplenishmentServiceTest`（4）、`LossServiceTest`（4）；累计 `clean verify` **29 项测试全部通过**（BUILD SUCCESS）。
+- 边界：仍只返回候选，不提交（真实 ChangeSet 还需 A 的文档/行类型）；补货 transferKey 由 IF-03 替身生成；报损仅 STORE，顾客交回不在此处理；未执行 AC。
+- 下一步：`aftersale` 纯计算（QuotaViewBuilder/QuotaCalculator/QualityPairValidator）+ CUI 菜单接入；A 交付 shared 后做真实联调。
