@@ -335,3 +335,8 @@
 - 新增 `AC_SUMMARY_B_2026-10-21.md`：汇总 21 项 PASS（自动化）、PARTIAL、BLOCKED 与明确不声称项，并给出复跑命令/关键测试类。
 - `ac_coverage_b.md` 增加汇总入口，最新提交更新为 `b1e8b77`。
 - 当前基线 **176 tests / 0 failed / 0 error / 1 skipped**；报告/视频/ZIP/Canvas 仍未做。
+
+## 44. 2026-10-21 AI 日志思考程度复核
+
+- 按本会话 `model/selection` 与 `request/header` 的 `reasoningEffort` 事件复核：实际 high 的步骤为 #1–#4、#7–#8、#12、#16、#19–#29、#31–#34；其余为 max。
+- 原日志把 #20–#29、#31–#34 误记为 `max`，已在 `ai_usage_log_b.md` 更正为 `high`，并加复核说明；#9 的 `max` 与实际一致。

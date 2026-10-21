@@ -8,7 +8,9 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#49） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19–#29、#31–#34）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#30、#35–#49） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+
+> 2026-10-21 复核：按本会话 `model/selection` 与 `request/header` 的 `reasoningEffort` 事件，实际为 **high** 的步骤是 #1–#4、#7–#8、#12、#16、#19–#29、#31–#34；其余为 **max**。原日志把 #20–#29、#31–#34 误写成 `max`，已按实际设置更正。此前 #9 也按用户要求改为 `max`，与实际一致。
 
 ## A.2 提示词日志（B 侧）
 
@@ -33,20 +35,20 @@
 | 17 | 实现-query / reversal 骨架 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按用户要求开始 query / reversal 骨架 | `QueryOperations/QueryService/QueryResult/SaleLineView`；`ReversalService/ReversalPlan/ReversalCommand/ReversalResult` + 端口 `RedemptionReader/ReversalDependencyReader/StockEffectReader`；5+7 项测试；累计 68 项通过 | 要求 thinking=max；只读/不提交；D1 仅阻断不级联；新增 B 业务码待通知 A；未执行 AC |
 | 18 | 实现-独立可完成规则收口 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按用户要求把 B 独立可完成规则补齐并保证质量 | Redemption 例外字段；同原行多明细顺序额度；SettlementCalculator；LossRecord.dispose；LossRecordView/Reader；DependencyChecker；CUI 测试；AC 索引；84 项通过 | 仍用替身；D1 不级联；顾客交回/真实 A 未接；未执行 AC |
 | 19 | 协调-B→A Git 对齐消息 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 在 Git 留正式 B→A 对齐消息，列清 B 状态、A 需交付/裁决项与回复方式 | `docs/coordination/B_TO_A_ALIGNMENT_2026-10-21.md`：R1 shared/IF-04/05、R2 包路径、R3 IF-07 balances 签名、R4 业务码、R5 IF-11、R6 CUI 入口/pom、R7 分支合并、R8 结果类型映射；HEAD 68f7c51、84 项测试 | 用户要求在 git 里留消息和 A 对齐；未改代码；等待 A 逐条回复 |
-| 20 | 集成-合并 main + CR07-10 迁移 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 在隔离分支合并 main，并迁移 CR07-09 到 CR07-10 | merge ef5eea1；主代码/测试 CR07-09 例外 → reasonKind/reasonText；CUI 其他原因文本；合并树 120 tests / 0 failed / 0 error / 1 skipped；文档同步 | 用户要求开始补救；不直接推 main；真实端口适配（G3）未开始 |
-| 21 | 集成-IF-07 A 适配器 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 在合并分支实现 A StockDependency 的真实适配 | SharedWorkingCopyView/SharedStockProjection/SharedStockAdapter；5 项测试；125 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；只读/不提交；CommitValidator/认证/CUI 未做 |
-| 22 | 集成-六参 CommitValidator/草稿删除 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 实现 AFTERSALE_DRAFT_DELETE 与 stock 六参 CommitValidator | AftersaleDraftDeletionValidator + SharedStockCommitValidator；5 项测试；130 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；A 的 DraftDeletionGuard 仍负责结构红线；未注册最终装配 |
-| 23 | 集成-售后 ChangeSet/提交入口 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 B 售后候选组装为 A ChangeSet 并接 SubmissionPort | AftersaleChangeSetAssembler + AftersaleSubmissionService；2 项测试；132 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；未嵌套 submit；AFTERSALE validator/认证/CUI 未接 |
-| 24 | 集成-AFTERSALE 校验器/注册表 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 AFTERSALE 六参校验器与注册表 | AftersaleCommitValidator + BCommitValidators；SharedStockAdapter 空 stock 修复；4 项测试；136 tests | 用户继续 Stage 3；注册表未交 A JsonStore；认证/CUI 未接 |
-| 25 | 集成-认证适配/JsonStore 集成 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 接 B 认证到 A IdentityResolver，并验证真实 JsonStore.open | SharedIdentityResolver + SharedCredentialStore + SharedAuthJsonStoreTest；5 项测试；141 tests | 用户继续 Stage 3；未做 Main/CUI 真实装配 |
-| 26 | 集成-售后读取适配 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 B 售后读取端口接到 A WorkingCopy | SharedSaleReader/SharedQuotaLedgerReader/SharedProductSnapshotReader + SharedAftersaleReadTest；2 项测试；143 tests | 用户继续 Stage 3；CUI/Main 未做 |
-| 27 | 集成-BApplication 装配/真实 JSON 提交 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 装配 A JsonStore + B 认证/校验器并跑真实提交 | BApplication + BApplicationTest；1 项测试；144 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；CUI/Main 未做；A 的稳定性/规则仍由 A 组件执行 |
-| 28 | 集成-CUI 真实操作/售后链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 CUI 会话接到 A open/submit，售后走真实服务 | CuiActor+SessionRef、SharedOperations、SharedProductCatalog、SharedIdGenerator、BApplication.operations；2 项测试；146 tests | 用户继续 Stage 3；补货/报损未接线；Main/pom 未接 |
-| 29 | 集成-CUI 售后完整链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 用 A 种子数据跑通 CUI 售后到 A submit | SharedOperationsIntegrationTest + SharedStockAdapter.review 修正；1 项测试；147 tests | 用户继续；Main/pom 仍待 A；补货/报损未接 |
+| 20 | 集成-合并 main + CR07-10 迁移 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 在隔离分支合并 main，并迁移 CR07-09 到 CR07-10 | merge ef5eea1；主代码/测试 CR07-09 例外 → reasonKind/reasonText；CUI 其他原因文本；合并树 120 tests / 0 failed / 0 error / 1 skipped；文档同步 | 用户要求开始补救；不直接推 main；真实端口适配（G3）未开始 |
+| 21 | 集成-IF-07 A 适配器 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 在合并分支实现 A StockDependency 的真实适配 | SharedWorkingCopyView/SharedStockProjection/SharedStockAdapter；5 项测试；125 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；只读/不提交；CommitValidator/认证/CUI 未做 |
+| 22 | 集成-六参 CommitValidator/草稿删除 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 实现 AFTERSALE_DRAFT_DELETE 与 stock 六参 CommitValidator | AftersaleDraftDeletionValidator + SharedStockCommitValidator；5 项测试；130 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；A 的 DraftDeletionGuard 仍负责结构红线；未注册最终装配 |
+| 23 | 集成-售后 ChangeSet/提交入口 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 把 B 售后候选组装为 A ChangeSet 并接 SubmissionPort | AftersaleChangeSetAssembler + AftersaleSubmissionService；2 项测试；132 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；未嵌套 submit；AFTERSALE validator/认证/CUI 未接 |
+| 24 | 集成-AFTERSALE 校验器/注册表 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 补 AFTERSALE 六参校验器与注册表 | AftersaleCommitValidator + BCommitValidators；SharedStockAdapter 空 stock 修复；4 项测试；136 tests | 用户继续 Stage 3；注册表未交 A JsonStore；认证/CUI 未接 |
+| 25 | 集成-认证适配/JsonStore 集成 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 接 B 认证到 A IdentityResolver，并验证真实 JsonStore.open | SharedIdentityResolver + SharedCredentialStore + SharedAuthJsonStoreTest；5 项测试；141 tests | 用户继续 Stage 3；未做 Main/CUI 真实装配 |
+| 26 | 集成-售后读取适配 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 把 B 售后读取端口接到 A WorkingCopy | SharedSaleReader/SharedQuotaLedgerReader/SharedProductSnapshotReader + SharedAftersaleReadTest；2 项测试；143 tests | 用户继续 Stage 3；CUI/Main 未做 |
+| 27 | 集成-BApplication 装配/真实 JSON 提交 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 装配 A JsonStore + B 认证/校验器并跑真实提交 | BApplication + BApplicationTest；1 项测试；144 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；CUI/Main 未做；A 的稳定性/规则仍由 A 组件执行 |
+| 28 | 集成-CUI 真实操作/售后链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 把 CUI 会话接到 A open/submit，售后走真实服务 | CuiActor+SessionRef、SharedOperations、SharedProductCatalog、SharedIdGenerator、BApplication.operations；2 项测试；146 tests | 用户继续 Stage 3；补货/报损未接线；Main/pom 未接 |
+| 29 | 集成-CUI 售后完整链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 用 A 种子数据跑通 CUI 售后到 A submit | SharedOperationsIntegrationTest + SharedStockAdapter.review 修正；1 项测试；147 tests | 用户继续；Main/pom 仍待 A；补货/报损未接 |
 | 30 | 代码审查修复-售后链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 修复 review 的换货、款项符号、校验器意图/30天、核销行与角色/时钟装配 | AftersaleRequest + CUI 换货输入；MoneyEntry 符号；validator request/acceptedAt；SharedRoles/IdClock；147 tests | 用户要求修；IF-11/CR07-11、幂等、恢复校验未修 |
-| 31 | 代码审查修复-幂等/恢复/数据形状 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 requestKey 重试、AftersaleIntegrityValidator、ERD 数据形状 | AftersaleRequest requestKey、SharedOperations 重试、BApplication 完整性、AFTERSALE/DOC_EVENT；149 tests | 用户要求继续修；IF-11/CR07-11 仍未修 |
-| 32 | IF-11/CR07-11-草稿/追溯/取消 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 实现售后草稿创建、READ_FOR_AFTERSALE 追溯、取消与 DRAFT 最终提交 | AftersaleDraftService/Validator、SharedOperations 三段式、AftersaleCommitValidator 支持 DRAFT；150 tests | 用户要求 B 责任全改；CUI 取消菜单未暴露 |
-| 33 | IF-11/CR07-11-CUI 取消与 A 对齐 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 CUI 取消入口并写 A 对齐请求 | Operations.cancelAftersaleDraft + CuiApp 菜单 + B_TO_A_IF11_ALIGNMENT；151 tests | 用户要求都做；A 侧读取准入待 A 确认 |
+| 31 | 代码审查修复-幂等/恢复/数据形状 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 补 requestKey 重试、AftersaleIntegrityValidator、ERD 数据形状 | AftersaleRequest requestKey、SharedOperations 重试、BApplication 完整性、AFTERSALE/DOC_EVENT；149 tests | 用户要求继续修；IF-11/CR07-11 仍未修 |
+| 32 | IF-11/CR07-11-草稿/追溯/取消 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 实现售后草稿创建、READ_FOR_AFTERSALE 追溯、取消与 DRAFT 最终提交 | AftersaleDraftService/Validator、SharedOperations 三段式、AftersaleCommitValidator 支持 DRAFT；150 tests | 用户要求 B 责任全改；CUI 取消菜单未暴露 |
+| 33 | IF-11/CR07-11-CUI 取消与 A 对齐 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 补 CUI 取消入口并写 A 对齐请求 | Operations.cancelAftersaleDraft + CuiApp 菜单 + B_TO_A_IF11_ALIGNMENT；151 tests | 用户要求都做；A 侧读取准入待 A 确认 |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -108,7 +110,7 @@
 
 
 
-| 34 | 补货/报损真实 ChangeSet | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 将补货/报损从“未接线”接到 A submit | StockChangeSetAssembler/StockOperationValidator + SharedOperations 真实库存链；StockOperationsIntegrationTest；152 tests | 用户要求继续；IF-11 准入待 A；AC 未跑 |
+| 34 | 补货/报损真实 ChangeSet | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 将补货/报损从“未接线”接到 A submit | StockChangeSetAssembler/StockOperationValidator + SharedOperations 真实库存链；StockOperationsIntegrationTest；152 tests | 用户要求继续；IF-11 准入待 A；AC 未跑 |
 - #34 StockChangeSetAssembler/StockOperationValidator/SharedOperations 补货报损、`StockOperationsIntegrationTest`、`implementation_log.md` §28（2026-10-21，152 项测试）
 
 | 35 | 审计交接单 B-01～B-08 修复 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按审计单修请求/身份复核、零金额、同原行多明细、稳定顺序、原行缺失、取消幂等、草稿归属 | StockOperationValidator/AftersaleIntegrityValidator/AftersaleCommitValidator/AftersaleService/AftersaleDraftValidator/Service；156 tests | 用户要求按交接单修；B-06/B-09/B-10 未完成 |
