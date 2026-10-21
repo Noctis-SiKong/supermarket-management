@@ -17,4 +17,6 @@ public interface Operations {
     OperationFeedback aftersale(CuiActor actor, AftersaleRequest request);
 
     OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId);
+
+    OperationFeedback deleteAftersaleDraft(CuiActor actor, String draftId);
 }

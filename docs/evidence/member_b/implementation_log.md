@@ -245,3 +245,11 @@
 - 新增零金额 `MONEY_ENTRY`、取消同键重试、草稿读取需真实已确认 SALE 等断言。
 - 合并树累计 **159 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：B-04 的 AC-79 尾差 3.33/3.33/3.34 尚未逐项复现；B-06/B-09/B-10 仍未完成。
+
+## 31. 2026-10-21 B-09 草稿删除生产/CUI 可达
+
+- `AftersaleDraftService.delete`：按实际草稿模型构造 DOCUMENT/AFTERSALE/DOC_LINE/DOC_EVENT/REPLACEMENT 完整 Removal 组，经 `AFTERSALE_DRAFT_DELETE` 提交。
+- `SharedOperations.deleteAftersaleDraft` + CUI 菜单「5) 删除未读取草稿」；删除请求使用稳定派生 requestKey，重复提交先 lookupResult。
+- `AftersaleDraftServiceTest` 增加无读取追溯草稿真实删除并验证 DOCUMENT 消失；A `DraftDeletionGuard` + B 校验器在同一 JsonStore 上联跑通过。
+- 测试：合并树累计 **160 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：有读取追溯的草稿仍只能走取消；B-10 整单冲销仍未完成。

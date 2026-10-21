@@ -10,7 +10,9 @@ import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.DocEvent;
 import nz.ac.aut.pdc.shared.DocumentHeader;
 import nz.ac.aut.pdc.shared.JsonCodec;
+import nz.ac.aut.pdc.shared.DraftDeletion;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
+import nz.ac.aut.pdc.shared.DocumentLine;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
 import nz.ac.aut.pdc.shared.Result;
@@ -116,6 +118,50 @@ public final class AftersaleDraftService {
                 draftId + "-CANCEL", draftId, nextEventVersion(workingCopy, draftId),
                 "CANCEL_AFTERSALE", actor.accountId(), null, "{}")));
         return store.submit(operation, request, workingCopy, out.build());
+    }
+
+    public Result<SubmissionPort.CommitReceipt> delete(
+            OperationContext operation, OperationContext.ActorContext actor) {
+        String draftId = operation.targetId();
+        Result<WorkingCopy> opened = store.open(operation);
+        if (!opened.hasValue()) {
+            return opened.failure();
+        }
+        WorkingCopy workingCopy = opened.value();
+        RecordData document = workingCopy.find("DOCUMENT", draftId).orElse(null);
+        if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
+            return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
+        }
+        DraftDeletion target = new DraftDeletion(draftId, document.version());
+        BusinessRequest request = BusinessRequest.of(target);
+        Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, request);
+        if (prior.status() != Result.Status.NOT_FOUND) {
+            return prior;
+        }
+        ChangeSet.Builder out = new ChangeSet.Builder();
+        out.remove(new ChangeSet.Removal("DOCUMENT", draftId, document.version()));
+        addRemoval(out, workingCopy, "AFTERSALE", draftId);
+        for (RecordData line : workingCopy.records("DOC_LINE")) {
+            if (draftId.equals(line.as(DocumentLine.class).documentId())) {
+                out.remove(new ChangeSet.Removal("DOC_LINE", line.id(), line.version()));
+            }
+        }
+        for (RecordData event : workingCopy.records("DOC_EVENT")) {
+            if (draftId.equals(event.as(DocEvent.class).documentId())) {
+                out.remove(new ChangeSet.Removal("DOC_EVENT", event.id(), event.version()));
+            }
+        }
+        for (RecordData replacement : workingCopy.records("REPLACEMENT")) {
+            if (draftId.equals(replacement.as(Replacement.class).aftersaleId())) {
+                out.remove(new ChangeSet.Removal("REPLACEMENT", replacement.id(), replacement.version()));
+            }
+        }
+        return store.submit(operation, request, workingCopy, out.build());
+    }
+
+    private void addRemoval(ChangeSet.Builder out, WorkingCopy workingCopy, String table, String id) {
+        workingCopy.find(table, id).ifPresent(record ->
+                out.remove(new ChangeSet.Removal(table, id, record.version())));
     }
 
     private long nextEventVersion(WorkingCopy workingCopy, String draftId) {

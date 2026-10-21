@@ -32,4 +32,9 @@ public final class UnavailableOperations implements Operations {
     public OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId) {
         return OperationFeedback.fail(MESSAGE);
     }
+
+    @Override
+    public OperationFeedback deleteAftersaleDraft(CuiActor actor, String draftId) {
+        return OperationFeedback.fail(MESSAGE);
+    }
 }

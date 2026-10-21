@@ -100,6 +100,19 @@ public class AftersaleDraftServiceTest {
             assertEquals("CANCELLED", header.status());
             assertTrue(state.records("DOC_EVENT").stream()
                     .anyMatch(r -> r.id().equals(draftId + "-READ")));
+
+            String deleteKey = ids.newRequestKey();
+            String deleteId = ids.entityId(deleteKey, "draft");
+            assertEquals(Result.Status.SUCCESS, drafts.create(new OperationContext(
+                    clerk.session(), deleteKey, AftersaleDraftOperations.CREATE, deleteId),
+                    actor).status());
+            Result<?> deleted = drafts.delete(new OperationContext(
+                    clerk.session(), ids.newRequestKey(),
+                    nz.ac.aut.pdc.shared.DraftDeletion.OPERATION, deleteId), actor);
+            assertEquals(deleted.code(), Result.Status.SUCCESS, deleted.status());
+            WorkingCopy afterDelete = app.store().open(new OperationContext(
+                    clerk.session(), UUID.randomUUID().toString(), "READ", null)).value();
+            assertTrue(afterDelete.find("DOCUMENT", deleteId).isEmpty());
         }
     }
 
