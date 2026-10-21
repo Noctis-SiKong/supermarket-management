@@ -1,0 +1,41 @@
+---
+title: "总览｜V2.1 已实现结构快照（仅类与依赖关系，不含字段/方法）"
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "16px"
+---
+classDiagram
+    direction TB
+
+    namespace cui {
+        class CuiApp
+        class Operations { <<interface>> }
+    }
+    namespace auth {
+        class AuthService { <<interface>> }
+        class LocalAuthService
+    }
+    namespace stock {
+        class StockOperations { <<interface>> }
+        class StockService
+        class StockPorts { <<ports>> }
+        class ReplenishmentService
+        class LossService
+    }
+    namespace aftersale {
+        class AftersaleService
+        class AftersaleAssembler
+    }
+
+    CuiApp --> AuthService
+    CuiApp --> Operations
+    LocalAuthService ..|> AuthService
+    StockService ..|> StockOperations
+    StockService --> StockPorts
+    ReplenishmentService --> StockOperations
+    LossService --> StockOperations
+    AftersaleService --> StockOperations
+    AftersaleService --> AftersaleAssembler
+    AftersaleAssembler --> StockPorts

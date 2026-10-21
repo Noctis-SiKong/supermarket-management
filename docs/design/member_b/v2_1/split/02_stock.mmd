@@ -1,0 +1,47 @@
+---
+title: "stock｜库存结构"
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "16px"
+---
+classDiagram
+    direction TB
+
+    namespace stock {
+        class StockOperations { <<interface>> }
+        class StockService
+        class StockValidator
+        class StockPorts { <<ports>> }
+        class SubmissionGateway { <<interface>> }
+        class ReplenishmentService
+        class LossService
+        class StockEntry
+        class StockChangeLine
+        class StockBalance
+        class LossRecord
+        class Position { <<enumeration>> }
+        class LossOrigin { <<enumeration>> }
+        class LossState { <<enumeration>> }
+    }
+
+    StockService ..|> StockOperations
+    StockService --> StockValidator
+    StockService --> StockPorts
+    StockService --> StockEntry
+    StockPorts --> StockBalance
+    ReplenishmentService --> StockOperations
+    LossService --> StockOperations
+    LossService --> LossRecord
+    ReplenishmentService --> StockPorts
+    LossService --> StockPorts
+    SubmissionGateway --> StockEntry
+    StockValidator --> StockChangeLine
+    StockValidator --> StockBalance
+
+    LossRecord --> Position
+    LossRecord --> LossOrigin
+    LossRecord --> LossState
+    StockEntry --> Position
+    StockBalance --> Position

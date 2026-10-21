@@ -1,0 +1,43 @@
+---
+title: "auth / cui｜认证与交互结构"
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "16px"
+---
+classDiagram
+    direction TB
+
+    namespace auth {
+        class AuthService { <<interface>> }
+        class LocalAuthService
+        class CredentialStore { <<interface>> }
+        class PasswordHasher { <<interface>> }
+        class Sha256PasswordHasher
+        class SessionRef
+        class AuthResult { <<sealed>> }
+        class Role { <<enumeration>> }
+    }
+    namespace cui {
+        class CuiApp
+        class Operations { <<interface>> }
+        class OperationFeedback
+        class CuiActor
+        class InputValidator
+        class UnavailableOperations
+    }
+
+    LocalAuthService ..|> AuthService
+    LocalAuthService --> CredentialStore
+    LocalAuthService --> PasswordHasher
+    Sha256PasswordHasher ..|> PasswordHasher
+    LocalAuthService --> SessionRef
+    AuthService --> AuthResult
+    AuthResult --> Role
+    CuiApp --> AuthService
+    CuiApp --> Operations
+    CuiApp --> InputValidator
+    CuiApp --> CuiActor
+    Operations --> OperationFeedback
+    UnavailableOperations ..|> Operations

@@ -34,3 +34,18 @@
 
 - `class_v2_1.mmd`：本快照的 Mermaid 源码（当前未渲染）。
 - 目标设计：`../class_v2.mmd`；差异决策：`../design_evolution.md`。
+
+## 5. 分图源文件（2026-10-21）
+
+总览图信息密度高，报告装配时拆为四张结构图（均只显示类/接口/依赖，不含字段/方法）：
+
+| 文件 | 建议图号 | 图注 |
+|---|---|---|
+| `split/00_overview.mmd` | 图 A | V2.1 已实现结构总览（仅类与依赖关系） |
+| `split/01_auth_cui.mmd` | 图 B | auth / cui 认证与交互结构 |
+| `split/02_stock.mmd` | 图 C | stock 库存结构（已补 `LossOrigin/LossState` 枚举记号） |
+| `split/03_aftersale.mmd` | 图 D | aftersale 售后结构（含 stock 外部依赖） |
+
+- 四张图的 PNG 尚未入库，待 B 用 mermaid.live 渲染后放 `v2_1/rendered/`（建议命名 `A_overview.png`、`B_auth_cui.png`、`C_stock.png`、`D_aftersale.png`）。
+- 渲染时确认 `RedemptionKind` 末字符未被裁切；`auth/cui` 图可裁掉左侧多余空白。
+- 图注必须保留“仅类与依赖、不含字段/方法”，不得把结构快照表述为完整详细类图。

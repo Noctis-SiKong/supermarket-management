@@ -1,0 +1,64 @@
+---
+title: "aftersale｜售后结构（含 stock 外部依赖）"
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "16px"
+---
+classDiagram
+    direction TB
+
+    namespace aftersale {
+        class AftersaleService
+        class AftersaleAssembler
+        class AftersaleCommand
+        class AftersaleCommandLine
+        class AftersaleResult { <<sealed>> }
+        class OriginalSaleReader { <<interface>> }
+        class QuotaLedgerReader { <<interface>> }
+        class ProductSnapshotReader { <<interface>> }
+        class QuotaViewBuilder
+        class QuotaCalculator
+        class QualityPairValidator
+        class QuotaView
+        class Redemption
+        class Replacement
+        class OriginalSaleLine
+        class SettlementContext
+        class Effect { <<enumeration>> }
+        class RedemptionKind { <<enumeration>> }
+    }
+    namespace stock {
+        class StockOperations { <<interface>> }
+        class StockPorts { <<ports>> }
+    }
+
+    AftersaleService --> OriginalSaleReader
+    AftersaleService --> QuotaLedgerReader
+    AftersaleService --> ProductSnapshotReader
+    AftersaleService --> QuotaViewBuilder
+    AftersaleService --> QuotaCalculator
+    AftersaleService --> QualityPairValidator
+    AftersaleService --> AftersaleAssembler
+    AftersaleService --> StockOperations
+    AftersaleService --> AftersaleCommand
+    AftersaleService --> AftersaleResult
+    AftersaleService --> QuotaView
+    AftersaleAssembler --> StockPorts
+    AftersaleAssembler --> Redemption
+    AftersaleAssembler --> Replacement
+    AftersaleCommand --> AftersaleCommandLine
+    AftersaleCommandLine --> RedemptionKind
+    QuotaViewBuilder --> OriginalSaleLine
+    QuotaViewBuilder --> Redemption
+    QuotaViewBuilder --> QuotaView
+    QuotaCalculator --> QuotaView
+    QuotaCalculator --> SettlementContext
+    QualityPairValidator --> OriginalSaleLine
+    QualityPairValidator --> Redemption
+    QualityPairValidator --> Replacement
+    Redemption --> Effect
+    Redemption --> RedemptionKind
+    AftersaleResult --> Redemption
+    AftersaleResult --> Replacement
