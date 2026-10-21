@@ -72,6 +72,8 @@
 
 ## 4. 输出
 
+> **v0.3 修订提示（2026-10-21）**：本节 v0.2 的 `source_locations`（收货行→可用数量）与旧“来源定位”表述已按共享规范 §5.3 / 本文件 §14 失效；权威输出为按商品/位置余额与候选流水。保留原文仅作演进记录。
+
 **来源**：分工清单 IF-07"输出"栏原文："该基线及本次变动后的S/W余额、来源入库定位、待提交库存流水及其来源；或明确拒绝，不单独返回已扣库存。库存缓存由原/反向事实重建"；交接包 §6"所有候选在同副本组装，只有IF-05保存"；Spec §10.2（`commit_ordinal` 由提交统一分配）。
 
 成功（候选，未生效；字段名**本文补充**）：
@@ -85,6 +87,8 @@
 拒绝（原文要求）：明确失败，**不返回部分候选**，不表示任何已生效变化，不返回"已扣库存"。
 
 ## 5. 错误语义
+
+> **v0.3 修订提示（2026-10-21）**：本节旧错误码（`SOURCE_INSUFFICIENT`/`INVALID_QUANTITY`/`DUPLICATE_EVENT`/`UNKNOWN_REFERENCE`/`OUT_OF_SCOPE`）为 v0.2 历史名；v0.3 起以共享规范 §4 稳定码与 §14.5 为准，代码按 §14 实现。保留原文仅作演进记录。
 
 **来源**：分工清单 IF-07"错误语义"栏原文："位置不足、数量/引用不合法、补货双腿不配对/不守恒、工作副本过期、重复事件冲突；总余额不得弥补来源位置不足。D1作废依赖政策仍由IF-14判，不因普通查询扩大到所有同码事件"；Spec §13 R-INPUT。
 
@@ -181,7 +185,7 @@ A 确认上述边界后，本契约视为稳定；后续随类图 V1/V2 受控�
 **来源**：交接包 §8（交 A 集中审计的材料）；本文件记录。
 
 - 本阶段只验证"契约完整、边界清楚、无新增业务规则"；**不执行测试、无真实 AC 结果**。
-- 证据：本文件 + AI 使用日志 #3（B 侧台账）；A 确认记录（待其回复后补）。
+- 证据：本文件 + AI 使用日志 #3（v0.1/v0.2）与 #8（v0.3 对齐）（B 侧台账）；A 确认记录（待其回复后补）。
 - 变更记录：v0.1（2026-10-20）初稿；v0.2（2026-10-20）按审计要求每节标注来源、标记本文补充、不引入原文之外规则；v0.3（2026-10-21）对齐 A 共享规范 v1.02 §5.3。
 
 ## 14. v0.3 修订：对齐共享规范 v1.02 §5.3（2026-10-21）
@@ -195,7 +199,7 @@ A 已发布《共享边界与接口规范》v1.02。本节为权威修订，覆�
    - `wc` 由 IF-04 `open(op)` 取得；`overlay` 为调用前已合并的只读候选视图；`check` 的 `changes` 是尚未并入 overlay 的完整变动组。
 3. **overlay 合并规则**：子服务只返回本次新增候选，不返回累计 overlay；业务协调者每次成功调用后合并一次；重复调用同一组不得再次叠加，按 eventKey/稳定键识别；调用失败不合并。
 4. **结果分类**：`balances` 用 `ReadResult`（VALUE/REJECTED/FAILED）；`check` 用 `CandidateResult`（PREPARED/REJECTED/FAILED）；PREPARED 不是业务成功、不分配 commitOrdinal。
-5. **错误码**：沿用规范 §4 稳定码（`INSUFFICIENT_STOCK` 带 barcode/position/available/requested、`TRANSFER_UNBALANCED`、`EVENT_CONFLICT`、`STALE_WORKING_COPY`、`REFERENCE_INVALID` 等）；本接口不新增业务细分码，确需时由 B 通知调用方。
+5. **错误码**：沿用规范 §4 稳定码（`INSUFFICIENT_STOCK` 带 barcode/position/available/requested、`TRANSFER_UNBALANCED`、`EVENT_CONFLICT`、`STALE_WORKING_COPY`、`REFERENCE_INVALID` 等）；本接口不新增业务细分码，确需时由 B 通知调用方。B 骨架另登记一个 FAILED 业务码 `STOCK_CHECK_FAILED`（内部/依赖读取异常），需通知 A 记录。
 6. **不保存、不嵌套提交**：仍由业务协调者持唯一 `ChangeSetBuilder`，经 IF-05 一次提交；`CustomerReturnLossRecorder` 作为售后子调用时只能组装候选，不得调用 submit/execute 模板入口。
 7. **权限**：由业务入口与 IF-05 复核；本接口不代替 IF-01 身份校验，不接受裸 `operatorId` 作为授权。
 8. **待 A 实现/确认**：A 的 `WorkingCopy`/`OverlayView`/`ReadResult`/`CandidateResult` 公共类型交付前，本契约用同名逻辑类型描述；B 以替身实现/自测，不复制 A 公共类型。

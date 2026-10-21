@@ -63,7 +63,7 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 
 1. **R-04 与 R-29 冲突**：R-04 拒绝"售后资格/期限策略类"，R-29 修改后采纳"抽 EligibilityPolicy 和 AftersaleAssembler"。
    - 本版按 **R-04 优先**：V2 不新增 `EligibilityPolicy`；30 天窗口/开封/质量规则以 `AftersaleService` 内简单校验方法实现（仍由系统拦截，见 §4）；R-29 只落地 `AftersaleAssembler` 与 `QuotaViewBuilder`。
-   - 待 B 确认；若改为保留策略类，则需同步修改本节与 §7 决定记录。
+   - 2026-10-21 已按 A 共享规范 §8 确认：不抽策略类；简单资格校验 + CR07-09 例外留痕；详见 §3.6。
 2. **R-03 解读**：替换品**只从在售（S）扣减**；在售不足时拒绝并返回 S/W 余额用于提示补货，**不允许用在仓（W）直接抵扣**（符合 FR-08/AC-13 的精神）。"不足再查看库存"按"查看余额、提示补货"理解，不是从 W 抵扣。
 3. **R-23 解读**：返回按位置的余额列表，同时保留 `totalsAfter` 合计字段（满足"要有总余额显示逻辑"）。
 4. **R-15/R-16/R-21/R-25**：涉及 A 的 common/IF 契约，V2 先用占位类型/方法建模，待 A 确认后对齐；不改变已批准业务规则。

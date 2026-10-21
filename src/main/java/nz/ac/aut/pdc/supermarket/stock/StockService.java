@@ -48,8 +48,11 @@ public final class StockService implements StockOperations {
             List<StockChangeLine> changes) {
         Objects.requireNonNull(workingCopy, "workingCopy");
         Objects.requireNonNull(overlayEntries, "overlayEntries");
+        if (changes == null) {
+            return new StockCheckResult.Rejected("INVALID_INPUT", "lines", "变动组不能为空");
+        }
         try {
-            List<StockChangeLine> requestLines = List.copyOf(Objects.requireNonNull(changes, "changes"));
+            List<StockChangeLine> requestLines = List.copyOf(changes);
             Optional<StockCheckResult.Rejected> referenceRejection = validateReferences(requestLines);
             if (referenceRejection.isPresent()) {
                 return referenceRejection.get();
@@ -64,19 +67,23 @@ public final class StockService implements StockOperations {
 
             List<StockEntry> prepared = new ArrayList<>(requestLines.size());
             for (StockChangeLine line : requestLines) {
+                String eventKey = line.eventKey() == null || line.eventKey().isBlank()
+                        ? idGenerator.nextId("EV")
+                        : line.eventKey();
                 prepared.add(new StockEntry(
                         idGenerator.nextId("SE"),
                         line.barcode(),
                         line.position(),
                         line.delta(),
-                        idGenerator.nextId("EV"),
+                        eventKey,
                         line.transferKey(),
                         line.sourceLineId(),
-                        line.reverseOfId()));
+                        line.reverseOfId(),
+                        line.receiptReviewId()));
             }
             return new StockCheckResult.Prepared(prepared, balancesAfter(balancesBefore, requestLines));
         } catch (RuntimeException ex) {
-            return new StockCheckResult.Failed("INTERNAL_ERROR", "库存核对暂时不可用");
+            return new StockCheckResult.Failed("STOCK_CHECK_FAILED", "库存核对暂时不可用");
         }
     }
 

@@ -85,6 +85,21 @@ public class StockServiceTest {
         assertTrue(result instanceof StockCheckResult.Prepared);
     }
 
+    @Test
+    public void suppliedEventKeyAndReceiptReviewIdArePreserved() {
+        StockOperations service = service();
+        FakeWorkingCopy workingCopy = new FakeWorkingCopy(7, List.of(
+                new StockBalance(BARCODE, Position.S, 5)));
+
+        StockCheckResult result = service.check(workingCopy, List.of(), List.of(
+                new StockChangeLine(BARCODE, Position.S, -1, "DL-1", null, null, "EV-FIXED", "RR-9")));
+
+        assertTrue(result instanceof StockCheckResult.Prepared);
+        StockEntry entry = ((StockCheckResult.Prepared) result).entries().get(0);
+        assertEquals("EV-FIXED", entry.eventKey());
+        assertEquals("RR-9", entry.receiptReviewId());
+    }
+
     private StockOperations service() {
         return new StockService(
                 new FakeProductCatalog(Set.of(BARCODE)),

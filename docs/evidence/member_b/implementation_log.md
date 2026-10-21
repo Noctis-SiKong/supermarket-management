@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.1，2026-10-21（Asia/Shanghai）
+版本/日期：v0.2，2026-10-21（含 §6/§7/§8 增补与独立审查修复记录）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -58,3 +58,10 @@
 - 新增纯计算：`QuotaViewBuilder`（CONSUME 汇总、RELEASE 扣减、非法历史拒绝）、`QuotaCalculator`（P×q/Q HALF_UP、剩余金额封顶、结清用全部剩余）、`QualityPairValidator`（质量零差配对的条码/数量/差额/quality 校验）。
 - 测试：`QuotaCalculatorTest`(5)、`QuotaViewBuilderTest`(3)、`QualityPairValidatorTest`(5)；累计 **42 项测试全部通过**（BUILD SUCCESS）。
 - 边界：纯函数/模型，不读 A 代码、不提交、不执行 AC；`QuotaView` 一致性约束仍待后续与真实历史数据联调验证。
+
+## 8. 2026-10-21 独立审查与修复
+
+- 独立审查（thinking=high 子智能体）报告：`docs/evidence/member_b/independent_review_2026-10-21.md`（快照 S0=`6c272ca`、S1=`d1ec5b1`；实测 29 项通过）。报告 P0：无可运行 CUI、售后/冲销/查询零实现（S1 时点）、V2 与实现不同步；P1：IF-07 v0.3 文档两套输出/错误码、`eventKey` 每次重算、`receiptReviewId` 缺失、`INTERNAL_ERROR` 非规范码等。
+- 已修复（本快照）：`StockChangeLine`/`StockEntry` 增加 `eventKey`（可稳定传入）与 `receiptReviewId`；`StockService` 使用调用方 eventKey、传递 receiptReviewId；内部异常码改为 B 登记码 `STOCK_CHECK_FAILED`；`changes==null` 返回 `INVALID_INPUT`；IF-07 §4/§5 加 v0.3 覆盖提示、§14.5 登记 `STOCK_CHECK_FAILED`、证据补 #8；`design_review.md` 补 R-04 覆盖说明；`design_evolution.md` §3.1 关闭"待确认"。
+- 修复后 `clean verify`：**43 项测试全部通过**（新增 stable eventKey/receiptReviewId 测试）。
+- 仍未处理（需决策/协作）：可运行 CUI 主类与 pom exec（A 的 Maven 框架/A 侧 shared 未交付）；售后编排/查询/冲销服务；V2 与实现同步；`baseLast` 过期检测；权限/经办字段；README 状态行（A 维护）。
