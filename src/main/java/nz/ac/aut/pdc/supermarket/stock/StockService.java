@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
+/** Pure IF-07 orchestration: read balances, validate and prepare candidates. No saving, submitting or commitOrdinal; constructor injection supports real adapters/tests.
+ *
+ *
  * IF-07 的纯候选实现：读取余额、校验变动、生成候选流水。
  *
  * <p>职责：编排只读读取 + 纯规则校验 + 候选组装；不保存、不分配 commitOrdinal、

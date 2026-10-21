@@ -5,7 +5,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
-/**
+/** Fixed ID/time test double for IF-03; deterministic values support assertions, never production.
+ *
+ *
  * 固定 ID/时间替身（测试用途，非生产实现）。
  *
  * <p>替代 A 的 IF-03：输出可预测的 ID 与固定业务时间，便于断言。</p>

@@ -19,7 +19,9 @@ import nz.ac.aut.pdc.shared.Result;
 import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
-/**
+/** Draft lifecycle: independently open/submit creation, reliable IF-11 trace-before-return and cancellation. Cancellation changes status/event only, never stock, money or quota.
+ *
+ *
  * 售后草稿生命周期：建 DRAFT → IF-11 读取追溯 → 取消。
  *
  * <p>每次操作独立 open/submit；追溯保存成功后才返回原销售最少字段。

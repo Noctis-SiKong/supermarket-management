@@ -103,7 +103,7 @@ public class FullRuntimeTest {
         String script=String.join("\n","fictional-manager",password,"7","new","00123456","虚构 CUI 商品","件","3.33","8","00123456","5","S","虚构期初","13","00123456","1","","y","14","DOCUMENT","","0","exit","");
         ByteArrayOutputStream capture=new ByteArrayOutputStream();
         new CuiApp(b.auth(),operations(),new InputValidator(),new BufferedReader(new StringReader(script)),new PrintStream(capture,true,StandardCharsets.UTF_8)).run();
-        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.contains("登录成功"));assertTrue(output,output.contains("SALE"));assertFalse(output.contains(password));
+        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.contains("Login successful"));assertTrue(output,output.contains("SALE"));assertFalse(output.contains(password));
         assertEquals(3,state().baseLast());assertEquals(4,stock(StockEntry.Position.S));
         assertFalse(operations().inspect(clerk,"DOCUMENT",null).message().contains(state().records("SALE").get(0).id()));
     }
@@ -147,7 +147,7 @@ public class FullRuntimeTest {
         boolean finished=process.waitFor(20,java.util.concurrent.TimeUnit.SECONDS);
         if(!finished)process.destroyForcibly();assertTrue("Child startup timed out",finished);
         String output=new String(process.getInputStream().readAllBytes(),StandardCharsets.UTF_8);
-        assertEquals(output,1,process.exitValue());assertTrue(output,output.contains("writer already active"));
+        assertEquals(output,1,process.exitValue());assertTrue(output,output.contains("WRITE_BLOCKED"));
     }
     @Test public void multipleRefundLinesAllocateTailByStableIdAndQualitySwapIgnoresChangedCurrentPrice() {
         execute(manager,"PRODUCT_PUT",new AOperations.ProductPut(new Product("00123456","虚构商品","件",new BigDecimal("3.34"),null),0));
@@ -212,13 +212,13 @@ public class FullRuntimeTest {
         String script=String.join("\n","fictional-clerk",password,refundInput,refundInput,"0","fictional-manager",password,"6",target,"虚构冲销",reversalKey,"0","exit","");
         ByteArrayOutputStream capture=new ByteArrayOutputStream();
         new CuiApp(b.auth(),operations(),new InputValidator(),new BufferedReader(new StringReader(script)),new PrintStream(capture,true,StandardCharsets.UTF_8)).run();
-        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.contains("已提交"));assertTrue(output,output.contains("整单冲销已提交"));
+        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.toLowerCase(Locale.ROOT).contains("committed:"));assertTrue(output,output.contains("Whole-document reversal committed"));
         long ordinal=state().baseLast();assertEquals(2,state().records("REDEMPTION").size());assertEquals(3,state().records("MONEY_ENTRY").size());
         assertEquals(1,state().records("DOC_EVENT").stream().filter(r -> r.data().path("action").asText().equals("READ_FOR_AFTERSALE")).count());
         app.close();open();capture.reset();
         script=String.join("\n","fictional-manager",password,"6",target,"虚构冲销",reversalKey,"0","exit","");
         new CuiApp(b.auth(),operations(),new InputValidator(),new BufferedReader(new StringReader(script)),new PrintStream(capture,true,StandardCharsets.UTF_8)).run();
-        assertTrue(capture.toString(StandardCharsets.UTF_8).contains("已提交"));assertEquals(ordinal,state().baseLast());
+        assertTrue(capture.toString(StandardCharsets.UTF_8).toLowerCase(Locale.ROOT).contains("committed:"));assertEquals(ordinal,state().baseLast());
     }
     @Test public void actualStartupRejectsCorruptSnapshotAndDoesNotInstallAnEmptyReplacement() throws Exception {
         product();app.close();app=null;
@@ -248,7 +248,7 @@ public class FullRuntimeTest {
         String script=String.join("\n","fictional-clerk",password,"18",line,"RETURN","1","n","n","虚构退货","y",line,"EXCHANGE","1","n","n","虚构换货","00123457","2","n",key,"y","0","exit","");
         ByteArrayOutputStream capture=new ByteArrayOutputStream();
         new CuiApp(b.auth(),operations(),new InputValidator(),new BufferedReader(new StringReader(script)),new PrintStream(capture,true,StandardCharsets.UTF_8)).run();
-        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.contains("已提交"));
+        String output=capture.toString(StandardCharsets.UTF_8);assertTrue(output,output.toLowerCase(Locale.ROOT).contains("committed:"));
         var target=app.ids().entityId(key,"aftersale");
         var money=state().records("MONEY_ENTRY").stream().map(r -> r.as(MoneyEntry.class)).filter(r -> r.documentId().equals(target)).toList();
         assertEquals(1,money.size());assertEquals(new BigDecimal("-4.66"),money.get(0).amountSigned());

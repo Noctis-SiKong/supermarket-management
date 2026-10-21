@@ -2,7 +2,9 @@ package nz.ac.aut.pdc.supermarket.aftersale;
 
 import java.util.Objects;
 
-/**
+/** One return/exchange line: QUALITY requires qualityProblem; OTHER requires reasonText. Reasons never relax time, opened-item, quota, money or stock rules.
+ *
+ *
  * 售后单中的一条明细（退货或换货），原因按 CR07-10 逐明细记录。
  *
  * <p>qualityProblem 是事实；QUALITY 只能用于质量事实，OTHER 必须填写原因文本。

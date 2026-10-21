@@ -57,7 +57,7 @@ try {
     )
     $taskAccountFile = Join-Path $taskFixture 'initial-accounts.json'
     [IO.File]::WriteAllText($taskAccountFile, (ConvertTo-Json -InputObject $taskAccounts), [Text.UTF8Encoding]::new($false))
-    $taskInput = @('fictional-manager',$taskPassword,'7','new','00123456','虚构 JAR 商品','件','3.33','8','00123456','5','S','虚构期初','13','00123456','1','','y','14','DOCUMENT','','0','exit') -join "`n"
+    $taskInput = @('fictional-manager',$taskPassword,'7','new','00123456','Fictional JAR product','item','3.33','8','00123456','5','S','Fictional opening','13','00123456','1','','y','14','DOCUMENT','','0','exit') -join "`n"
     $taskOldEncoding = $OutputEncoding
     $taskOldConsoleEncoding = [Console]::OutputEncoding
     try {
@@ -65,15 +65,34 @@ try {
         [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
         $taskOutput = ($taskInput | & $taskJava '-Dfile.encoding=UTF-8' -jar $taskJar --project-root $taskFixture --accounts $taskAccountFile | Out-String)
         $taskExit = $LASTEXITCODE
+        $taskZhProject = Join-Path $taskFixture 'zh-run'
+        New-Item -ItemType Directory -Path (Join-Path $taskZhProject 'docs') | Out-Null
+        [IO.File]::WriteAllText((Join-Path $taskZhProject 'README.md'), 'FICTIONAL isolated Chinese run', [Text.UTF8Encoding]::new($false))
+        [IO.File]::WriteAllText((Join-Path $taskZhProject 'pom.xml'), '<project/>', [Text.UTF8Encoding]::new($false))
+        $taskEnglishHelp = (& $taskJava '-Dfile.encoding=UTF-8' -jar $taskJar --lang en --help | Out-String)
+        if ($LASTEXITCODE -ne 0 -or -not $taskEnglishHelp.Contains('Language')) { throw 'Explicit English packaged help failed.' }
+        $taskChineseHelp = (& $taskJava '-Dfile.encoding=UTF-8' -jar $taskJar --lang zh --help | Out-String)
+        if ($LASTEXITCODE -ne 0 -or -not $taskChineseHelp.Contains('登录')) { throw 'Chinese packaged help failed.' }
+        $taskZhOutput = ($taskInput | & $taskJava '-Dfile.encoding=UTF-8' -jar $taskJar --lang zh --project-root $taskZhProject --accounts $taskAccountFile | Out-String)
+        $taskZhExit = $LASTEXITCODE
+
     } finally {
         [Console]::OutputEncoding = $taskOldConsoleEncoding
         $OutputEncoding = $taskOldEncoding
     }
     $taskState = Get-Content -Raw -LiteralPath (Join-Path $taskFixture 'data/snapshot.json') -Encoding utf8 | ConvertFrom-Json
-    if ($taskExit -ne 0 -or -not $taskOutput.Contains('登录成功') -or $taskOutput.Contains($taskPassword) -or
+    if ($taskExit -ne 0 -or -not $taskOutput.Contains('Login successful') -or $taskOutput.Contains($taskPassword) -or
         $taskState.last_commit_ordinal -ne 3 -or @($taskState.records | Where-Object table -eq 'PRODUCT').Count -ne 1 -or
         @($taskState.records | Where-Object table -eq 'SALE').Count -ne 1 -or @($taskState.records | Where-Object table -eq 'STOCK_ENTRY').Count -ne 2) { throw 'Packaged real CUI smoke failed.' }
-    [pscustomobject]@{ tests=$taskTotals.tests; failures=$taskTotals.failures; errors=$taskTotals.errors; skipped=$taskTotals.skipped; packagedCuiExit=$taskExit; legalBusinessCommits=$taskState.last_commit_ordinal } | ConvertTo-Json -Compress
+    $taskZhState = Get-Content -Raw -LiteralPath (Join-Path $taskZhProject 'data/snapshot.json') -Encoding utf8 | ConvertFrom-Json
+    if ($taskZhExit -ne 0 -or -not $taskZhOutput.Contains('登录成功') -or $taskZhOutput.Contains($taskPassword) -or
+        $taskOutput.Contains('TEXT_UNAVAILABLE') -or $taskZhOutput.Contains('TEXT_UNAVAILABLE') -or
+        $taskZhState.last_commit_ordinal -ne 3 -or @($taskZhState.records | Where-Object table -eq 'PRODUCT').Count -ne 1 -or
+        @($taskZhState.records | Where-Object table -eq 'SALE').Count -ne 1 -or @($taskZhState.records | Where-Object table -eq 'STOCK_ENTRY').Count -ne 2) { throw 'Chinese packaged real CUI smoke failed.' }
+    $taskEnMoney = (@($taskState.records | Where-Object table -eq 'MONEY_ENTRY')[0].json | ConvertFrom-Json).amountSigned
+    $taskZhMoney = (@($taskZhState.records | Where-Object table -eq 'MONEY_ENTRY')[0].json | ConvertFrom-Json).amountSigned
+    if ($taskEnMoney -ne 3.33 -or $taskZhMoney -ne $taskEnMoney) { throw 'Language changed the packaged sale amount.' }
+    [pscustomobject]@{ tests=$taskTotals.tests; failures=$taskTotals.failures; errors=$taskTotals.errors; skipped=$taskTotals.skipped; packagedCuiExit=$taskExit; chinesePackagedCuiExit=$taskZhExit; legalBusinessCommits=$taskState.last_commit_ordinal } | ConvertTo-Json -Compress
 } finally {
     # One shell end-to-end. Delete only this invocation's generated, resolved, non-link temporary directory.
     if ($taskFixture -and (Test-Path -LiteralPath $taskFixture)) {

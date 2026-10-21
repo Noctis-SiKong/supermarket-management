@@ -5,7 +5,9 @@ import java.util.List;
 
 import nz.ac.aut.pdc.supermarket.stock.SubmissionGateway;
 
-/** 捕获式提交替身（测试用途，非生产实现）。 */
+/** Capturing submission test double; never persists production data.
+ *
+ * 捕获式提交替身（测试用途，非生产实现）。 */
 public final class FakeSubmissionGateway implements SubmissionGateway {
 
     private final List<SubmissionRequest> requests = new ArrayList<>();

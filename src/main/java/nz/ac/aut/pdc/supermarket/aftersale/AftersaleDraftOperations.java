@@ -1,6 +1,8 @@
 package nz.ac.aut.pdc.supermarket.aftersale;
 
-/** B 负责的售后草稿/读取追溯操作名。 */
+/** B-owned operation names for drafts and read traces.
+ *
+ * B 负责的售后草稿/读取追溯操作名。 */
 public final class AftersaleDraftOperations {
 
     public static final String CREATE = "AFTERSALE_DRAFT_CREATE";

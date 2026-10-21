@@ -5,7 +5,9 @@ import java.util.Objects;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.Result;
 
-/** B 认证 → A IF-01 IdentityResolver 适配器。 */
+/** Adapter from B authentication to A IF-01 IdentityResolver.
+ *
+ * B 认证 → A IF-01 IdentityResolver 适配器。 */
 public final class SharedIdentityResolver implements OperationContext.IdentityResolver {
 
     private final AuthService authService;

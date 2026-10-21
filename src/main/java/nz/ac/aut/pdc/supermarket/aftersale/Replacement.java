@@ -2,7 +2,9 @@ package nz.ac.aut.pdc.supermarket.aftersale;
 
 import java.math.BigDecimal;
 
-/**
+/** ERD replacement line: ordinary exchanges use redemptionId; quality zero-difference exchanges additionally pair one-to-one through qualityRedemptionId.
+ *
+ *
  * 换货替换品明细（ERD REPLACEMENT 的 B 侧模型）。
  *
  * <p>普通换货用 redemptionId 关联本次核销；质量同款零差另用

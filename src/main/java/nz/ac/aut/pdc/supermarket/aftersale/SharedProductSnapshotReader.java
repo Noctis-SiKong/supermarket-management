@@ -6,7 +6,9 @@ import java.util.Optional;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 import nz.ac.aut.pdc.supermarket.catalog.Product;
 
-/** A WorkingCopy 上的 B 商品快照读取适配器。 */
+/** Read-only B product snapshot adapter over A WorkingCopy.
+ *
+ * A WorkingCopy 上的 B 商品快照读取适配器。 */
 public final class SharedProductSnapshotReader implements ProductSnapshotReader {
 
     private final WorkingCopy workingCopy;

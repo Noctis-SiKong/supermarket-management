@@ -5,7 +5,9 @@ import java.util.Set;
 
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
-/**
+/** Fictional read-only IF-06 product-existence snapshot for tests, never production.
+ *
+ *
  * 虚构商品只读快照（测试替身，非生产实现）。
  *
  * <p>契约：A 的 IF-06 商品读取最小视图；只回答商品是否存在。</p>

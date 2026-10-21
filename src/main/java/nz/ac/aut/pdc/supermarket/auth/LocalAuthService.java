@@ -5,7 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
+/** Local authentication with in-memory sessions/read-only credentials; never writes business data or submits. CredentialStore adapts A's dedicated view.
+ *
+ *
  * 本地认证实现：内存会话表 + 只读凭证端口。
  *
  * <p>职责边界：只做认证/解析，不写业务数据、不调用业务提交入口。

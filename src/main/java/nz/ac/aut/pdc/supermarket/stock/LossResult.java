@@ -3,7 +3,9 @@ package nz.ac.aut.pdc.supermarket.stock;
 import java.util.List;
 import java.util.Objects;
 
-/** 店内报损用例的候选结果（尚未提交）。 */
+/** Uncommitted store-loss candidate result.
+ *
+ * 店内报损用例的候选结果（尚未提交）。 */
 public sealed interface LossResult
         permits LossResult.Prepared, LossResult.Rejected, LossResult.Failed {
 

@@ -2,7 +2,9 @@ package nz.ac.aut.pdc.supermarket.reversal;
 
 import java.util.Objects;
 
-/** 整单冲销请求：目标已确认单据 + 授权原因。 */
+/** Whole-document reversal request: confirmed target and authorized reason.
+ *
+ * 整单冲销请求：目标已确认单据 + 授权原因。 */
 public record DocumentReversalCommand(
         String targetDocumentId, String reason, String requestKey) {
 

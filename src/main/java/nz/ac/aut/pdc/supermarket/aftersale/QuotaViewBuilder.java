@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
-/**
+/** Build quota from original snapshots and effective CONSUME minus corresponding RELEASE; no uncommitted inputs or cross-line reallocation. Invalid negative remainder fails explicitly.
+ *
+ *
  * 由"原行快照 + 有效核销历史"构造额度视图。
  *
  * <p>只汇总 CONSUME，并减去对应的 RELEASE；不读取当前未提交明细，

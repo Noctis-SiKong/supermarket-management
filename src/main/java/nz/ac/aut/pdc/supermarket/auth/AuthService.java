@@ -1,6 +1,8 @@
 package nz.ac.aut.pdc.supermarket.auth;
 
-/**
+/** Minimal B-owned IF-01 authentication: issue sessions and resolve trusted identity; caller-supplied roles/account IDs never authorize operations.
+ *
+ *
  * 本地认证与可信身份解析（IF-01，B 提供并唯一维护）。
  *
  * <p>接口刻意保持最小：登录签发会话；下游用会话解析可信身份。
@@ -8,7 +10,9 @@ package nz.ac.aut.pdc.supermarket.auth;
  */
 public interface AuthService {
 
-    /**
+    /** Login with preset username and transient password, never logged/stored in plaintext. Success returns a session; invalid credentials are REJECTED; technical faults are FAILED.
+ *
+ *
      * 本地账号登录。
      *
      * @param username 预置账号用户名
@@ -17,6 +21,8 @@ public interface AuthService {
      */
     AuthResult login(String username, char[] password);
 
-    /** 解析会话引用为可信身份；无效会话返回 REJECTED。 */
+    /** Resolve trusted identity from a session; invalid sessions return REJECTED.
+ *
+ * 解析会话引用为可信身份；无效会话返回 REJECTED。 */
     AuthResult resolve(SessionRef session);
 }

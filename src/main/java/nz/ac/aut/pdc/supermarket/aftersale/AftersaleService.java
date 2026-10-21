@@ -18,7 +18,9 @@ import nz.ac.aut.pdc.supermarket.stock.StockCheckResult;
 import nz.ac.aut.pdc.supermarket.stock.StockOperations;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
-/**
+/** CR07-10 candidate orchestration: strict eligibility, quotas, redemptions/replacements, IF-07 stock and settlement; never saves. Reject over-30-day and opened non-quality items; reasons do not relax rules.
+ *
+ *
  * 售后编排（CR07-10）：资格严格判定 -> 额度/金额 -> 核销/替换候选
  * -> 替换品 IF-07 库存核对 -> 结算候选。不保存、不提交。
  *
@@ -65,7 +67,9 @@ public final class AftersaleService {
         this.settlementCalculator = Objects.requireNonNull(settlementCalculator, "settlementCalculator");
     }
 
-    /** 兼容旧调用：默认结算计算器。 */
+    /** Compatibility constructor using the default settlement calculator.
+ *
+ * 兼容旧调用：默认结算计算器。 */
     public AftersaleService(
             OriginalSaleReader originalSaleReader,
             QuotaLedgerReader quotaLedgerReader,

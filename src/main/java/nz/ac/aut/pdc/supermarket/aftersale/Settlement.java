@@ -3,7 +3,9 @@ package nz.ac.aut.pdc.supermarket.aftersale;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-/**
+/** Uncommitted settlement: redemption ID, optional replacement ID, direction and nonnegative amount; NONE requires zero.
+ *
+ *
  * 售后结算候选：退款/补收金额与方向。
  *
  * @param redemptionId 本次核销 ID

@@ -6,7 +6,9 @@ import java.util.Objects;
 
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
-/** B 的 IF-07 只读视图在 A WorkingCopy 上的适配器。 */
+/** Read-only IF-07 adapter over A WorkingCopy.
+ *
+ * B 的 IF-07 只读视图在 A WorkingCopy 上的适配器。 */
 public final class SharedWorkingCopyView implements StockPorts.WorkingCopyView {
 
     private final WorkingCopy workingCopy;

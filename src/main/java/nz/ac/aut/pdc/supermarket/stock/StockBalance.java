@@ -2,7 +2,9 @@ package nz.ac.aut.pdc.supermarket.stock;
 
 import java.util.Objects;
 
-/**
+/** Read-only barcode/position/nonnegative quantity balance from a working copy or test snapshot.
+ *
+ *
  * 某商品在某位置的只读库存余额（来自工作副本或替身快照）。
  *
  * @param barcode  商品条码

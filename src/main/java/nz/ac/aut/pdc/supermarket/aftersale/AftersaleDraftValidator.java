@@ -18,7 +18,9 @@ import nz.ac.aut.pdc.shared.Result;
 import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
-/** B 负责的售后草稿/读取追溯/取消六参校验器。 */
+/** B-owned six-argument validator for creation, read traces and cancellation.
+ *
+ * B 负责的售后草稿/读取追溯/取消六参校验器。 */
 public final class AftersaleDraftValidator implements SubmissionPort.CommitValidator {
 
     private final String operation;

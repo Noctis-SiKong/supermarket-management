@@ -6,6 +6,8 @@ A single-store offline Java CUI course project. The existing monolith is already
 
 Applies to Windows + JDK 17; full instructions are in [Build and run](#build-and-run) below.
 
+For Chinese terminal input, configure UTF-8 input/output as shown in the language section below.
+
 1. Make sure `JAVA_HOME` points to JDK 17 (Enforcer rejects Java 8 and other major versions; the `java` on `PATH` is not necessarily 17).
 2. Build: `.\mvnw.cmd -B --no-transfer-progress clean package`
 3. Initialise the accounts once (**a real terminal is required**, interactive input, no default accounts):
@@ -152,10 +154,21 @@ The project uses a pinned Maven Wrapper, JDK 17 Enforcer, JUnit and Jackson, and
 
 IF-11 is implemented per the approved [CR07-11](./docs/Project_Spec.md#175-cr07-11-if-11-read-admission-and-local-cancellation-retention); the approved baseline and the course AC are not rewritten in this change. Complete automated test evidence, test-double scope and real-chain scope are listed separately; course manual materials are not counted as completed.
 
-## Approved language requirement (implementation pending)
+## English and Chinese
 
-Approved requirement: English will be the default language, with public English and Chinese language switching. Implementation is pending. Planned `--lang en` and `--lang zh` options are **not currently implemented commands**; existing run instructions remain unchanged. The login screen and post-login menus will expose switching; selection lasts for the current run, survives logout, and resets on restart according to the startup option or English default. See Spec CR07-12, §10.3 and AC-91–100 (approved expectations; not executed).
+English is the default. Chinese is a public supported language. Select the startup language:
 
-Language does not alter business records, permissions, money, inventory, eligibility, request fingerprints or idempotency. User-entered and historical data remain in their original form. Substantive source comments must be bilingual (English and Chinese); no source code is translated in this documentation-only change.
+```powershell
+# Configure this terminal for UTF-8 input/output (Windows PowerShell 5.1 and PowerShell 7):
+[Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+$OutputEncoding = [Text.UTF8Encoding]::new($false)
+& "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --lang en
+& "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --lang zh
+```
 
-For documents affected by this revision, repository copies are English and corresponding Chinese copies are held outside the repository in the owner's designated directory. README is primarily English. This is a user document-management decision, not a verified course requirement to exclude Chinese working papers. Existing submission checks still follow the original course checklist. No unrelated documents are moved or translated.
+At the login username prompt or authenticated main menu, enter `language`, then `en` or `zh`. If a username is `language` or `login`, enter `login` first, then the literal username. Business menu numbers remain unchanged. Switching does not log out, submit anything, discard quoted/pending requests, change original request keys or rebuild business operations. No per-field switch is added; those menu boundaries have no unsubmitted form, so the form-preservation subcheck is not applicable there. The selection survives logout within this process. Restarting uses `--lang en|zh`, or English if omitted. Invalid/missing values are rejected with `INVALID_LANGUAGE` and a nonzero exit. Existing CLI rules otherwise remain unchanged.
+
+System prompts, labels, help and feedback follow the selected language. User-entered product names, units, reasons, opinions, usernames and stored historical data remain verbatim, including Chinese data in English mode. Stable business codes/IDs and stored enum values are unchanged. Chinese missing text falls back to English; missing English or both missing displays `TEXT_UNAVAILABLE Text unavailable.`. Resources for both languages are included in the JAR. No language environment variable, configuration file or account preference is added, and language is absent from business snapshots, fingerprints and idempotency.
+
+CR07-12 is implemented; automated and real packaged-runtime verification evidence for AC-91–100 is in the [implementation log](./docs/P1_Implementation_Log.md#7-2026-10-22-public-englishchinese-implementation). Manual acceptance is pending. Substantive Chinese source comments retain Chinese and now include English. The English repository/external Chinese document arrangement is a user decision, not a course mandate to exclude Chinese drafts. No final report or signature is produced by this feature.

@@ -29,7 +29,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n1\n690123\n3\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("acc-1", operations.lastActor.accountId());
         assertEquals(Role.CLERK, operations.lastActor.role());
         assertEquals("690123", operations.replenishBarcode);
@@ -42,7 +42,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n2\n690123\nW\n2\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("690123", operations.lossBarcode);
         assertEquals(Position.W, operations.lossPosition);
         assertEquals(2, operations.lossQuantity);
@@ -54,7 +54,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n3\nSL-1\nRETURN\n2\ny\nn\n顾客原因\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("SL-1", operations.saleLineId);
         assertEquals(RedemptionKind.RETURN, operations.kind);
         assertEquals(2, operations.aftersaleQuantity);
@@ -70,7 +70,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n1\n690123\n0\n0\nexit\n", operations);
 
-        assertTrue(output.contains("输入错误"));
+        assertTrue(output.contains("Input error"));
         assertEquals(null, operations.replenishBarcode);
     }
 
@@ -80,7 +80,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n2\n690123\nX\n2\n0\nexit\n", operations);
 
-        assertTrue(output.contains("输入错误：位置只能是 S 或 W"));
+        assertTrue(output.contains("Input error: position must be S or W"));
         assertEquals(null, operations.lossBarcode);
     }
 
@@ -90,7 +90,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n3\nSL-1\nEXCHANGE\n1\nn\ny\nREP-1\n2\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals(RedemptionKind.EXCHANGE, operations.kind);
         assertEquals(Boolean.FALSE, operations.opened);
         assertEquals(Boolean.TRUE, operations.qualityProblem);
@@ -106,7 +106,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n4\nAF-1\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("AF-1", operations.cancelledDraftId);
     }
 
@@ -116,7 +116,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n5\nAF-2\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("AF-2", operations.deletedDraftId);
     }
 
@@ -126,7 +126,7 @@ public class CuiAppTest {
 
         String output = run("alice\nsecret\n6\nDOC-1\n原因\n0\nexit\n", operations);
 
-        assertTrue(output.contains("登录成功"));
+        assertTrue(output.contains("Login successful"));
         assertEquals("DOC-1", operations.reversedTargetId);
         assertEquals("原因", operations.reversalReason);
     }

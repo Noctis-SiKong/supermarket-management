@@ -5,7 +5,9 @@ import java.util.Objects;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 
-/** CUI 售后菜单的一次完整输入，避免把多字段散落在 Operations 参数表。 */
+/** Complete CUI aftersale input instead of unrelated scalar Operations arguments.
+ *
+ * CUI 售后菜单的一次完整输入，避免把多字段散落在 Operations 参数表。 */
 public record AftersaleRequest(
         String saleLineId,
         RedemptionKind kind,

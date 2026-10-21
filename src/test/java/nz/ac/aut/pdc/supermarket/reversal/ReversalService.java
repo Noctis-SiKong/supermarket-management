@@ -14,7 +14,9 @@ import nz.ac.aut.pdc.supermarket.stock.StockEntry;
 import nz.ac.aut.pdc.supermarket.stock.StockOperations;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
-/**
+/** Historical WP-06 prototype: authorize, check D1 dependencies/repeated reversals, then prepare RELEASE and reverse stock facts. No persistence or automatic cascading; DEPENDENCY_BLOCKED/REVERSAL_FAILED require shared-code registration.
+ *
+ *
  * 冲销编排骨架（WP-06）：高权限校验 → D1 依赖/重复冲销检查 → 生成 RELEASE
  * 核销与反向库存候选。不保存、不提交。
  *

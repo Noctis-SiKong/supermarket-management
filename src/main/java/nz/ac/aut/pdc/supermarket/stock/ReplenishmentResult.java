@@ -3,7 +3,9 @@ package nz.ac.aut.pdc.supermarket.stock;
 import java.util.List;
 import java.util.Objects;
 
-/** 补货用例的候选结果（尚未提交；不分配 commitOrdinal）。 */
+/** Uncommitted replenishment outcome; never allocates commitOrdinal.
+ *
+ * 补货用例的候选结果（尚未提交；不分配 commitOrdinal）。 */
 public sealed interface ReplenishmentResult
         permits ReplenishmentResult.Prepared, ReplenishmentResult.Rejected, ReplenishmentResult.Failed {
 

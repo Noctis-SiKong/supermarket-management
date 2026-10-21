@@ -3,7 +3,9 @@ package nz.ac.aut.pdc.supermarket.cui;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-/**
+/** CUI parsing, format and basic-range checks only; domain services separately recheck stock, quota and permissions.
+ *
+ *
  * CUI 输入格式与基础边界校验。
  *
  * <p>只做"能否解析/格式/基础范围"的检查；业务规则（库存、额度、权限）
@@ -50,7 +52,9 @@ public final class InputValidator {
         return value;
     }
 
-    /** CUI 层可向用户展示的输入错误。 */
+    /** Input-validation error rendered by the CUI.
+ *
+ * CUI 层可向用户展示的输入错误。 */
     public static final class InvalidInputException extends Exception {
         public InvalidInputException(String message) {
             super(Objects.requireNonNull(message, "message"));

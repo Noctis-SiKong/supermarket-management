@@ -4,7 +4,9 @@ import java.util.List;
 
 import nz.ac.aut.pdc.supermarket.stock.StockEntry;
 
-/** 原核销关联库存流水只读端口（IF-11/stock 事实读取，当前用替身）。 */
+/** Historical read-only stock-effect port for a redemption (IF-11/stock facts), backed by doubles in tests.
+ *
+ * 原核销关联库存流水只读端口（IF-11/stock 事实读取，当前用替身）。 */
 public interface StockEffectReader {
 
     List<StockEntry> entriesFor(String redemptionId);

@@ -1,6 +1,7 @@
 package nz.ac.aut.pdc.supermarket.app;
 
 import java.io.*;
+import nz.ac.aut.pdc.supermarket.i18n.Texts;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
@@ -21,7 +22,14 @@ public final class RepositoryBIntegration implements BIntegration {
     private final SharedStockAdapter stock=new SharedStockAdapter();
     private AuthService auth;
     private Supplier<List<JsonStore.Credential>> credentialView;
-    public RepositoryBIntegration(List<JsonStore.Credential> accounts) { this.accounts=List.copyOf(accounts); }
+    private final Texts texts;
+    private final PrintStream output;
+    private final InputStream input;
+    public RepositoryBIntegration(List<JsonStore.Credential> accounts) { this(accounts,new Texts("en"),System.out,System.in); }
+    public RepositoryBIntegration(List<JsonStore.Credential> accounts,Texts texts,PrintStream output,InputStream input) {
+        this.accounts=List.copyOf(accounts); this.texts=Objects.requireNonNull(texts);
+        this.output=Objects.requireNonNull(output); this.input=Objects.requireNonNull(input);
+    }
     public AuthService auth() { return Objects.requireNonNull(auth,"Application not initialized"); }
     @Override public IdentityResolver identities(Supplier<List<JsonStore.Credential>> credentials) {
         credentialView=credentials;
@@ -41,10 +49,9 @@ public final class RepositoryBIntegration implements BIntegration {
     public Operations cuiOperations(Application app) { return new SharedOperations(app.storage(),app.ids()); }
     @Override public void run(Application app) {
         if (credentialView.get().isEmpty()) {
-            System.out.println("未配置预置账号，登录暂不可用。首次启动可用 --init-accounts 交互创建 ADMIN/MANAGER/CLERK 账号（无默认密码）；"
-                    + "或用 --accounts <本地凭证JSON> 提供已有哈希。已有数据不会被覆盖。"); return;
+            output.println(texts.text("start.noAccounts")); return;
         }
 
-        new CuiApp(auth(),cuiOperations(app),new InputValidator(),new BufferedReader(new InputStreamReader(System.in,StandardCharsets.UTF_8)),System.out).run();
+        new CuiApp(auth(),cuiOperations(app),new InputValidator(),new BufferedReader(new InputStreamReader(input,StandardCharsets.UTF_8)),output,texts).run();
     }
 }

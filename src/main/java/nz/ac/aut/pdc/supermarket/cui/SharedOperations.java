@@ -1,6 +1,8 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
 import java.util.List;
+import nz.ac.aut.pdc.supermarket.i18n.Texts;
+import static nz.ac.aut.pdc.supermarket.i18n.Texts.*;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,7 +35,9 @@ import nz.ac.aut.pdc.supermarket.stock.Position;
 import nz.ac.aut.pdc.supermarket.stock.StockService;
 import nz.ac.aut.pdc.supermarket.stock.StockValidator;
 
-/**
+/** Unified real CUI adapter: all commits through JsonStore; quotes, authorized projections, original-key retry and business operations use real services.
+ *
+ *
  * 完整 CUI 的统一业务适配器：所有提交只走 JsonStore。
  * 报价、受限投影、原键重试与所有业务入口使用真实服务。
  */
@@ -51,49 +55,50 @@ public final class SharedOperations implements MaintenanceOperations {
     private final Map<String,Quoted> quotes=new java.util.HashMap<>();
     @Override public OperationFeedback quoteSale(CuiActor actor,List<nz.ac.aut.pdc.supermarket.app.AOperations.Item> items,String key) {
         var context=new OperationContext(actor.session(),key,"SALE",null);
-        var identity=store.authenticate(context);if(!identity.hasValue())return OperationFeedback.fail(identity.code());
+        var identity=store.authenticate(context);if(!identity.hasValue())return rejected(identity.code());
         var a=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,s -> store.authenticate(new OperationContext(s,key,"SALE",null)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter());
         var candidate=a.prepare(store,context,BusinessRequest.of(new nz.ac.aut.pdc.supermarket.app.AOperations.Sale(items,true)));
-        if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail());
+        if(!candidate.hasValue())return rejected(candidate.code());
         var prepared=candidate.value();quotes.put(key,new Quoted(identity.value().accountId(),prepared.workingCopy(),prepared.request(),prepared.changes()));
         var sale=prepared.changes().inserts().stream().filter(r -> r.table().equals("SALE")).findFirst().orElseThrow().as(nz.ac.aut.pdc.supermarket.app.AOperations.SaleRecord.class);
-        return OperationFeedback.ok("待确认报价："+sale.quote()+"；尚未收款或扣存；请求键 "+key);
+        return OperationFeedback.shown(true, message("feedback.quote",data(sale.quote()),key));
     }
     @Override public OperationFeedback quoteAftersale(CuiActor actor,List<AftersaleRequest> lines,String key) {return aftersaleOnce(actor,lines,key,false);}
     private record Pending(String accountId,java.util.function.Supplier<OperationFeedback> retry) {}
     private final Map<String,Pending> pending=new java.util.HashMap<>();
     private OperationFeedback remember(CuiActor actor,String key,java.util.function.Supplier<OperationFeedback> action) {
         var identity=store.authenticate(new OperationContext(actor.session(),key,"AUTH",null));
-        if(!identity.hasValue()) return OperationFeedback.fail(identity.code());
+        if(!identity.hasValue()) return rejected(identity.code());
         pending.put(key,new Pending(identity.value().accountId(),action));
         var result=action.get();
-        return new OperationFeedback(result.success(),result.message()+"；请求键 "+key);
+        return OperationFeedback.shown(result.success(), t -> t.text("feedback.key", result.render(t), key));
     }
     @Override public OperationFeedback retry(CuiActor actor,String key) {
         var identity=store.authenticate(new OperationContext(actor.session(),key,"AUTH",null));
         var saved=pending.get(key);
         if(!identity.hasValue() || saved==null || !saved.accountId().equals(identity.value().accountId()))
-            return OperationFeedback.fail("原请求不在本会话或不属于当前身份；请保留原键和原始业务输入，不换键盲目提交。");
-        return saved.retry().get();
+            return notice(false,"feedback.retryMissing");
+        var result=saved.retry().get();
+        return OperationFeedback.shown(result.success(),t -> t.text("feedback.key",result.render(t),key));
     }
     @Override public OperationFeedback executeA(CuiActor actor,String kind,Object input,String key) {
         String requestKey=key==null?idClock.newRequestKey():key;
         OperationContext context=new OperationContext(actor.session(),requestKey,kind,null);
-        var opened=store.open(context); if(!opened.hasValue()) return OperationFeedback.fail(opened.code());
+        var opened=store.open(context); if(!opened.hasValue()) return rejected(opened.code());
         WorkingCopy wc=opened.value(); Object resolved=input;
         if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.ProductPut p && p.expectedVersion()<0) {
-            if(wc.find("PRODUCT",p.product().barcode()).isEmpty())return OperationFeedback.fail("待修改商品不存在；新增请使用 new");
+            if(wc.find("PRODUCT",p.product().barcode()).isEmpty())return notice(false,"feedback.productMissing");
             resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.ProductPut(p.product(),wc.find("PRODUCT",p.product().barcode()).map(nz.ac.aut.pdc.shared.RecordData::version).orElse(0L));
         }
         if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.PromotionPut p && p.expectedVersion()<0)
             resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.PromotionPut(p.promotion(),wc.find("PROMOTION",p.promotion().promotionId()).map(nz.ac.aut.pdc.shared.RecordData::version).orElse(0L));
         if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptReview r && r.expectedVersion()==0) {
             var record=wc.find("DOCUMENT",r.receiptId());
-            if(record.isEmpty()) return OperationFeedback.fail("收货单不存在");
+            if(record.isEmpty()) return notice(false,"feedback.receiptMissing");
             resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptReview(r.receiptId(),record.get().version(),r.approve(),r.opinion(),r.attachments());
         }
         if(input instanceof MaintenanceOperations.ReceiptEdit edit) {
-            var document=wc.find("DOCUMENT",edit.receiptId()); if(document.isEmpty()) return OperationFeedback.fail("收货单不存在");
+            var document=wc.find("DOCUMENT",edit.receiptId()); if(document.isEmpty()) return notice(false,"feedback.receiptMissing");
             Map<String,nz.ac.aut.pdc.supermarket.app.AOperations.Item> rows=new java.util.LinkedHashMap<>();
             int sequence=0;
             for(var item:edit.items()) {
@@ -108,11 +113,11 @@ public final class SharedOperations implements MaintenanceOperations {
             var contextLoss=new OperationContext(actor.session(),requestKey,kind,loss.lossId());
             return remember(actor,requestKey,() -> {
                 var prior=store.lookupResult(contextLoss,request); if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
-                var current=store.open(contextLoss);if(!current.hasValue())return OperationFeedback.fail(current.code());
-                var who=store.authenticate(contextLoss);if(!who.hasValue())return OperationFeedback.fail(who.code());
+                var current=store.open(contextLoss);if(!current.hasValue())return rejected(current.code());
+                var who=store.authenticate(contextLoss);if(!who.hasValue())return rejected(who.code());
                 try {var delta=new nz.ac.aut.pdc.supermarket.stock.LossWorkflow().prepare(contextLoss,who.value(),loss,current.value(),idClock.now());
                     return feedback(store.submit(contextLoss,request,current.value(),delta));}
-                catch(RuntimeException e){return OperationFeedback.fail("报损后续操作拒绝："+e.getMessage());}
+                catch(RuntimeException e){return rejected(e.getMessage());}
             });
         }
         var a=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,session -> store.authenticate(new OperationContext(session,requestKey,kind,null)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter());
@@ -122,17 +127,26 @@ public final class SharedOperations implements MaintenanceOperations {
             var quoted=quotes.get(requestKey);
             if(quoted!=null) {
                 var identity=store.authenticate(context);
-                if(!identity.hasValue() || !quoted.actor().equals(identity.value().accountId()) || !quoted.request().equals(request))return OperationFeedback.fail("REQUEST_KEY_CONFLICT");
+                if(!identity.hasValue() || !quoted.actor().equals(identity.value().accountId()) || !quoted.request().equals(request))return rejected("REQUEST_KEY_CONFLICT");
                 return feedback(store.submit(context,request,quoted.wc(),quoted.delta()));
             }
             var prepared=a.prepare(store,context,request);
-            if(!prepared.hasValue()) return OperationFeedback.fail(prepared.code()+" "+prepared.detail());
+            if(!prepared.hasValue()) return rejected(prepared.code());
             return feedback(store.submit(context,request,prepared.value().workingCopy(),prepared.value().changes()));
         });
     }
+    private static OperationFeedback notice(boolean success,String key,Object... args) {
+        return OperationFeedback.shown(success,message(key,args));
+    }
+    private static OperationFeedback rejected(String code) {
+        String stable=code!=null && code.matches("[A-Z][A-Z0-9_]*")?code:"INVALID_INPUT";
+        boolean technical=stable.contains("FAILED") || stable.contains("FAILURE") || stable.endsWith("_UNAVAILABLE");
+        return OperationFeedback.shown(false,t -> t.text(technical?"feedback.failed":"feedback.rejected",t.error(stable)));
+    }
     private OperationFeedback feedback(Result<SubmissionPort.CommitReceipt> result) {
-        return result.status()==Result.Status.SUCCESS ? OperationFeedback.ok("已提交："+result.value().requestKey()+"；单据／行凭证 "+result.value().resultIds())
-            : OperationFeedback.fail("未提交："+result.code()+" "+result.detail());
+        return result.status()==Result.Status.SUCCESS
+            ? notice(true,"feedback.commit",result.value().requestKey(),data(result.value().resultIds()))
+            : rejected(result.code());
     }
     @Override public Result<nz.ac.aut.pdc.infrastructure.AttachmentStore.Attachment> attach(CuiActor actor,String source,String receiptId,int additional) {
         var op=new OperationContext(actor.session(),idClock.newRequestKey(),"ATTACHMENT",receiptId);
@@ -144,32 +158,34 @@ public final class SharedOperations implements MaintenanceOperations {
     }
     @Override public OperationFeedback inspect(CuiActor actor,String category,String id) {
         var op=new OperationContext(actor.session(),idClock.newRequestKey(),"QUERY",id);
-        var identity=store.authenticate(op); if(!identity.hasValue()) return OperationFeedback.fail(identity.code());
-        var open=store.open(op); if(!open.hasValue()) return OperationFeedback.fail(open.code());
-        var wc=open.value(); StringBuilder out=new StringBuilder();
+        var identity=store.authenticate(op); if(!identity.hasValue()) return rejected(identity.code());
+        var open=store.open(op); if(!open.hasValue()) return rejected(open.code());
+        var wc=open.value(); var out=new java.util.ArrayList<Object>();
         if(category.equals("QUOTA")) {
             var allowed=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,session -> store.authenticate(new OperationContext(session,op.requestKey(),"QUERY",id)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter()).readSaleLine(op,wc,id);
-            if(!allowed.hasValue())return OperationFeedback.fail(allowed.code());
+            if(!allowed.hasValue())return rejected(allowed.code());
             var query=new nz.ac.aut.pdc.supermarket.query.QueryService(new SharedSaleReader(wc),new SharedQuotaLedgerReader(wc),new QuotaViewBuilder());
             var result=query.quotaView(id);
-            return result instanceof nz.ac.aut.pdc.supermarket.query.QueryResult.Value<?> value?OperationFeedback.ok(value.value().toString()):OperationFeedback.fail(result.toString());
+            if(result instanceof nz.ac.aut.pdc.supermarket.query.QueryResult.Value<?> value) return OperationFeedback.shown(true,data(value.value()));
+            if(result instanceof nz.ac.aut.pdc.supermarket.query.QueryResult.Rejected<?> denied) return rejected(denied.code());
+            return rejected(((nz.ac.aut.pdc.supermarket.query.QueryResult.Failed<?>)result).code());
         }
-        if(category.equals("PRODUCT")) for(var r:wc.records("PRODUCT")) out.append(r.json()).append("\n");
-        else if(category.equals("PROMOTION")) for(var r:wc.records("PROMOTION")) out.append(r.json()).append("\n");
-        else if(category.equals("LOSS")) for(var r:wc.records("LOSS_RECORD")) {var loss=r.as(nz.ac.aut.pdc.supermarket.stock.LossRecord.class);var source=wc.find("DOC_LINE",loss.sourceLineId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);var owner=wc.find("DOCUMENT",source.documentId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentHeader.class);if(identity.value().role()==OperationContext.Role.CLERK && !owner.createdBy().equals(identity.value().accountId())) continue;out.append(nz.ac.aut.pdc.supermarket.stock.LossWorkflow.effective(wc,r.id())).append("\n");}
-        else if(category.equals("STOCK")) out.append(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(wc).balances(wc.records("PRODUCT").stream().map(nz.ac.aut.pdc.shared.RecordData::id).toList()));
+        if(category.equals("PRODUCT")) for(var r:wc.records("PRODUCT")) out.add(r.data());
+        else if(category.equals("PROMOTION")) for(var r:wc.records("PROMOTION")) out.add(r.data());
+        else if(category.equals("LOSS")) for(var r:wc.records("LOSS_RECORD")) {var loss=r.as(nz.ac.aut.pdc.supermarket.stock.LossRecord.class);var source=wc.find("DOC_LINE",loss.sourceLineId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);var owner=wc.find("DOCUMENT",source.documentId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentHeader.class);if(identity.value().role()==OperationContext.Role.CLERK && !owner.createdBy().equals(identity.value().accountId())) continue;out.add(nz.ac.aut.pdc.supermarket.stock.LossWorkflow.effective(wc,r.id()));}
+        else if(category.equals("STOCK")) out.addAll(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(wc).balances(wc.records("PRODUCT").stream().map(nz.ac.aut.pdc.shared.RecordData::id).toList()));
         else for(var r:wc.records("DOCUMENT")) {
             var h=r.as(nz.ac.aut.pdc.shared.DocumentHeader.class);
             if(identity.value().role()==OperationContext.Role.CLERK && !h.createdBy().equals(identity.value().accountId())) continue;
             if(id!=null && !id.isBlank() && !id.equals(r.id())) continue;
-            out.append(h.documentId()).append(" ").append(h.kind()).append(" ").append(h.status()).append(" ").append(h.createdAt()).append("\n");
+            out.add(h);
             for(var line:wc.records("DOC_LINE")) if(line.data().path("documentId").asText().equals(h.documentId())) {
-                out.append(line.json()).append("\n");wc.find("SALE_LINE",line.id()).ifPresent(snapshot -> out.append(snapshot.json()).append("\n"));
+                out.add(line.data());wc.find("SALE_LINE",line.id()).ifPresent(snapshot -> out.add(snapshot.data()));
             }
-            for(var money:wc.records("MONEY_ENTRY")) if(money.data().path("documentId").asText().equals(h.documentId()))out.append(money.json()).append("\n");
-            for(var event:wc.records("DOC_EVENT")) if(event.data().path("documentId").asText().equals(h.documentId()))out.append(event.json()).append("\n");
+            for(var money:wc.records("MONEY_ENTRY")) if(money.data().path("documentId").asText().equals(h.documentId()))out.add(money.data());
+            for(var event:wc.records("DOC_EVENT")) if(event.data().path("documentId").asText().equals(h.documentId()))out.add(event.data());
         }
-        return OperationFeedback.ok(out.length()==0?"没有当前身份可见的记录":out.toString());
+        return out.isEmpty()?notice(true,"feedback.noRecords"):OperationFeedback.shown(true,data(out));
     }
 
     @Override
@@ -182,9 +198,9 @@ public final class SharedOperations implements MaintenanceOperations {
         if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
         return stockOnce(actor,requestKey,nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT,original);
     }
-    @Override public OperationFeedback recordLoss(CuiActor actor,String barcode,Position position,int quantity) {return OperationFeedback.fail("报损必须填写原因");}
+    @Override public OperationFeedback recordLoss(CuiActor actor,String barcode,Position position,int quantity) {return notice(false,"feedback.lossReason");}
     @Override public OperationFeedback recordLoss(CuiActor actor,String barcode,Position position,int quantity,String reason) {
-        if(reason==null || reason.isBlank())return OperationFeedback.fail("报损必须填写原因");
+        if(reason==null || reason.isBlank())return notice(false,"feedback.lossReason");
         String key=idClock.newRequestKey();return remember(actor,key,() -> {
             var request=BusinessRequest.of(Map.of("barcode",barcode,"quantity",quantity,"position",position.name(),"reason",reason));
             return stockOnce(actor,key,nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS,request);
@@ -193,10 +209,10 @@ public final class SharedOperations implements MaintenanceOperations {
     private OperationFeedback stockOnce(CuiActor actor,String key,String kind,BusinessRequest request) {
         var context=new OperationContext(actor.session(),key,kind,idClock.entityId(key,"document"));
         var prior=store.lookupResult(context,request);if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
-        var identity=store.authenticate(context);if(!identity.hasValue())return OperationFeedback.fail(identity.code());
-        var opened=store.open(context);if(!opened.hasValue())return OperationFeedback.fail(opened.code());
+        var identity=store.authenticate(context);if(!identity.hasValue())return rejected(identity.code());
+        var opened=store.open(context);if(!opened.hasValue())return rejected(opened.code());
         var candidate=nz.ac.aut.pdc.supermarket.stock.StockBusiness.prepare(context,identity.value(),request,opened.value(),idClock);
-        if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail());
+        if(!candidate.hasValue())return rejected(candidate.code());
         return feedback(store.submit(context,request,opened.value(),candidate.value()));
     }
 
@@ -211,7 +227,7 @@ public final class SharedOperations implements MaintenanceOperations {
         Objects.requireNonNull(actor,"actor");
         String aftersaleId=idClock.entityId(finalKey,"aftersale");
         var identity=store.authenticate(new OperationContext(actor.session(),finalKey,"AFTERSALE",aftersaleId));
-        if(!identity.hasValue())return OperationFeedback.fail(identity.code());
+        if(!identity.hasValue())return rejected(identity.code());
         var sharedActor=identity.value();
         OperationContext operation=new OperationContext(actor.session(),finalKey,AftersaleChangeSetAssembler.OPERATION,aftersaleId);
         AftersaleCommand command=new AftersaleCommand(finalKey,null,lines.stream().map(request -> new AftersaleCommandLine(
@@ -220,14 +236,14 @@ public final class SharedOperations implements MaintenanceOperations {
         Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, finalRequest);
         if (prior.status() != Result.Status.NOT_FOUND) {
             if (prior.hasValue()) {
-                return OperationFeedback.ok("售后已提交：" + prior.value().requestKey());
+                return notice(true,"feedback.aftersaleDone",prior.value().requestKey());
             }
-            return OperationFeedback.fail("售后未提交：" + prior.code() + " " + prior.detail());
+            return rejected(prior.code());
         }
 
         var quoted=quotes.get(finalKey);
         if(commit && quoted!=null) {
-            if(!quoted.actor().equals(sharedActor.accountId()) || !quoted.request().equals(finalRequest))return OperationFeedback.fail("REQUEST_KEY_CONFLICT");
+            if(!quoted.actor().equals(sharedActor.accountId()) || !quoted.request().equals(finalRequest))return rejected("REQUEST_KEY_CONFLICT");
             return feedback(store.submit(operation,finalRequest,quoted.wc(),quoted.delta()));
         }
         var originals=new java.util.ArrayList<nz.ac.aut.pdc.shared.SaleLineSnapshot>();
@@ -238,12 +254,12 @@ public final class SharedOperations implements MaintenanceOperations {
             String readKey=derivedKey(finalKey,"read:"+lineId);
             var readOp=new OperationContext(actor.session(),readKey,nz.ac.aut.pdc.shared.AftersaleReadRequest.OPERATION,aftersaleId);
             var traced=access.readForAftersale(store,readOp,new nz.ac.aut.pdc.shared.AftersaleReadRequest(lineId,aftersaleId,List.of(lineId)));
-            if(!traced.hasValue())return OperationFeedback.fail("IF-11 未返回原单："+traced.code()+"；原键 "+finalKey+"；目标 "+aftersaleId);
+            if(!traced.hasValue())return notice(false,"feedback.readFailure",(Texts.Display)t -> t.error(traced.code()),finalKey,aftersaleId);
             originals.addAll(traced.value().lines());
         }
         Result<WorkingCopy> openResult = store.open(operation);
         if (!openResult.hasValue()) {
-            return OperationFeedback.fail("打开工作副本失败：" + openResult.code() + " " + openResult.detail());
+            return rejected(openResult.code());
         }
         WorkingCopy workingCopy = openResult.value();
         AftersaleService aftersaleService=nz.ac.aut.pdc.supermarket.aftersale.AftersaleEngine.create(workingCopy,idClock,finalKey);
@@ -251,23 +267,23 @@ public final class SharedOperations implements MaintenanceOperations {
                 aftersaleService, new AftersaleChangeSetAssembler(), store);
         if(!commit) {
             var candidate=submission.prepare(command,workingCopy,operation,sharedActor);
-            if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail()+"；已读取草稿 "+aftersaleId+" 可取消");
+            if(!candidate.hasValue())return notice(false,"feedback.draftFailure",(Texts.Display)t -> t.error(candidate.code()),aftersaleId);
             var prepared=candidate.value();quotes.put(finalKey,new Quoted(sharedActor.accountId(),workingCopy,finalRequest,prepared.changes()));
-            return OperationFeedback.ok("原销售最少字段："+originals+"；本次结算："+prepared.summary().settlements()+"；售后尚未完成，目标 "+aftersaleId+"，原键 "+finalKey);
+            return notice(true,"feedback.aftersaleQuote",data(originals),data(prepared.summary().settlements()),aftersaleId,finalKey);
         }
         Result<SubmissionPort.CommitReceipt> result = submission.submit(
                 command, workingCopy, operation, sharedActor);
         if (!result.hasValue()) {
-            return OperationFeedback.fail("售后未提交：" + result.code() + " " + result.detail());
+            return rejected(result.code());
         }
-        return OperationFeedback.ok("售后已提交：" + result.value().requestKey());
+        return notice(true,"feedback.aftersaleDone",result.value().requestKey());
     }
 
     @Override
     public OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId) {
         Objects.requireNonNull(actor, "actor");
         if (draftId == null || draftId.isBlank()) {
-            return OperationFeedback.fail("售后草稿 ID 不能为空");
+            return notice(false,"feedback.draftRequired");
         }
         OperationContext operation = new OperationContext(
                 actor.session(), derivedKey(draftId.trim(), "cancel"),
@@ -277,16 +293,16 @@ public final class SharedOperations implements MaintenanceOperations {
                 new OperationContext.ActorContext(
                         actor.accountId(), SharedRoles.toShared(actor.role())));
         if (!result.hasValue()) {
-            return OperationFeedback.fail("取消失败：" + result.code() + " " + result.detail());
+            return rejected(result.code());
         }
-        return OperationFeedback.ok("售后草稿已取消：" + draftId.trim());
+        return notice(true,"feedback.cancelled",draftId.trim());
     }
 
     @Override
     public OperationFeedback deleteAftersaleDraft(CuiActor actor, String draftId) {
         Objects.requireNonNull(actor, "actor");
         if (draftId == null || draftId.isBlank()) {
-            return OperationFeedback.fail("售后草稿 ID 不能为空");
+            return notice(false,"feedback.draftRequired");
         }
         OperationContext operation = new OperationContext(
                 actor.session(), derivedKey(draftId.trim(), "delete"),
@@ -296,9 +312,9 @@ public final class SharedOperations implements MaintenanceOperations {
                 new OperationContext.ActorContext(
                         actor.accountId(), SharedRoles.toShared(actor.role())));
         if (!result.hasValue()) {
-            return OperationFeedback.fail("删除失败：" + result.code() + " " + result.detail());
+            return rejected(result.code());
         }
-        return OperationFeedback.ok("售后草稿已删除：" + draftId.trim());
+        return notice(true,"feedback.deleted",draftId.trim());
     }
 
     @Override
@@ -306,7 +322,7 @@ public final class SharedOperations implements MaintenanceOperations {
         Objects.requireNonNull(actor, "actor");
         if (targetDocumentId == null || targetDocumentId.isBlank()
                 || reason == null || reason.isBlank()) {
-            return OperationFeedback.fail("冲销目标单和原因不能为空");
+            return notice(false,"feedback.reverseRequired");
         }
         return reverseDocument(actor,targetDocumentId,reason,idClock.newRequestKey());
     }
@@ -326,7 +342,7 @@ public final class SharedOperations implements MaintenanceOperations {
         if(prior.status()!=Result.Status.NOT_FOUND) return feedback(prior);
         Result<WorkingCopy> opened = store.open(operation);
         if (!opened.hasValue()) {
-            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
+            return rejected(opened.code());
         }
         OperationContext.ActorContext sharedActor =
                 new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
@@ -335,14 +351,14 @@ public final class SharedOperations implements MaintenanceOperations {
             changes = new nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler()
                     .assemble(opened.value(), target, operation, sharedActor, request, idClock);
         } catch (RuntimeException ex) {
-            return OperationFeedback.fail("冲销候选失败：" + ex.getMessage());
+            return rejected(ex.getMessage());
         }
         Result<SubmissionPort.CommitReceipt> submitted = store.submit(
                 operation, request, opened.value(), changes);
         if (!submitted.hasValue()) {
-            return OperationFeedback.fail("冲销未提交：" + submitted.code() + " " + submitted.detail());
+            return rejected(submitted.code());
         }
-        return OperationFeedback.ok("整单冲销已提交：" + submitted.value().requestKey());
+        return notice(true,"feedback.reversalDone",submitted.value().requestKey());
     }
 
     private String derivedKey(String baseKey, String purpose) {

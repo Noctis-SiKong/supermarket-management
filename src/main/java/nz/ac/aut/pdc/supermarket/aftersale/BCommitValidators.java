@@ -6,7 +6,9 @@ import nz.ac.aut.pdc.shared.DraftDeletion;
 import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter;
 
-/** B 的提交校验器注册表；由装配层交给 A JsonStore。 */
+/** B validator registry supplied to JsonStore by the assembly layer.
+ *
+ * B 的提交校验器注册表；由装配层交给 A JsonStore。 */
 public final class BCommitValidators {
 
     private BCommitValidators() {

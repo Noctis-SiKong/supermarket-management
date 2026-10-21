@@ -1,6 +1,8 @@
 package nz.ac.aut.pdc.supermarket.app;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import nz.ac.aut.pdc.supermarket.i18n.Texts;
 import java.nio.file.*;
 import java.time.Clock;
 import java.util.*;
@@ -9,62 +11,86 @@ import nz.ac.aut.pdc.shared.JsonCodec;
 
 public final class Main {
     private Main() {}
-    public static void main(String[] args) { System.exit(run(args,System.out,System.err)); }
+    public static void main(String[] args) {
+        // Windows console encoding can override file.encoding; keep the CUI streams explicitly UTF-8.
+        // Windows 控制台编码可能覆盖 file.encoding，故显式使用 UTF-8 展示流。
+        System.exit(run(args,new PrintStream(System.out,true,StandardCharsets.UTF_8),new PrintStream(System.err,true,StandardCharsets.UTF_8)));
+    }
     public static int run(String[] args,PrintStream out,PrintStream err) {
+        Texts texts = new Texts("en");
         try {
+            // Language applies to help too; do not reinterpret values of existing options.
+            // 语言也作用于帮助，但不把既有参数的值重新解释成选项。
+            for (int i=0;i<args.length;i++) {
+                if (args[i].equals("--lang")) {
+                    if (++i==args.length || (!args[i].equals("en") && !args[i].equals("zh"))) {
+                        err.println(new Texts("en").text("language.invalid")); return 1;
+                    }
+                    texts.select(args[i]);
+                } else if ((args[i].equals("--project-root") || args[i].equals("--accounts")) && i+1<args.length) i++;
+            }
             Path project = null, accountsFile = null; boolean check = false, initialize = false;
             for (int i=0;i<args.length;i++) switch (args[i]) {
-                case "--help" -> { out.println("P1: java -jar <jar> [--project-root <repository>] [--accounts <local-hash-json> | --init-accounts] [--check]\nUses real authentication/stock/CUI. No automatic business goods. See README for run and recovery instructions."); return 0; }
+                case "--lang" -> i++;
+                case "--help" -> { out.println(texts.text("start.help")); return 0; }
                 case "--check" -> check = true;
                 case "--init-accounts" -> initialize = true;
-                case "--project-root" -> { if (++i==args.length) throw new IllegalArgumentException("--project-root needs a directory"); project=Path.of(args[i]); }
-                case "--accounts" -> { if (++i==args.length) throw new IllegalArgumentException("--accounts needs a local hash file"); accountsFile=Path.of(args[i]); }
-                default -> throw new IllegalArgumentException("Unknown startup option");
+                case "--project-root" -> { if (++i==args.length) throw new IllegalArgumentException("cli.project"); project=Path.of(args[i]); }
+                case "--accounts" -> { if (++i==args.length) throw new IllegalArgumentException("cli.accounts"); accountsFile=Path.of(args[i]); }
+                default -> throw new IllegalArgumentException("cli.unknown");
             }
             // Exercises the packaged JSON dependency as well as the manifest entry point.
-            out.println("P1 JDK " + Runtime.version().feature() + " JSON " + JsonCodec.write(Map.of("schemaVersion",1)));
-            if (Runtime.version().feature()!=17) throw new IllegalArgumentException("Run with JDK 17");
+            out.println(texts.text("start.banner", Runtime.version().feature(), JsonCodec.tree(JsonCodec.write(Map.of("schemaVersion",1))).path("schemaVersion").asInt()));
+            if (Runtime.version().feature()!=17) throw new IllegalArgumentException("cli.jdk");
             if (project==null) project=locateProject();
             if(initialize && (accountsFile!=null || Files.exists(project.resolve("data/snapshot.json"))))
-                throw new IllegalArgumentException("Initialize only a new store; existing credentials are never overwritten");
-            var accounts=initialize ? initializeAccounts() : accountsFile==null ? List.<nz.ac.aut.pdc.infrastructure.JsonStore.Credential>of() : loadAccounts(accountsFile);
+                throw new IllegalArgumentException("account.existing");
+            var accounts=initialize ? initializeAccounts(texts,out) : accountsFile==null ? List.<nz.ac.aut.pdc.infrastructure.JsonStore.Credential>of() : loadAccounts(accountsFile);
             // Single production assembly; BIntegration remains the constructor seam for tests.
-            BIntegration b=new RepositoryBIntegration(accounts);
+            BIntegration b=new RepositoryBIntegration(accounts,texts,out,System.in);
             try (Application app=new Application(DataRoot.forProject(project),b,Clock.systemUTC())) {
-                if (check) out.println("Storage recovery and registered domain validation passed; no business operation submitted.");
+                if (check) out.println(texts.text("start.check"));
                 else b.run(app);
             }
             return 0;
         } catch (Exception e) {
-            err.println("STARTUP_BLOCKED: " + e.getClass().getSimpleName() + ": " + e.getMessage()); return 1;
+            String key=e.getMessage();
+            String explanation;
+            if(key!=null && (key.startsWith("cli.") || key.startsWith("account."))) explanation=texts.text(key);
+            else if(key!=null && key.contains("RECOVERY_WRITE_BLOCKED")) explanation=texts.error("RECOVERY_WRITE_BLOCKED");
+            else if(key!=null && key.contains("writer already active")) explanation=texts.error("WRITE_BLOCKED");
+            else explanation=texts.text("start.unavailable");
+            err.println(texts.text("start.blocked",explanation)); return 1;
         }
     }
-    private static List<nz.ac.aut.pdc.infrastructure.JsonStore.Credential> initializeAccounts() {
+    private static List<nz.ac.aut.pdc.infrastructure.JsonStore.Credential> initializeAccounts(Texts texts,PrintStream output) {
         var console=System.console();
-        if(console==null) throw new IllegalArgumentException("Interactive console required for --init-accounts; alternatively supply --accounts with hashes");
+        if(console==null) throw new IllegalArgumentException("account.console");
         var out=new ArrayList<nz.ac.aut.pdc.infrastructure.JsonStore.Credential>();
         Set<String> names=new HashSet<>();
         for(var role:nz.ac.aut.pdc.shared.OperationContext.Role.values()) {
-            String username=console.readLine("%s 用户名（exit 放弃）：",role);
+            output.print(texts.text("account.username",texts.label(role.name())));output.flush();
+            String username=console.readLine();
             if(username==null || username.isBlank() || username.equalsIgnoreCase("exit") || !names.add(username.trim()))
-                throw new IllegalArgumentException("Account setup cancelled or username invalid/duplicated; nothing installed");
-            char[] password=console.readPassword("密码（不回显）：");
+                throw new IllegalArgumentException("account.cancelled");
+            output.print(texts.text("account.password"));output.flush();
+            char[] password=console.readPassword();
             try {
-                if(password==null || password.length==0)throw new IllegalArgumentException("Password required; nothing installed");
+                if(password==null || password.length==0)throw new IllegalArgumentException("account.passwordRequired");
                 out.add(new nz.ac.aut.pdc.infrastructure.JsonStore.Credential(UUID.randomUUID().toString(),username.trim(),new nz.ac.aut.pdc.supermarket.auth.Sha256PasswordHasher().hash(password),role));
             } finally {if(password!=null)Arrays.fill(password,'\0');}
         }
         return List.copyOf(out);
     }
     private static List<nz.ac.aut.pdc.infrastructure.JsonStore.Credential> loadAccounts(Path file) throws Exception {
-        if (!Files.isRegularFile(file) || Files.size(file)>64_000) throw new IllegalArgumentException("Local account file missing or too large");
+        if (!Files.isRegularFile(file) || Files.size(file)>64_000) throw new IllegalArgumentException("account.file");
         try { return List.of(JsonCodec.read(Files.readString(file),nz.ac.aut.pdc.infrastructure.JsonStore.Credential[].class)); }
-        catch (RuntimeException e) { throw new IllegalArgumentException("Invalid local account JSON; expected accountId/username/passwordHash/role, no plaintext passwords"); }
+        catch (RuntimeException e) { throw new IllegalArgumentException("account.file"); }
     }
     private static Path locateProject() throws Exception {
         Path start=Path.of(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toAbsolutePath();
         for (Path p=Files.isDirectory(start)?start:start.getParent();p!=null;p=p.getParent())
             if (Files.isRegularFile(p.resolve("pom.xml")) && Files.isRegularFile(p.resolve("README.md")) && Files.isDirectory(p.resolve("docs"))) return p;
-        throw new IllegalArgumentException("Repository markers not found from executable; specify --project-root");
+        throw new IllegalArgumentException("cli.root");
     }
 }

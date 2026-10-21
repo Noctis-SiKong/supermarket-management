@@ -21,7 +21,9 @@ import nz.ac.aut.pdc.shared.WorkingCopy;
 import nz.ac.aut.pdc.supermarket.aftersale.Effect;
 import nz.ac.aut.pdc.supermarket.aftersale.Redemption;
 
-/** 已确认单据的整单冲销 ChangeSet：REVERSAL 单 + 反向行/库存/款项/核销释放。 */
+/** Whole-document reversal ChangeSet: REVERSAL document plus reverse lines, stock, money and redemption releases.
+ *
+ * 已确认单据的整单冲销 ChangeSet：REVERSAL 单 + 反向行/库存/款项/核销释放。 */
 public final class ReversalChangeSetAssembler {
 
     public static final String OPERATION = "REVERSAL";

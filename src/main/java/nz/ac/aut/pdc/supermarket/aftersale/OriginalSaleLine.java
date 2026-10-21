@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
+/** Immutable minimal original-sale snapshot: stable ID, original barcode, quantity Q, paid P in two-decimal RMB and business time in Asia/Shanghai; historical test model.
+ *
+ *
  * 原销售行的不可变快照（IF-11 返回的最小只读字段，测试用模型）。
  *
  * @param saleLineId 稳定原销售行 ID

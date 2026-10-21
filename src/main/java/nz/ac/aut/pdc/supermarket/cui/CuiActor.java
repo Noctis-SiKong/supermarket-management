@@ -5,7 +5,9 @@ import java.util.Objects;
 import nz.ac.aut.pdc.supermarket.auth.Role;
 import nz.ac.aut.pdc.supermarket.auth.SessionRef;
 
-/** CUI 会话中的可信身份快照（来自 AuthResult.Success）。 */
+/** Trusted CUI identity snapshot from AuthResult.Success.
+ *
+ * CUI 会话中的可信身份快照（来自 AuthResult.Success）。 */
 public record CuiActor(String accountId, Role role, SessionRef session) {
 
     public CuiActor {

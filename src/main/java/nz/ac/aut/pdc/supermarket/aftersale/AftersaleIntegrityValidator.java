@@ -9,7 +9,9 @@ import nz.ac.aut.pdc.shared.MoneyEntry;
 import nz.ac.aut.pdc.shared.RecordData;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
-/** 恢复/快照期的 B 售后结构完整性检查（只检查 B 拥有的表与关联）。 */
+/** B-owned snapshot/recovery integrity validation limited to aftersale tables and associations.
+ *
+ * 恢复/快照期的 B 售后结构完整性检查（只检查 B 拥有的表与关联）。 */
 public final class AftersaleIntegrityValidator implements JsonStore.IntegrityValidator {
 
     @Override

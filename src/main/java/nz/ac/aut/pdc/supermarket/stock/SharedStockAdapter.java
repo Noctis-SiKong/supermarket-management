@@ -14,7 +14,9 @@ import nz.ac.aut.pdc.shared.StockEntry;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 import nz.ac.aut.pdc.supermarket.app.AOperations;
 
-/**
+/** Real IF-07 StockDependency: read A WorkingCopy, validate shared stock candidates using B rules and return new STOCK_ENTRY changes only. No overlay merge, submit or file writes.
+ *
+ *
  * B 的 IF-07 在 A 的 StockDependency 适配要求上的真实实现。
  *
  * <p>只读 A WorkingCopy，接受 A shared.StockEntry 候选组；用 B 的库存规则校验后

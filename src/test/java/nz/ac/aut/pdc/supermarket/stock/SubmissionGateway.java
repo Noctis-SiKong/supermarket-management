@@ -3,7 +3,9 @@ package nz.ac.aut.pdc.supermarket.stock;
 import java.util.List;
 import java.util.Objects;
 
-/**
+/** Historical capturing test payload, not the production entry (shared.SubmissionPort). Verifies one submission and candidates without JSON or real atomicity; IF-05 three-state results are nested types.
+ *
+ *
  * 历史捕获式测试载荷；非生产提交入口，生产仅用 shared.SubmissionPort。
  *
  * <p>正式实现由 A 维护；本骨架用捕获式替身验证"只提交一次、候选正确"，
@@ -13,7 +15,9 @@ public interface SubmissionGateway {
 
     SubmitOutcome submit(SubmissionRequest request);
 
-    /** 一次业务请求的提交载荷（只带本次增量，不带整快照）。 */
+    /** One request's incremental submission payload, never the complete snapshot.
+ *
+ * 一次业务请求的提交载荷（只带本次增量，不带整快照）。 */
     record SubmissionRequest(
             String requestKey,
             long baseLast,
@@ -31,7 +35,9 @@ public interface SubmissionGateway {
         }
     }
 
-    /** 提交结果三态；只有 Success 表示已提交。 */
+    /** Three-state submission result; only Success means committed.
+ *
+ * 提交结果三态；只有 Success 表示已提交。 */
     sealed interface SubmitOutcome
             permits SubmitOutcome.Success, SubmitOutcome.Rejected, SubmitOutcome.Failed {
 

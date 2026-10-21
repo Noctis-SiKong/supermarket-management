@@ -2,7 +2,9 @@ package nz.ac.aut.pdc.supermarket.auth;
 
 import java.util.Objects;
 
-/**
+/** Opaque AuthService session with package-visible constructor prevents caller-forged identity. Historical expiry is not implemented; see shared section 3.1.
+ *
+ *
  * 认证服务签发的会话引用（逻辑句柄）。
  *
  * <p>构造器包内可见，业务代码只能从 {@link AuthService} 获得实例，避免自行伪造可信身份。
