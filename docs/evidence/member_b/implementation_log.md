@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.10，2026-10-21（含 §6–§16 增补、合并 main、CR07-10、IF-07 与六参校验器）
+版本/日期：v0.11，2026-10-21（含 §6–§17 增补、合并 main、CR07-10、IF-07、校验器与售后 ChangeSet）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -125,3 +125,10 @@
 - 新增 `SharedStockCommitValidator`：六参包装 `SharedStockAdapter.review`，供 B 的库存相关操作注册。
 - 测试：`AftersaleDraftDeletionValidatorTest` 5 项；合并树累计 **130 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：校验器尚未注册到最终 B 装配；B 售后/冲销仍未产出完整 ChangeSet；认证/CUI 真实适配未做。
+
+## 17. 2026-10-21 Stage 3c：售后 ChangeSet 与提交入口
+
+- 新增 `AftersaleChangeSetAssembler`：把 `AftersaleResult.Prepared` 组装为 A `ChangeSet`（DOCUMENT/AFTERSALE/DOC_LINE/DOC_EVENT/REDEMPTION/REPLACEMENT/STOCK_ENTRY/MONEY_ENTRY）；库存条目映射为 A `shared.StockEntry`，commitOrdinal=0。
+- 新增 `AftersaleSubmissionService`：`lookupResult` 幂等检查 → B 售后候选 → ChangeSet → A `SubmissionPort.submit`；不嵌套 submit、不写文件。
+- 测试：`AftersaleChangeSetAssemblerTest`(1)、`AftersaleSubmissionServiceTest`(1)；合并树累计 **132 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：B `AftersaleService` 仍用 B 库存/候选端口；`AFTERSALE` 六参 validator 尚未注册；认证/CUI 真实适配未做。
