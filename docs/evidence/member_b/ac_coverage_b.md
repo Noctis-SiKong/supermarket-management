@@ -10,14 +10,14 @@
 - 分支：`member-b/merge-main-2026-10-21`
 - 最新提交：`f4ed044`
 - 全量命令：`./mvnw -B clean verify`
-- 结果：**167 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）
+- 结果：**169 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）
 - 1 skipped：A `AttachmentTest` 的符号链接平台差异
 
 ## 2. 状态汇总
 
 | 状态 | AC |
 |---|---|
-| PASS（自动化） | AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-47、AC-79 |
+| PASS（自动化） | AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-34、AC-47、AC-79 |
 | PARTIAL | AC-03、AC-06、AC-09、AC-10、AC-12–15、AC-17、AC-22、AC-30、AC-33/34/35、AC-37、AC-46/47、AC-51–59、AC-80–84、AC-86–90 |
 | BLOCKED | AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 准入） |
 | N/A | AC-25/38/39/49/50（已撤销） |
@@ -38,5 +38,6 @@
 2. PASS 仅表示本轮自动化证据覆盖该 AC 核心数据，正式课程验收仍需 CUI 演示、报告/视频和人工确认。
 3. 因无 `Main`/pom 入口，AC-02 及需要 `java -jar` 的正式演示仍阻塞。
 4. AC-87/88 的 A 侧 IF-11 受控读取端口尚未确认；B 侧只实现草稿/追溯编排，不宣称正式联调完成。
+
 
 

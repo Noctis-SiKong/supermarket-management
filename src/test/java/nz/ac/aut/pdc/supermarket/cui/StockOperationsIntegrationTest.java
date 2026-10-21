@@ -94,6 +94,54 @@ public class StockOperationsIntegrationTest {
         }
     }
 
+    @Test
+    public void ac30ReplenishmentPreservesTotalAndBalances() throws Exception {
+        Path project = temporaryFolder.newFolder("ac30").toPath();
+        Files.writeString(project.resolve("pom.xml"), "<project/>");
+        Files.writeString(project.resolve("README.md"), "# test");
+        Files.createDirectories(project.resolve("docs"));
+        Sha256PasswordHasher hasher = new Sha256PasswordHasher();
+        String hash = hasher.hash("secret".toCharArray());
+        List<JsonStore.Credential> credentials = List.of(
+                new JsonStore.Credential("mgr", "manager", hash, OperationContext.Role.MANAGER),
+                new JsonStore.Credential("clerk", "clerk", hash, OperationContext.Role.CLERK));
+        IdClock ids = new IdClock(Clock.fixed(Instant.parse("2026-10-21T04:00:00Z"), ZoneOffset.UTC));
+
+        try (BApplication app = new BApplication(project, credentials, ids)) {
+            AuthResult.Success manager = (AuthResult.Success) app.authService()
+                    .login("manager", "secret".toCharArray());
+            AuthResult.Success clerk = (AuthResult.Success) app.authService()
+                    .login("clerk", "secret".toCharArray());
+            AOperations a = new AOperations(ids,
+                    new SharedIdentityResolver(app.authService()), new SharedStockAdapter());
+            submit(a, app.store(), manager.session(), "PRODUCT_PUT",
+                    new ProductPut(new Product("00123456", "测试商品", "盒", new BigDecimal("3.33"), null), 0));
+            submit(a, app.store(), manager.session(), "OPENING",
+                    new Opening(new AOperations.Item("00123456", 10), Position.W, "期初W"));
+
+            SharedOperations operations = new SharedOperations(app.store(), ids);
+            OperationFeedback feedback = operations.replenish(
+                    new CuiActor(clerk.accountId(), Role.CLERK, clerk.session()), "00123456", 3);
+            assertTrue(feedback.message(), feedback.success());
+
+            WorkingCopy state = app.store().open(new OperationContext(
+                    manager.session(), UUID.randomUUID().toString(), "READ", null)).value();
+            int shelf = 0;
+            int warehouse = 0;
+            for (var record : state.records("STOCK_ENTRY")) {
+                var entry = record.as(nz.ac.aut.pdc.shared.StockEntry.class);
+                if (entry.position() == nz.ac.aut.pdc.shared.StockEntry.Position.S) {
+                    shelf += entry.quantityDelta();
+                } else {
+                    warehouse += entry.quantityDelta();
+                }
+            }
+            assertEquals(3, shelf);
+            assertEquals(7, warehouse);
+            assertEquals(10, shelf + warehouse);
+        }
+    }
+
     private void submit(
             AOperations operations, JsonStore store, Object session, String kind, Object input) {
         OperationContext op = new OperationContext(session, UUID.randomUUID().toString(), kind, null);

@@ -105,6 +105,32 @@ public class AftersaleServiceTest {
     }
 
     @Test
+    public void ac34ExchangeComputesChargeRefundAndZeroDifference() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 1, new BigDecimal("48.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        productReader.put(BARCODE, new ProductSnapshot("替换品", new BigDecimal("55.00")));
+        AftersaleCommand command = command(
+                line(RedemptionKind.EXCHANGE, 1, false, false, BARCODE, 1, false));
+
+        AftersaleResult.Prepared charge = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+        assertEquals(SettlementDirection.CHARGE, charge.settlements().get(0).direction());
+        assertEquals(new BigDecimal("7.00"), charge.settlements().get(0).amount());
+
+        productReader.put(BARCODE, new ProductSnapshot("替换品", new BigDecimal("30.00")));
+        AftersaleResult.Prepared refund = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+        assertEquals(SettlementDirection.REFUND, refund.settlements().get(0).direction());
+        assertEquals(new BigDecimal("18.00"), refund.settlements().get(0).amount());
+
+        productReader.put(BARCODE, new ProductSnapshot("替换品", new BigDecimal("48.00")));
+        AftersaleResult.Prepared zero = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+        assertEquals(SettlementDirection.NONE, zero.settlements().get(0).direction());
+    }
+
+    @Test
     public void ac47WindowEndsAtShanghaiMidnight() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 
@@ -346,3 +372,4 @@ public class AftersaleServiceTest {
         }
     }
 }
+

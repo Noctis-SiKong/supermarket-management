@@ -16,7 +16,7 @@
 | 提交 | `f4ed044` |
 | JDK | 17 |
 | 构建 | `./mvnw -B clean verify` |
-| 结果 | **167 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
+| 结果 | **169 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
 | 说明 | 1 skipped 为 A `AttachmentTest` 的符号链接平台差异 |
 
 ## 2. B 相关 AC 状态
@@ -40,9 +40,9 @@
 | AC-19 | 开封非质量/其他原因 | `AftersaleServiceTest.openedNonQuality...`、`managerCannotOverride...` | PASS（自动化） | — |
 | AC-21 | 小数数量拒绝 | `InputValidatorTest`、`CuiAppTest.invalidQuantity...` | PASS（自动化） | — |
 | AC-22 | 库存不足查来源 | 无专门测试 | PARTIAL | A 的 IF-04 读取/核对 |
-| AC-30 | 期初+补货余额重建 | `AOperationsTest`、`StockOperationsIntegrationTest` | PARTIAL | 未做 AC 场景全套断言 |
+| AC-30 | 期初+补货余额重建 | `StockOperationsIntegrationTest.ac30...` W10→W7/S3，合计 10 | PASS（自动化） | 未做重启重建 |
 | AC-33 | 已退已换后再退/重复提交 | `AftersaleServiceTest` 部分、`QuotaCalculatorTest` | PARTIAL | 未覆盖已退+已换组合 |
-| AC-34 | 换货补/退/零差 | `AftersaleServiceTest` 质量换货/金额计算 | PARTIAL | 55/30/48 三种现价未逐项复现 |
+| AC-34 | 换货补/退/零差 | `AftersaleServiceTest.ac34...` 现价 55/30/48 分别补 7/退 18/零差 | PASS（自动化） | 未接真实 CUI/库存提交 |
 | AC-35 | 整单作废反向恢复 | `ReversalIntegrationTest` | PARTIAL | 无 AC-35 精确断言 |
 | AC-37 | 店长报损/管理员修正 | `LossServiceTest`、`StockOperationsIntegrationTest` | PARTIAL | 修正/处置未接 |
 | AC-46 | 原行部分退款 | `AftersaleServiceTest` | PARTIAL | 未逐项复现 AC-46 |
@@ -80,8 +80,9 @@
 
 ## 4. 结论
 
-- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-47、AC-79。
+- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-34、AC-47、AC-79。
 - 其余 B 相关 AC 多数为 **PARTIAL**，原因是缺少正式 CUI 入口、真实权限/恢复/故障注入或 A 的 IF-11 正式端口；不能把模块测试当作全部 AC 已通过。
 - **BLOCKED 关键项**：AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 读取准入）。
+
 
 
