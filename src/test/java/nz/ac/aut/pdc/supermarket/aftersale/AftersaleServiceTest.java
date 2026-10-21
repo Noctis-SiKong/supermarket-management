@@ -2,6 +2,7 @@ package nz.ac.aut.pdc.supermarket.aftersale;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +176,27 @@ public class AftersaleServiceTest {
                 new QualityPairValidator(),
                 new AftersaleAssembler(ids),
                 ids);
+    }
+
+    @Test
+    public void ac33ReturnedAndExchangedLeavesOnlyOneUnit() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        quotaLedgerReader.put(SALE_LINE, new Redemption(
+                "R-1", "R-1", SALE_LINE, BARCODE, "AF-1",
+                RedemptionKind.RETURN, Effect.CONSUME, 1, new BigDecimal("3.33"),
+                "REQ-H1", null, false, false, "其他原因"));
+        quotaLedgerReader.put(SALE_LINE, new Redemption(
+                "R-2", "R-2", SALE_LINE, BARCODE, "AF-1",
+                RedemptionKind.EXCHANGE, Effect.CONSUME, 1, new BigDecimal("3.33"),
+                "REQ-H2", null, false, false, "其他原因"));
+
+        AftersaleResult result = service.apply(
+                workingCopy, command(line(RedemptionKind.RETURN, 2, false, false, null, 0, false)),
+                Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
     }
 
     @Test
@@ -353,6 +375,10 @@ public class AftersaleServiceTest {
     private static final class InMemoryQuotaLedgerReader implements QuotaLedgerReader {
         private final Map<String, List<Redemption>> history = new HashMap<>();
 
+        void put(String saleLineId, Redemption redemption) {
+            history.computeIfAbsent(saleLineId, ignored -> new ArrayList<>()).add(redemption);
+        }
+
         @Override
         public List<Redemption> effectiveFor(String saleLineId) {
             return history.getOrDefault(saleLineId, List.of());
@@ -372,4 +398,5 @@ public class AftersaleServiceTest {
         }
     }
 }
+
 

@@ -155,7 +155,7 @@ public final class ReversalCommitValidator implements SubmissionPort.CommitValid
             }
             for (RecordData record : baseline.records("STOCK_ENTRY")) {
                 StockEntry entry = record.as(StockEntry.class);
-                if (!targetLines.contains(entry.sourceLineId()) || entry.quantityDelta() >= 0) {
+                if (!targetLines.contains(entry.sourceLineId())) {
                     continue;
                 }
                 String entryBarcode = barcodeOf(baseline, entry.sourceLineId());
