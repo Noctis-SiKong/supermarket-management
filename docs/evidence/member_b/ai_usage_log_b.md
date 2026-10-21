@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#48） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#49） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -152,3 +152,6 @@
 
 | 48 | AC-46/58/80/82 精确测试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补顺序退款/历史额度/零差换货/独立资格 | AftersaleServiceTest；176 tests | 用户要求继续 AC；AC-81 两顺序等仍 PARTIAL |
 - #48 AC-46/58/80/82 精确测试、`implementation_log.md` §42（2026-10-21，176 项测试）
+
+| 49 | B 侧 AC 汇总 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 汇总 21 项 PASS、PARTIAL、BLOCKED 与不声称项 | AC_SUMMARY_B_2026-10-21.md、ac_coverage_b.md；176 tests | 用户要求汇总；报告/视频/ZIP 未做 |
+- #49 B 侧 AC 汇总、`implementation_log.md` §43（2026-10-21，176 项测试）

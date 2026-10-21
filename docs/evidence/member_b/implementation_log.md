@@ -329,3 +329,9 @@
 - AC-58：零补差换货占满额度后，同原行再退被拒。
 - AC-82：同单两条原行的 opened/quality/reason 事实独立保留。
 - 合并树累计 **176 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 21 项。
+
+## 43. 2026-10-21 B 侧 AC 汇总报告
+
+- 新增 `AC_SUMMARY_B_2026-10-21.md`：汇总 21 项 PASS（自动化）、PARTIAL、BLOCKED 与明确不声称项，并给出复跑命令/关键测试类。
+- `ac_coverage_b.md` 增加汇总入口，最新提交更新为 `b1e8b77`。
+- 当前基线 **176 tests / 0 failed / 0 error / 1 skipped**；报告/视频/ZIP/Canvas 仍未做。

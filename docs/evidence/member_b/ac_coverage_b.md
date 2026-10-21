@@ -1,6 +1,6 @@
 # B 侧 AC → 证据索引（2026-10-21 更新）
 
-> 本文件只做索引；正式执行口径、逐项状态和缺口见
+> 汇总报告见 [`AC_SUMMARY_B_2026-10-21.md`](AC_SUMMARY_B_2026-10-21.md)；逐项证据见
 > [`ac_execution_b_2026-10-21.md`](ac_execution_b_2026-10-21.md)。
 >
 > **不要把模块测试/集成测试当作全部 AC 已通过。**
@@ -8,7 +8,7 @@
 ## 1. 当前基线
 
 - 分支：`member-b/merge-main-2026-10-21`
-- 最新提交：`f4ed044`
+- 最新提交：`b1e8b77`
 - 全量命令：`./mvnw -B clean verify`
 - 结果：**176 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）
 - 1 skipped：A `AttachmentTest` 的符号链接平台差异
