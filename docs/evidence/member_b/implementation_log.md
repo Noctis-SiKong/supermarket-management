@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.12，2026-10-21（含 §6–§18 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet 与 AFTERSALE 校验）
+版本/日期：v0.13，2026-10-21（含 §6–§19 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验与认证适配）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -140,3 +140,11 @@
 - 修正 `SharedStockAdapter.review`：无 STOCK_ENTRY 时返回成功（纯退货/无库存变更），不再被 B `StockValidator` 的空组拒绝。
 - 测试：`AftersaleCommitValidatorTest` 4 项；合并树累计 **136 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：注册表尚未实际传给 A JsonStore；B 售后 submission 测试仍用 capturing SubmissionPort；认证/CUI 未接。
+
+## 19. 2026-10-21 Stage 3e：认证适配与真实 JsonStore open
+
+- 新增 `SharedIdentityResolver`：B `AuthService`/`SessionRef` → A `OperationContext.IdentityResolver`/`ActorContext`，角色枚举映射。
+- 新增 `SharedCredentialStore`：A `JsonStore.authenticationView()` → B `CredentialStore` 只读适配。
+- 新增 `SharedAuthJsonStoreTest`：临时项目根 + A `DataRoot`/`JsonStore` + B `LocalAuthService`，验证 B 会话可被 A `open` 接受（baseLast=0）。
+- 测试：`SharedIdentityResolverTest`(2)、`SharedCredentialStoreTest`(2)、`SharedAuthJsonStoreTest`(1)；合并树累计 **141 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：尚未做统一 `Main`/pom 入口与 CUI 真实 `Operations`；B 服务装配仍用内存/替身端口。
