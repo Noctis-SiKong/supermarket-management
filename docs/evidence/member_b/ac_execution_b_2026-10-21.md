@@ -16,7 +16,7 @@
 | 提交 | `f4ed044` |
 | JDK | 17 |
 | 构建 | `./mvnw -B clean verify` |
-| 结果 | **165 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
+| 结果 | **167 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
 | 说明 | 1 skipped 为 A `AttachmentTest` 的符号链接平台差异 |
 
 ## 2. B 相关 AC 状态
@@ -30,13 +30,13 @@
 | AC-06 | 设计图与实现对应 | V2/V2.1 文档、当前代码 | PARTIAL | 最终图未冻结重绘 |
 | AC-07 | 视频/AI 日志 | 无 | BLOCKED | 人工视频 |
 | AC-08 | ZIP/报告/反思 | 无 | BLOCKED | 人工材料 |
-| AC-09 | 普通退货退款 8 元 | `AftersaleServiceTest` 部分退货、`SharedOperationsIntegrationTest` 真实提交 | PARTIAL | 未逐字复现 AC-09 场景 |
+| AC-09 | 普通退货退款 8 元 | `AftersaleServiceTest.ac09AndAc17...` 精确退款 8.00 | PASS（自动化） | 未做真实 CUI 离线店长场景 |
 | AC-10 | 两角色查询售后记录 | `QueryServiceTest` | PARTIAL | 真实 CUI/数据 |
-| AC-12 | 补货后两位置余额 | `StockOperationsIntegrationTest` | PARTIAL | 当前断言流水数，未逐项断言 S/W 余额 |
+| AC-12 | 补货后两位置余额 | `StockOperationsIntegrationTest` 断言补货后 S=8/W=7、合计 15 | PASS（自动化） | 未接正式 CUI |
 | AC-13 | 在售不足拒绝整单 | `StockValidatorTest`/`StockServiceTest` | PARTIAL | 未接真实销售 CUI |
 | AC-14 | 换货不足/同款质量换 | `AftersaleServiceTest` 换货库存不足 | PARTIAL | 未复现 AC-14 全部数字 |
 | AC-15 | 残次退货记损耗/去向 | 无完整证据 | PARTIAL | 交回品损耗未接 |
-| AC-17 | 退款按原实付 | `QuotaCalculatorTest`、`AftersaleServiceTest` | PARTIAL | 未接真实 CUI |
+| AC-17 | 退款按原实付 | `AftersaleServiceTest.ac09AndAc17...` 退款 8.00 而非 10/12 | PASS（自动化） | 未接正式 CUI |
 | AC-19 | 开封非质量/其他原因 | `AftersaleServiceTest.openedNonQuality...`、`managerCannotOverride...` | PASS（自动化） | — |
 | AC-21 | 小数数量拒绝 | `InputValidatorTest`、`CuiAppTest.invalidQuantity...` | PASS（自动化） | — |
 | AC-22 | 库存不足查来源 | 无专门测试 | PARTIAL | A 的 IF-04 读取/核对 |
@@ -46,7 +46,7 @@
 | AC-35 | 整单作废反向恢复 | `ReversalIntegrationTest` | PARTIAL | 无 AC-35 精确断言 |
 | AC-37 | 店长报损/管理员修正 | `LossServiceTest`、`StockOperationsIntegrationTest` | PARTIAL | 修正/处置未接 |
 | AC-46 | 原行部分退款 | `AftersaleServiceTest` | PARTIAL | 未逐项复现 AC-46 |
-| AC-47 | 第 30/31 天边界 | `AftersaleServiceTest.outOfWindowSaleIsRejected...` | PARTIAL | 未专门断言 Asia/Shanghai 23:59:59 |
+| AC-47 | 第 30/31 天边界 | `AftersaleServiceTest.ac47...` 上海 10-31 23:59:59 通过、11-01 00:00:00 拒绝 | PASS（自动化） | — |
 | AC-51 | 三角色登录/权限 | `LocalAuthServiceTest`、`SharedIdentityResolverTest` | PARTIAL | 真实 CUI/权限菜单未全验 |
 | AC-52 | D1 阻断旧收货 | `ReversalCommitValidatorTest` | PARTIAL | 未复现收货/补货精确场景 |
 | AC-53 | 输入边界 | `InputValidatorTest`、`StockValidatorTest` | PARTIAL | 全部数值/图片边界未逐项 |
@@ -80,6 +80,8 @@
 
 ## 4. 结论
 
-- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-19、AC-21、AC-79。
+- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-47、AC-79。
 - 其余 B 相关 AC 多数为 **PARTIAL**，原因是缺少正式 CUI 入口、真实权限/恢复/故障注入或 A 的 IF-11 正式端口；不能把模块测试当作全部 AC 已通过。
 - **BLOCKED 关键项**：AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 读取准入）。
+
+

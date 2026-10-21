@@ -105,6 +105,53 @@ public class AftersaleServiceTest {
     }
 
     @Test
+    public void ac47WindowEndsAtShanghaiMidnight() {
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult inside = serviceAt(Instant.parse("2026-10-31T15:59:59Z"))
+                .apply(workingCopy, command, Role.CLERK);
+        AftersaleResult outside = serviceAt(Instant.parse("2026-10-31T16:00:00Z"))
+                .apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(inside instanceof AftersaleResult.Prepared);
+        assertTrue(outside instanceof AftersaleResult.Rejected);
+        assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) outside).code());
+    }
+
+    @Test
+    public void ac09AndAc17SingleReturnRefundsOriginalPaidEight() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 1, new BigDecimal("8.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+
+        assertEquals(new BigDecimal("8.00"), prepared.redemptions().get(0).amount());
+        assertEquals(new BigDecimal("8.00"), prepared.settlements().get(0).amount());
+        assertEquals(SettlementDirection.REFUND, prepared.settlements().get(0).direction());
+    }
+
+    private AftersaleService serviceAt(Instant now) {
+        FakeIdGenerator ids = new FakeIdGenerator(now);
+        StockOperations stockOperations = new StockService(
+                new FakeProductCatalog(Set.of(BARCODE)),
+                new FakeIdGenerator(now),
+                new StockValidator());
+        return new AftersaleService(
+                originalSaleReader,
+                quotaLedgerReader,
+                productReader,
+                stockOperations,
+                new QuotaViewBuilder(),
+                new QuotaCalculator(),
+                new QualityPairValidator(),
+                new AftersaleAssembler(ids),
+                ids);
+    }
+
+    @Test
     public void partialReturnCalculatesQuotaAmountAndRefund() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 

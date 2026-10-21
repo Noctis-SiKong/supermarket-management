@@ -64,7 +64,7 @@ public class StockOperationsIntegrationTest {
             submit(a, app.store(), manager.session(), "OPENING",
                     new Opening(new AOperations.Item("00123456", 10), Position.W, "期初W"));
             submit(a, app.store(), manager.session(), "OPENING",
-                    new Opening(new AOperations.Item("00123456", 10), Position.S, "期初S"));
+                    new Opening(new AOperations.Item("00123456", 5), Position.S, "期初S"));
 
             SharedOperations operations = new SharedOperations(app.store(), ids);
             CuiActor actor = new CuiActor(clerk.accountId(), Role.CLERK, clerk.session());
@@ -77,6 +77,18 @@ public class StockOperationsIntegrationTest {
             assertTrue(lost.message(), lost.success());
             WorkingCopy state = app.store().open(new OperationContext(
                     manager.session(), UUID.randomUUID().toString(), "READ", null)).value();
+            int shelf = 0;
+            int warehouse = 0;
+            for (var record : state.records("STOCK_ENTRY")) {
+                var entry = record.as(nz.ac.aut.pdc.shared.StockEntry.class);
+                if (entry.position() == nz.ac.aut.pdc.shared.StockEntry.Position.S) {
+                    shelf += entry.quantityDelta();
+                } else if (entry.position() == nz.ac.aut.pdc.shared.StockEntry.Position.W) {
+                    warehouse += entry.quantityDelta();
+                }
+            }
+            assertEquals(6, shelf);
+            assertEquals(7, warehouse);
             assertEquals(1, state.records("LOSS_RECORD").size());
             assertEquals(5, state.records("STOCK_ENTRY").size());
         }
