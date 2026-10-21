@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.8，2026-10-21（含 §6–§14 增补、合并 main 与 CR07-10 迁移）
+版本/日期：v0.9，2026-10-21（含 §6–§15 增补、合并 main、CR07-10 与 IF-07 适配）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -111,3 +111,10 @@
 - Stage 2：按 CR07-10 迁移售后：删除 `AftersaleCommand`/`Redemption` 的店长资格例外字段；`AftersaleCommandLine` 增 `reasonKind(QUALITY/OTHER)+reasonText`；`AftersaleService` 改为严格资格（超 30 天、已开封非质量一律拒绝，无店长例外）；CUI 增加“其他原因”文本提示；新增/改写测试后合并树 **120 tests / 0 failed / 0 error / 1 skipped**。
 - 文档：本条与后续文档修正同步；CR07-09 仅保留为历史记录，现行口径为 CR07-10。
 
+
+## 15. 2026-10-21 Stage 3a：IF-07 真实适配
+
+- 新增 `SharedWorkingCopyView`：把 A `WorkingCopy` 投影为 B 的 IF-07 只读余额视图；`SharedStockProjection` 通过 `STOCK_ENTRY.sourceLineId → DOC_LINE.barcode` 聚合余额。
+- 新增 `SharedStockAdapter`：实现 A `AOperations.StockDependency` 的 `prepare/review/validateRecovered`；接受 A `shared.StockEntry` 组，用 B `StockValidator` 校验后返回仅新增 `STOCK_ENTRY` 的 `ChangeSet`，不合并 overlay/不提交。
+- 测试：`SharedStockAdapterTest` 5 项；合并树累计 **125 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：`Result` 仅做直接映射；`STOCK_ENTRY` 只支持 inserts；提交/CommitValidator/认证/CUI 真实适配未做。
