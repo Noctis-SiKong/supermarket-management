@@ -6,9 +6,8 @@ import java.util.Objects;
 /**
  * 原销售行的一次核销明细（ERD REDEMPTION 的 B 侧不可变模型）。
  *
- * <p>业务类型与账务方向分离：kind=RETURN/EXCHANGE，effect=CONSUME/RELEASE。
- * RELEASE 必须通过 reverseOfId 指向被释放的原核销。资格例外（CR07-09）事实
- * 写在例外字段中，便于审计；未使用例外时为空。</p>
+ * <p>CR07-10：不保存店长资格例外字段；质量/其他原因按明细记录，其他原因文本存
+ * reasonText。RELEASE 必须通过 reverseOfId 指向被释放的原核销。</p>
  */
 public record Redemption(
         String redemptionId,
@@ -24,9 +23,7 @@ public record Redemption(
         String reverseOfId,
         boolean opened,
         boolean qualityProblem,
-        String exceptionAuthorizedBy,
-        String exceptionReason,
-        String relaxedRule) {
+        String reasonText) {
 
     public Redemption {
         if (redemptionId == null || redemptionId.isBlank()) {
@@ -52,7 +49,7 @@ public record Redemption(
         }
     }
 
-    /** 兼容旧调用：无资格例外事实。 */
+    /** 兼容旧调用：无原因文本。 */
     public Redemption(
             String redemptionId,
             String sourceLineId,
@@ -69,6 +66,6 @@ public record Redemption(
             boolean qualityProblem) {
         this(redemptionId, sourceLineId, originalSaleLineId, originalBarcode, aftersaleId,
                 kind, effect, quantity, amount, requestKey, reverseOfId, opened, qualityProblem,
-                null, null, null);
+                null);
     }
 }

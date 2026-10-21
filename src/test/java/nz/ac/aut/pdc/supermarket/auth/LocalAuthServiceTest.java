@@ -82,10 +82,11 @@ public class LocalAuthServiceTest {
 
     @Test
     public void managerAndAdminCanAuthorizeExceptionsButClerkCannot() {
-        assertTrue(Role.MANAGER.canAuthorizeException());
-        assertTrue(Role.ADMIN.canAuthorizeException());
-        assertTrue(!Role.CLERK.canAuthorizeException());
+        assertTrue(Role.MANAGER.canPerformHighRiskOperation());
+        assertTrue(Role.ADMIN.canPerformHighRiskOperation());
+        assertTrue(!Role.CLERK.canPerformHighRiskOperation());
         assertNotEquals(Role.CLERK, Role.MANAGER);
         assertSame(Role.ADMIN, Role.valueOf("ADMIN"));
     }
 }
+

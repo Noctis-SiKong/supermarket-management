@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.auth.AuthService;
 import nz.ac.aut.pdc.supermarket.auth.CredentialStore;
@@ -51,7 +52,7 @@ public class CuiAppTest {
     public void aftersaleMenuDispatchesQualificationFacts() {
         RecordingOperations operations = new RecordingOperations();
 
-        String output = run("alice\nsecret\n3\nSL-1\nRETURN\n2\ny\nn\n0\nexit\n", operations);
+        String output = run("alice\nsecret\n3\nSL-1\nRETURN\n2\ny\nn\n顾客原因\n0\nexit\n", operations);
 
         assertTrue(output.contains("登录成功"));
         assertEquals("SL-1", operations.saleLineId);
@@ -59,6 +60,8 @@ public class CuiAppTest {
         assertEquals(2, operations.aftersaleQuantity);
         assertTrue(operations.opened);
         assertEquals(Boolean.FALSE, operations.qualityProblem);
+        assertEquals(AftersaleReasonKind.OTHER, operations.reasonKind);
+        assertEquals("顾客原因", operations.reasonText);
     }
 
     @Test
@@ -91,6 +94,8 @@ public class CuiAppTest {
         assertEquals(RedemptionKind.EXCHANGE, operations.kind);
         assertEquals(Boolean.FALSE, operations.opened);
         assertEquals(Boolean.TRUE, operations.qualityProblem);
+        assertEquals(AftersaleReasonKind.QUALITY, operations.reasonKind);
+        assertEquals(null, operations.reasonText);
     }
 
     private String run(String input, RecordingOperations operations) {
@@ -124,6 +129,8 @@ public class CuiAppTest {
         private int aftersaleQuantity;
         private boolean opened;
         private Boolean qualityProblem;
+        private AftersaleReasonKind reasonKind;
+        private String reasonText;
 
         @Override
         public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
@@ -146,15 +153,21 @@ public class CuiAppTest {
         @Override
         public OperationFeedback aftersale(
                 CuiActor actor, String saleLineId, RedemptionKind kind,
-                int quantity, boolean opened, boolean qualityProblem) {
+                int quantity, boolean opened, boolean qualityProblem,
+                AftersaleReasonKind reasonKind, String reasonText) {
             lastActor = actor;
             this.saleLineId = saleLineId;
             this.kind = kind;
             this.aftersaleQuantity = quantity;
             this.opened = opened;
             this.qualityProblem = qualityProblem;
+            this.reasonKind = reasonKind;
+            this.reasonText = reasonText;
             return OperationFeedback.ok("售后候选已受理（测试替身，未提交）");
         }
     }
 }
+
+
+
 

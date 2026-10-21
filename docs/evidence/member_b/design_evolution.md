@@ -78,7 +78,7 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 - **R-04 已确认（按 A 规范 §8）**：维持不抽策略类；系统必须做默认资格校验与 CR07-09 例外留痕；若实现成"系统不校验资格"则违反 BR-22/26、CR07-09、AC-19/33/47，须暂停该模块按 Spec §17 处理。
 - **渲染图集**：8 张分图已按修正重渲染并入库 `docs/design/member_b/v2/rendered/`（00 总体图的 customer-return 指向 `CustomerReturnLossRecorder`；02 售后详情含 CR07-09 例外字段与 Session 授权校验）。
 - **V2 规模**：约 50 个类/接口/枚举，单图较宽；报告可横向整页或用分图集；图面可读性（R-27）已拒绝，不再改图。
-- **共享规范 v1.02 与代码**：IF-01/04/05/07/11 契约已定稿；A 的 `src/main/java/nz/ac/aut/pdc/shared/` 公共代码尚未交付，B 先用替身实现/自测，真实联调待 A 交付。
+- **共享规范与代码（2026-10-21 合并后）**：A 的 `src/main/java/nz/ac/aut/pdc/{shared,infrastructure}/` 已合入 main `a109135`；B 已合并 main（G2），真实端口适配（G3）进行中。
 
 ## 5. 共享规范 v1.02 的状态
 
@@ -106,3 +106,4 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 - v1（2026-10-20）：初建；27 项 V1→V2 变化 + 裁决记录。
 - v1.1（2026-10-20）：A 推送 CR07-09 与 P1 用例图后 rebase 到 `7216724`；新增 §0 基线同步与第 28 项变化；更新 R-04 口径、渲染图集状态与下一步。
 - v1.2（2026-10-21）：按 A 共享规范 v1.02 与 R-04 执行口径（简单校验 + CR07-09 例外留痕）更新；明确 V2 局部适配项与编码门。
+

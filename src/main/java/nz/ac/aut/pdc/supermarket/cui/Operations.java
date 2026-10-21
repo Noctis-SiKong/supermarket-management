@@ -1,5 +1,6 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
@@ -21,5 +22,7 @@ public interface Operations {
             RedemptionKind kind,
             int quantity,
             boolean opened,
-            boolean qualityProblem);
+            boolean qualityProblem,
+            AftersaleReasonKind reasonKind,
+            String reasonText);
 }

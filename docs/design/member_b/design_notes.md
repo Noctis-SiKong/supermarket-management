@@ -2,6 +2,8 @@
 
 > **CR07-10（2026-10-20）**：CR07-09的店长资格个案例外已撤销。以下涉及`exception_authorized_by`、`exception_reason`、CR07-09授权例外的段落仅保留历史记录，不是现行实现依据；V2应删除AFTERSALE授权字段，改由REDEMPTION.reason_text记录“其他原因”，资格仍按质量/30天/开封规则判定。
 
+> **2026-10-21 合并后状态**：A 的 shared/infrastructure 已合入 main a109135；B 已合并 main（G2）；CR07-10 生效，CR07-09 仅历史；B 代码已迁移 reasonKind/reasonText，真实端口适配（G3）进行中。
+
 版本/日期：v0.1，2026-10-20（Asia/Shanghai）
 依据：交接包 v0.4、Spec/PRD/ERD v0.7、分工与接口清单 v0.3、交付提交 `f554cc2`
 性质：B 侧工作记录与依赖登记。不修改冻结需求；不代替设计评审证据或测试结果。
@@ -85,3 +87,5 @@
 - 2026-10-21：R-04 执行口径确认（按 A 共享规范 §8）：维持不抽策略类；`AftersaleService` 内部简单方法做默认资格校验（30 天本地日历、开封/质量默认规则）；CR07-09 例外经 `Session` 校验店长/管理员并记录授权人/原因/放宽规则；数量/金额/库存校验不受例外影响。
 - 2026-10-21：IF-07 契约升 **v0.3**，对齐共享规范 §5.3：取消"收货行→可用数量"的 `source_locations`，改为 `balances(wc, overlay, barcodes)` / `check(wc, overlay, changes)`；overlay 只合并一次；结果三态；不嵌套提交。v0.2 中冲突表述失效。
 - 2026-10-21：共享规范 v1.02 已定 IF-01/04/05/07/11 契约与公共代码位置；A 的 `shared/`/`infrastructure/` 代码未交付，B 先用替身实现/自测。
+
+

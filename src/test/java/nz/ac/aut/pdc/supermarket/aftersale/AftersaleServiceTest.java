@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import nz.ac.aut.pdc.supermarket.stock.StockService;
 import nz.ac.aut.pdc.supermarket.stock.StockValidator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -66,7 +68,7 @@ public class AftersaleServiceTest {
     }
 
     @Test
-    public void partialReturnCalculatesQuotaAmount() {
+    public void partialReturnCalculatesQuotaAmountAndRefund() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 
         AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
@@ -77,6 +79,8 @@ public class AftersaleServiceTest {
         assertEquals(new BigDecimal("3.33"), prepared.redemptions().get(0).amount());
         assertTrue(prepared.replacements().isEmpty());
         assertTrue(prepared.stockEntries().isEmpty());
+        assertEquals(SettlementDirection.REFUND, prepared.settlements().get(0).direction());
+        assertEquals(new BigDecimal("3.33"), prepared.settlements().get(0).amount());
     }
 
     @Test
@@ -96,41 +100,37 @@ public class AftersaleServiceTest {
         assertEquals(prepared.redemptions().get(0).redemptionId(), replacement.qualityRedemptionId());
         assertEquals(1, prepared.stockEntries().size());
         assertEquals(-1, prepared.stockEntries().get(0).delta());
+        assertEquals(SettlementDirection.NONE, prepared.settlements().get(0).direction());
     }
 
     @Test
-    public void openedNonQualityRequiresException() {
+    public void openedNonQualityIsRejectedWithoutManagerException() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, true, false, null, 0, false));
 
-        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+        AftersaleResult result = service.apply(workingCopy, command, Role.MANAGER);
 
         assertTrue(result instanceof AftersaleResult.Rejected);
         assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) result).code());
     }
 
     @Test
-    public void managerExceptionAllowsOpenedNonQuality() {
-        AftersaleCommand command = new AftersaleCommand(
-                "REQ-EX", "V-1", "acc-manager", "顾客坚持", "已开封非质量",
-                List.of(line(RedemptionKind.RETURN, 1, true, false, null, 0, false)));
+    public void managerCannotOverrideOpenedNonQuality() {
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, true, false, null, 0, false));
 
         AftersaleResult result = service.apply(workingCopy, command, Role.MANAGER);
 
-        assertTrue(result instanceof AftersaleResult.Prepared);
-        Redemption redemption = ((AftersaleResult.Prepared) result).redemptions().get(0);
-        assertEquals("acc-manager", redemption.exceptionAuthorizedBy());
-        assertEquals("顾客坚持", redemption.exceptionReason());
-        assertEquals("已开封非质量", redemption.relaxedRule());
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) result).code());
     }
 
     @Test
-    public void outOfWindowSaleRequiresException() {
+    public void outOfWindowSaleIsRejectedEvenForManager() {
         originalSaleReader.put(new OriginalSaleLine(
                 SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
                 Instant.parse("2026-09-01T00:00:00Z")));
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 
-        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+        AftersaleResult result = service.apply(workingCopy, command, Role.MANAGER);
 
         assertTrue(result instanceof AftersaleResult.Rejected);
         assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) result).code());
@@ -139,7 +139,8 @@ public class AftersaleServiceTest {
     @Test
     public void unknownSaleLineIsRejected() {
         AftersaleCommand command = command(new AftersaleCommandLine(
-                "missing", RedemptionKind.RETURN, 1, false, false, null, 0, false));
+                "missing", RedemptionKind.RETURN, 1, false, false,
+                AftersaleReasonKind.OTHER, "顾客原因", null, 0, false));
 
         AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
 
@@ -179,7 +180,7 @@ public class AftersaleServiceTest {
     }
 
     @Test
-    public void resultCarriesGeneratedIds() {
+    public void resultCarriesGeneratedIdsAndReasonText() {
         AftersaleResult result = service.apply(
                 workingCopy, command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false)), Role.CLERK);
 
@@ -187,17 +188,42 @@ public class AftersaleServiceTest {
         Redemption redemption = ((AftersaleResult.Prepared) result).redemptions().get(0);
         assertNotNull(redemption.redemptionId());
         assertEquals("REQ-1", redemption.requestKey());
+        assertEquals("顾客原因", redemption.reasonText());
+        assertFalse(redemption.qualityProblem());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void otherReasonRequiresReasonText() {
+        new AftersaleCommandLine(
+                SALE_LINE, RedemptionKind.RETURN, 1, false, false,
+                AftersaleReasonKind.OTHER, " ", null, 0, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void qualityReasonRequiresQualityProblem() {
+        new AftersaleCommandLine(
+                SALE_LINE, RedemptionKind.RETURN, 1, false, false,
+                AftersaleReasonKind.QUALITY, null, null, 0, false);
     }
 
     private AftersaleCommand command(AftersaleCommandLine... lines) {
-        return new AftersaleCommand("REQ-1", "V-1", null, null, null, List.of(lines));
+        return new AftersaleCommand("REQ-1", "V-1", List.of(lines));
     }
 
     private AftersaleCommandLine line(
             RedemptionKind kind, int quantity, boolean opened, boolean qualityProblem,
             String replacementBarcode, int replacementQty, boolean qualityPair) {
+        AftersaleReasonKind reasonKind;
+        String reasonText;
+        if (qualityProblem) {
+            reasonKind = AftersaleReasonKind.QUALITY;
+            reasonText = null;
+        } else {
+            reasonKind = AftersaleReasonKind.OTHER;
+            reasonText = "顾客原因";
+        }
         return new AftersaleCommandLine(
-                SALE_LINE, kind, quantity, opened, qualityProblem,
+                SALE_LINE, kind, quantity, opened, qualityProblem, reasonKind, reasonText,
                 replacementBarcode, replacementQty, qualityPair);
     }
 

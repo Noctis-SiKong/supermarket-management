@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.7，2026-10-21（含 §6–§13 增补与独立审查修复记录）
+版本/日期：v0.8，2026-10-21（含 §6–§14 增补、合并 main 与 CR07-10 迁移）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -64,7 +64,7 @@
 - 独立审查（thinking=high 子智能体）报告：`docs/evidence/member_b/independent_review_2026-10-21.md`（快照 S0=`6c272ca`、S1=`d1ec5b1`；实测 29 项通过）。报告 P0：无可运行 CUI、售后/冲销/查询零实现（S1 时点）、V2 与实现不同步；P1：IF-07 v0.3 文档两套输出/错误码、`eventKey` 每次重算、`receiptReviewId` 缺失、`INTERNAL_ERROR` 非规范码等。
 - 已修复（本快照）：`StockChangeLine`/`StockEntry` 增加 `eventKey`（可稳定传入）与 `receiptReviewId`；`StockService` 使用调用方 eventKey、传递 receiptReviewId；内部异常码改为 B 登记码 `STOCK_CHECK_FAILED`；`changes==null` 返回 `INVALID_INPUT`；IF-07 §4/§5 加 v0.3 覆盖提示、§14.5 登记 `STOCK_CHECK_FAILED`、证据补 #8；`design_review.md` 补 R-04 覆盖说明；`design_evolution.md` §3.1 关闭"待确认"。
 - 修复后 `clean verify`：**43 项测试全部通过**（新增 stable eventKey/receiptReviewId 测试）。
-- 仍未处理（需决策/协作）：可运行 CUI 主类与 pom exec（A 的 Maven 框架/A 侧 shared 未交付）；售后编排/查询/冲销服务；V2 与实现同步；`baseLast` 过期检测；权限/经办字段；README 状态行（A 维护）。
+- 仍未处理（需决策/协作）：可运行 CUI 主类与 pom exec（A 的 Maven 框架；A shared 已合 main，B 适配中）；售后编排/查询/冲销服务；V2 与实现同步；`baseLast` 过期检测；权限/经办字段；README 状态行（A 维护）。
 
 ## 9. 2026-10-21 增补：售后编排骨架
 
@@ -78,7 +78,7 @@
 - V2.1：新增 `docs/design/member_b/v2_1/class_v2_1.mmd`（当前实现快照，不是目标全图）与 `README.md`（V2 目标→实现差异表、AC-06 报告口径）；PNG 待 B 用 mermaid.live 渲染。
 - CUI：`CuiApp` 重构为登录 + 角色菜单（补货/报损/售后/退出），只依赖 `Operations` 接口；新增 `CuiActor`、`OperationFeedback`、`Operations`、`UnavailableOperations`。未接真实 A 适配时 `UnavailableOperations` 明确返回"依赖未交付"，不伪造库存/提交结果。
 - 测试：`CuiAppTest`(4)；累计 **56 项测试全部通过**（BUILD SUCCESS）。
-- 边界：仍无 `main`/pom exec（A 的 Maven 框架/A 侧 shared 未交付）；CUI 真实业务适配器待 A 的 IF-04/05；V2.1 图尚未渲染；未执行 AC。
+- 边界：仍无 `main`/pom exec（A 的 Maven 框架）；A shared 已合 main；CUI 真实业务适配器与 IF-04/05 适配进行中；V2.1 图尚未渲染；未执行 AC。
 
 ## 11. 2026-10-21 增补：V2.1 分图源文件
 
@@ -97,10 +97,17 @@
 
 ## 13. 2026-10-21 增补：独立可完成规则收口
 
-- 售后：`Redemption` 增加 CR07-09 例外字段（授权人/原因/放宽规则），`AftersaleService` 在例外生效时写入；支持同一原行多条明细的顺序额度扣减；新增 `SettlementCalculator`/`Settlement`/`SettlementDirection`，输出退款/补收/无差候选并接入 `AftersaleResult.Prepared`。
+- 售后：曾按 CR07-09 增加例外字段；2026-10-21 已按 CR07-10 迁移（见 §14），删除例外字段，改为 reasonKind/reasonText；支持同一原行多条明细的顺序额度扣减；新增 `SettlementCalculator`/`Settlement`/`SettlementDirection`，输出退款/补收/无差候选并接入 `AftersaleResult.Prepared`。
 - 报损：`LossRecord.dispose(String)` 将状态转为 DISPOSED，保留原字段；新增测试。
 - 查询：新增 `LossRecordView`、`LossRecordReader`，`QueryService` 支持按 ID/条码查损耗记录；补 4 项测试。
 - 冲销：新增 `DependencyChecker`（直接/传递依赖与环检测）；补 4 项测试。
 - CUI：补非法位置与换货质量事实分派测试。
 - 测试：`clean verify` **84 项全部通过**；AC 索引见 `docs/evidence/member_b/ac_coverage_b.md`。
 - 边界：仍用替身；D1 只阻断不级联；顾客交回损耗记录器、真实 A 数据/权限未接；未执行正式 AC。
+
+## 14. 2026-10-21 合并 main + CR07-10 迁移
+
+- Stage 1：在隔离 worktree `supermarket-management-merge` 将 `origin/main`（a109135）合入 B，merge commit `ef5eea1`；无文本冲突；合并树 `clean verify` = **118 tests / 0 failed / 0 error / 1 skipped**（A 36 + B 84 共享 FrameworkSmokeTest 2 项，实际 118）。
+- Stage 2：按 CR07-10 迁移售后：删除 `AftersaleCommand`/`Redemption` 的店长资格例外字段；`AftersaleCommandLine` 增 `reasonKind(QUALITY/OTHER)+reasonText`；`AftersaleService` 改为严格资格（超 30 天、已开封非质量一律拒绝，无店长例外）；CUI 增加“其他原因”文本提示；新增/改写测试后合并树 **120 tests / 0 failed / 0 error / 1 skipped**。
+- 文档：本条与后续文档修正同步；CR07-09 仅保留为历史记录，现行口径为 CR07-10。
+

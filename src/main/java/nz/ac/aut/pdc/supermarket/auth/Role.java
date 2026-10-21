@@ -10,8 +10,8 @@ public enum Role {
     MANAGER,
     CLERK;
 
-    /** 只有店长/管理员可以授权 CR07-09 的个案例外或作废类高风险操作。 */
-    public boolean canAuthorizeException() {
+    /** 店长/管理员用于冲销等高风险操作；CR07-10 已撤销售后资格例外。 */
+    public boolean canPerformHighRiskOperation() {
         return this == MANAGER || this == ADMIN;
     }
 }

@@ -20,7 +20,7 @@
 | `BusinessTransaction` / `OperationResult` | **未实现** | 目标模板，后续跨模块复用；当前各服务用三态结果 |
 | `ReversalPlan` / `ReversalService` / `DependencyChecker` / D1 消费 | **已实现骨架（不提交）** | `reversal/`；D1 只做阻断/环检测，不级联重建；依赖 A 的 IF-04/05 |
 | 查询模块（`query`） | **已实现骨架（只读）** | `query/QueryService`：原行/额度/核销历史/损耗记录；权限范围待 A 的 IF-04 |
-| A 的 `shared/`、`infrastructure/` | **未交付** | 联调/真实提交前置 |
+| A 的 `shared/`、`infrastructure/` | **已合入 main（a109135）** | B 仍需按 G3 适配真实端口 |
 | 款项/顾客交回损耗/权限校验细节 | **未实现** | 骨架边界，报告需如实说明 |
 
 > 注：当前 `class_v2_1.mmd` 与 `split/` 分图尚未包含 `query`/`reversal` 新包；下次渲染前补入，或在报告中单独出图。
@@ -29,7 +29,7 @@
 
 1. V2.1 不是"完成全部设计"的图；它证明当前代码结构可追溯到文档，不证明 A 域已实现。
 2. 图中 `UnavailableOperations` 是明确的未接线占位，不得在报告/演示中当作真实业务能力。
-3. 最终 AC-06 证据需在 A 交付 shared、B 完成 query/reversal 后重绘图并替换本文件说明。
+3. 最终 AC-06 证据需在 B 完成 G3 真实端口适配后重绘图并替换本文件说明。
 4. 建议由 B 在 mermaid.live 渲染 `class_v2_1.mmd` 为 PNG，放入 `v2_1/rendered/` 并在报告图注中标注"V2.1 已实现快照"。
 
 ## 4. 文件
@@ -51,4 +51,5 @@
 - 四张图的 PNG 尚未入库，待 B 用 mermaid.live 渲染后放 `v2_1/rendered/`（建议命名 `A_overview.png`、`B_auth_cui.png`、`C_stock.png`、`D_aftersale.png`）。
 - 渲染时确认 `RedemptionKind` 末字符未被裁切；`auth/cui` 图可裁掉左侧多余空白。
 - 图注必须保留“仅类与依赖、不含字段/方法”，不得把结构快照表述为完整详细类图。
+
 

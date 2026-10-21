@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.Locale;
 import java.util.Objects;
 
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.auth.AuthResult;
 import nz.ac.aut.pdc.supermarket.auth.AuthService;
@@ -147,8 +148,22 @@ public final class CuiApp {
         if (qualityProblem == null) {
             return;
         }
+        AftersaleReasonKind reasonKind;
+        String reasonText = null;
+        if (qualityProblem) {
+            reasonKind = AftersaleReasonKind.QUALITY;
+        } else {
+            reasonKind = AftersaleReasonKind.OTHER;
+            reasonText = prompt("其他原因（必填）：");
+            if (reasonText == null || reasonText.isBlank()) {
+                output.println("输入错误：其他原因必须填写原因文本");
+                return;
+            }
+            reasonText = reasonText.trim();
+        }
         print(operations.aftersale(
-                actor, saleLineId.trim(), kind, quantity, opened, qualityProblem));
+                actor, saleLineId.trim(), kind, quantity, opened, qualityProblem,
+                reasonKind, reasonText));
     }
 
     private Integer readQuantity(String message) {

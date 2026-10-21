@@ -16,7 +16,7 @@
 | AC-09/14/15 | 售后资格/额度/已开封/质量 | `AftersaleServiceTest`、`QuotaCalculatorTest`、`QualityPairValidatorTest` | 部分 | 简化规则；真实数据/权限待 A |
 | AC-12/13 | 库存两位置/来源不足 | `StockValidatorTest`、`StockServiceTest`、`LossServiceTest` | 部分 | 未做端到端余额重建 |
 | AC-22/30 | 余额重建/流水一致性 | 无专门测试 | 未覆盖 | 需 A 的 IF-04/恢复夹具 |
-| AC-33/34 | CR07-09 例外/留痕 | `AftersaleServiceTest`（例外字段断言） | 部分 | 真实授权/审计存储待 A |
+| AC-33/34 | CR07-10 严格资格/原因 | `AftersaleServiceTest`（超期、开封非质量、质量/其他原因） | 部分 | 真实数据/权限待 A；已无店长例外 |
 | AC-46/47 | 退款金额/30 天边界 | `QuotaCalculatorTest`、`AftersaleServiceTest` | 部分 | 日历日边界仅单测；真实时区数据待 A |
 | AC-51/53 | 额度/剩余金额 | `QuotaViewBuilderTest`、`QuotaCalculatorTest` | 部分 | 多行顺序扣减已测；跨会话并发未测 |
 | AC-58/82 | 质量同款零差配对 | `QualityPairValidatorTest`、`AftersaleServiceTest` | 部分 | 金额/库存真实提交未接 |
@@ -39,4 +39,5 @@
 1. 以上测试全部运行在虚构端口/内存替身上，未写真实 `data/`。
 2. 不得把本表"部分"当作 AC 通过；正式 AC 需在 A 交付 shared/IF-04/05 后按 J-01–J-07 执行并补证据。
 3. B 新增业务码 `QUERY_FAILED`、`DEPENDENCY_BLOCKED`、`REVERSAL_FAILED`、`AFTERSALE_FAILED` 待通知 A 登记。
+
 

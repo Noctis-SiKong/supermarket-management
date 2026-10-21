@@ -19,11 +19,12 @@ import nz.ac.aut.pdc.supermarket.stock.StockOperations;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /**
- * 售后编排骨架（WP-05）：资格校验 -> 额度视图/金额计算 -> 核销/替换候选
+ * 售后编排（CR07-10）：资格严格判定 -> 额度/金额 -> 核销/替换候选
  * -> 替换品 IF-07 库存核对 -> 结算候选。不保存、不提交。
  *
- * <p>支持同一原行在一次命令内多条明细的顺序额度扣减；资格判定为简化规则：
- * 超 30 天或已开封非质量需要 CR07-09 店长/管理员例外；例外不改变数量/金额/库存校验。</p>
+ * <p>不设店长资格例外：超 30 天一律拒绝；已开封非质量一律拒绝；
+ * 质量原因仅允许 qualityProblem=true；其他原因必须填写 reasonText。原因文本
+ * 不改变 30 天、开封/质量、数量/金额/库存校验。</p>
  */
 public final class AftersaleService {
 
@@ -84,6 +85,7 @@ public final class AftersaleService {
             StockPorts.WorkingCopyView workingCopy, AftersaleCommand command, Role actorRole) {
         Objects.requireNonNull(workingCopy, "workingCopy");
         Objects.requireNonNull(command, "command");
+        Objects.requireNonNull(actorRole, "actorRole");
         try {
             Instant now = idGenerator.now();
             String aftersaleId = idGenerator.nextId("AF");
@@ -102,9 +104,8 @@ public final class AftersaleService {
                 }
                 OriginalSaleLine original = originalOptional.get();
 
-                boolean exceptionRequired = requiresException(original, line, now);
                 Optional<AftersaleResult.Rejected> eligibility =
-                        checkEligibility(command, actorRole, exceptionRequired);
+                        checkEligibility(original, line, now);
                 if (eligibility.isPresent()) {
                     return eligibility.get();
                 }
@@ -121,14 +122,7 @@ public final class AftersaleService {
                 BigDecimal amount = quotaCalculator.allocate(
                         line.quantity(), view, new SettlementContext(settlesRemaining));
                 Redemption redemption = assembler.assembleRedemption(
-                        aftersaleId,
-                        command.requestKey(),
-                        original,
-                        line,
-                        amount,
-                        exceptionRequired ? command.exceptionAuthorizedBy() : null,
-                        exceptionRequired ? command.exceptionReason() : null,
-                        exceptionRequired ? command.relaxedRule() : null);
+                        aftersaleId, command.requestKey(), original, line, amount);
                 redemptions.add(redemption);
                 pendingByLine.computeIfAbsent(original.saleLineId(), key -> new ArrayList<>())
                         .add(redemption);
@@ -191,32 +185,27 @@ public final class AftersaleService {
     }
 
     private Optional<AftersaleResult.Rejected> checkEligibility(
-            AftersaleCommand command, Role actorRole, boolean exceptionRequired) {
-        if (!exceptionRequired) {
-            return Optional.empty();
-        }
-        if (actorRole == null || !actorRole.canAuthorizeException()) {
+            OriginalSaleLine original, AftersaleCommandLine line, Instant now) {
+        LocalDate saleDate = original.saleTime().atZone(ZONE).toLocalDate();
+        boolean withinWindow = !now.atZone(ZONE).toLocalDate()
+                .isAfter(saleDate.plusDays(RETURN_WINDOW_DAYS));
+        if (!withinWindow) {
             return Optional.of(new AftersaleResult.Rejected(
-                    "FORBIDDEN", "actorRole", "该售后需要店长/管理员授权例外"));
+                    "FORBIDDEN", "saleTime", "超过 30 天售后期限，一律拒绝"));
         }
-        if (isBlank(command.exceptionAuthorizedBy())
-                || isBlank(command.exceptionReason())
-                || isBlank(command.relaxedRule())) {
+        if (line.opened() && !line.qualityProblem()) {
             return Optional.of(new AftersaleResult.Rejected(
-                    "INVALID_INPUT", "exception",
-                    "资格例外必须记录授权人、原因和所放宽规则"));
+                    "FORBIDDEN", "opened", "已开封且非质量问题，一律拒绝"));
+        }
+        if (line.reasonKind() == AftersaleReasonKind.QUALITY && !line.qualityProblem()) {
+            return Optional.of(new AftersaleResult.Rejected(
+                    "INVALID_INPUT", "reasonKind", "质量原因必须对应质量问题"));
+        }
+        if (line.reasonKind() == AftersaleReasonKind.OTHER
+                && (line.reasonText() == null || line.reasonText().isBlank())) {
+            return Optional.of(new AftersaleResult.Rejected(
+                    "INVALID_INPUT", "reasonText", "其他原因必须填写原因文本"));
         }
         return Optional.empty();
-    }
-
-    private boolean requiresException(OriginalSaleLine original, AftersaleCommandLine line, Instant now) {
-        LocalDate saleDate = original.saleTime().atZone(ZONE).toLocalDate();
-        boolean withinWindow = !now.atZone(ZONE).toLocalDate().isAfter(saleDate.plusDays(RETURN_WINDOW_DAYS));
-        boolean openedNonQuality = line.opened() && !line.qualityProblem();
-        return !(withinWindow && !openedNonQuality);
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 }
