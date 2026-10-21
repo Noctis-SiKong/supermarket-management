@@ -1,0 +1,114 @@
+classDiagram
+    direction LR
+
+    namespace auth {
+        class AuthService { <<interface>> }
+        class LocalAuthService
+        class CredentialStore { <<interface>> }
+        class PasswordHasher { <<interface>> }
+        class Sha256PasswordHasher
+        class SessionRef
+        class AuthResult { <<sealed>> }
+        class Role { <<enumeration>> }
+    }
+
+    namespace cui {
+        class CuiApp
+        class Operations { <<interface>> }
+        class OperationFeedback
+        class CuiActor
+        class InputValidator
+        class UnavailableOperations
+    }
+
+    namespace stock {
+        class StockOperations { <<interface>> }
+        class StockService
+        class StockValidator
+        class StockPorts { <<ports>> }
+        class SubmissionGateway { <<interface>> }
+        class ReplenishmentService
+        class LossService
+        class StockEntry
+        class StockChangeLine
+        class StockBalance
+        class LossRecord
+        class Position { <<enumeration>> }
+    }
+
+    namespace aftersale {
+        class AftersaleService
+        class AftersaleAssembler
+        class AftersaleCommand
+        class AftersaleCommandLine
+        class AftersaleResult { <<sealed>> }
+        class OriginalSaleReader { <<interface>> }
+        class QuotaLedgerReader { <<interface>> }
+        class ProductSnapshotReader { <<interface>> }
+        class QuotaViewBuilder
+        class QuotaCalculator
+        class QualityPairValidator
+        class QuotaView
+        class Redemption
+        class Replacement
+        class OriginalSaleLine
+        class SettlementContext
+        class Effect { <<enumeration>> }
+        class RedemptionKind { <<enumeration>> }
+    }
+
+    AuthService <|.. LocalAuthService
+    LocalAuthService --> CredentialStore
+    LocalAuthService --> PasswordHasher
+    Sha256PasswordHasher ..|> PasswordHasher
+    LocalAuthService --> SessionRef
+    AuthService --> AuthResult
+    AuthResult --> Role
+
+    CuiApp --> AuthService
+    CuiApp --> Operations
+    CuiApp --> InputValidator
+    CuiApp --> CuiActor
+    Operations --> OperationFeedback
+    UnavailableOperations ..|> Operations
+
+    StockService ..|> StockOperations
+    StockService --> StockValidator
+    StockService --> StockPorts
+    StockService --> StockEntry
+    StockPorts --> StockBalance
+    ReplenishmentService --> StockOperations
+    LossService --> StockOperations
+    LossService --> LossRecord
+    ReplenishmentService --> StockPorts
+    LossService --> StockPorts
+    SubmissionGateway --> StockEntry
+    StockValidator --> StockChangeLine
+    StockValidator --> StockBalance
+
+    AftersaleService --> OriginalSaleReader
+    AftersaleService --> QuotaLedgerReader
+    AftersaleService --> ProductSnapshotReader
+    AftersaleService --> QuotaViewBuilder
+    AftersaleService --> QuotaCalculator
+    AftersaleService --> QualityPairValidator
+    AftersaleService --> AftersaleAssembler
+    AftersaleService --> StockOperations
+    AftersaleService --> AftersaleCommand
+    AftersaleService --> AftersaleResult
+    AftersaleService --> QuotaView
+    AftersaleAssembler --> StockPorts
+    AftersaleAssembler --> Redemption
+    AftersaleAssembler --> Replacement
+    AftersaleCommand --> AftersaleCommandLine
+    AftersaleCommandLine --> RedemptionKind
+    QuotaViewBuilder --> OriginalSaleLine
+    QuotaViewBuilder --> Redemption
+    QuotaViewBuilder --> QuotaView
+    QuotaCalculator --> QuotaView
+    QuotaCalculator --> SettlementContext
+    QualityPairValidator --> OriginalSaleLine
+    QualityPairValidator --> Redemption
+    QualityPairValidator --> Replacement
+    Redemption --> Effect
+    Redemption --> RedemptionKind

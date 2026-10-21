@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12）/ max（#5–#6、#9–#11、#13–#14） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12）/ max（#5–#6、#9–#11、#13–#15） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -28,6 +28,7 @@
 | 12 | 审查-独立子智能体全面审查 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（子智能体，thinking=high） | 以完全客观、证据化方式审查既有内容（需求追溯/契约一致/代码/测试/留痕/交付风险），不修改源码与既有文档 | 报告 `independent_review_2026-10-21.md`：P0=无可运行 CUI、售后/冲销/查询零实现（S1 快照）、V2-实现不同步；P1=IF-07 文档两套输出/错误码、`eventKey` 重算、`receiptReviewId` 缺失、`INTERNAL_ERROR` 非规范码等；含证据行号/提交哈希 | 要求客观、无主观色彩；报告如实记录快照与限制；本步不修改代码 |
 | 13 | 修复-审查发现（契约/代码） | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按审查发现修复可直接处理项 | `StockChangeLine`/`StockEntry` 增 `eventKey`/`receiptReviewId` 并传递；内部异常码改 `STOCK_CHECK_FAILED`；`changes==null`→INVALID_INPUT；IF-07 §4/§5 加覆盖提示、§14.5 登记新码、证据补 #8；`design_review` 补 R-04 覆盖说明；`design_evolution` 关闭待确认；43 项测试通过 | 要求继续开发并处理审查发现；剩余 P0（CUI 主类、售后编排、V2 同步）待协作决策 |
 | 14 | 实现-售后编排骨架 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按"先做第一项"实现售后编排：资格 → 额度 → 核销/替换品 → 替换品库存核对 | `AftersaleCommand/AftersaleCommandLine/AftersaleResult/AftersaleAssembler/AftersaleService` + 端口 `OriginalSaleReader/QuotaLedgerReader/ProductSnapshot/ProductSnapshotReader`；9 项测试；累计 52 项测试通过 | 要求先做第一项（售后编排）；不提交、不保存、未执行 AC |
+| 15 | 实现-V2.1 同步 + CUI 菜单 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按建议执行 V2.1 设计-实现同步与 CUI 业务菜单接入 | `v2_1/class_v2_1.mmd` + `v2_1/README.md`（V2 目标→实现差异、AC-06 口径）；`CuiActor/OperationFeedback/Operations/UnavailableOperations` + `CuiApp` 菜单重构；`CuiAppTest` 4 项；累计 56 项测试通过 | 按建议执行；未接真实 A 适配时明确失败、不伪造数据；V2.1 图待渲染；未执行 AC |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -44,6 +45,7 @@
 - #12 `docs/evidence/member_b/independent_review_2026-10-21.md`（2026-10-21，独立子智能体审查报告）
 - #13 源码修复（StockChangeLine/StockEntry/StockService）、`docs/design/member_b/if07_contract.md`、`docs/evidence/member_b/{design_review,design_evolution,implementation_log}.md`（2026-10-21，43 项测试）
 - #14 `src/main/java/nz/ac/aut/pdc/supermarket/aftersale/{AftersaleCommand,AftersaleCommandLine,AftersaleResult,AftersaleAssembler,AftersaleService,OriginalSaleReader,QuotaLedgerReader,ProductSnapshot,ProductSnapshotReader}.java`、`AftersaleServiceTest`、`docs/evidence/member_b/implementation_log.md` §9（2026-10-21，52 项测试）
+- #15 `docs/design/member_b/v2_1/`、`src/main/java/nz/ac/aut/pdc/supermarket/cui/{CuiActor,OperationFeedback,Operations,UnavailableOperations,CuiApp}.java`、`CuiAppTest`、`implementation_log.md` §10（2026-10-21，56 项测试）
 
 ## 待补（按阶段追加，不预先填写）
 

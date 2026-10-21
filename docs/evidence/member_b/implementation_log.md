@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.3，2026-10-21（含 §6–§9 增补与独立审查修复记录）
+版本/日期：v0.4，2026-10-21（含 §6–§10 增补与独立审查修复记录）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -72,3 +72,10 @@
 - 流程：验证重复原行 → 读原行（IF-11 替身）→ 简化资格（30 天 / 已开封非质量；CR07-09 店长例外）→ QuotaView/QuotaCalculator → Redemption/Replacement → 替换品 IF-07 核对；不保存/不提交。
 - 测试：`AftersaleServiceTest`(9)；累计 **52 项测试全部通过**（BUILD SUCCESS）。
 - 边界：同一原行一次命令限一条明细；30 天按 Asia/Shanghai 日历日；`AFTERSALE_FAILED` 为 B 暂用码待通知 A 登记；未记录款项/顾客交回损耗；未执行 AC。
+
+## 10. 2026-10-21 增补：V2.1 同步 + CUI 菜单
+
+- V2.1：新增 `docs/design/member_b/v2_1/class_v2_1.mmd`（当前实现快照，不是目标全图）与 `README.md`（V2 目标→实现差异表、AC-06 报告口径）；PNG 待 B 用 mermaid.live 渲染。
+- CUI：`CuiApp` 重构为登录 + 角色菜单（补货/报损/售后/退出），只依赖 `Operations` 接口；新增 `CuiActor`、`OperationFeedback`、`Operations`、`UnavailableOperations`。未接真实 A 适配时 `UnavailableOperations` 明确返回"依赖未交付"，不伪造库存/提交结果。
+- 测试：`CuiAppTest`(4)；累计 **56 项测试全部通过**（BUILD SUCCESS）。
+- 边界：仍无 `main`/pom exec（A 的 Maven 框架/A 侧 shared 未交付）；CUI 真实业务适配器待 A 的 IF-04/05；V2.1 图尚未渲染；未执行 AC。
