@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.14，2026-10-21（含 §6–§20 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证与售后读取适配）
+版本/日期：v0.15，2026-10-21（含 §6–§21 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配与 BApplication）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -157,3 +157,10 @@
 - 新增 `SharedAftersaleReadTest`：真实 A `WorkingCopy` 数据驱动 B 售后读取与 `AftersaleService` 候选（2 项）。
 - 测试：合并树累计 **143 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI `Operations`/`Main` 装配仍未做；B 售后真实提交路径仍使用 capturing `SubmissionPort` 测试。
+
+## 21. 2026-10-21 Stage 3g：BApplication 装配与真实 JSON 提交
+
+- 新增 `BApplication`：组合 `DataRoot/JsonStore` + `SharedIdentityResolver` + `SharedCredentialStore` + A `AOperations` 校验器 + B `BCommitValidators` + `SharedStockAdapter` 完整性检查。
+- 新增 `BApplicationTest`：临时项目根、真实 JSON 写入：B 登录 → A `open`（AFTERSALE target）→ 售后 ChangeSet + PRODUCT → A `submit` → `lookupResult` replayed。
+- 测试：合并树累计 **144 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI 真实 `Operations` 与 `Main`/pom 尚未接入；A 的 `DraftDeletionGuard` 仍由 A 执行；B 售后提交仍以手工 Prepared 构造测试。

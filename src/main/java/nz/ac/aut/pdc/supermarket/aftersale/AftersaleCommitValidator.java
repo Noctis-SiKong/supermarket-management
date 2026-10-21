@@ -64,7 +64,12 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
 
         List<Redemption> redemptions = new ArrayList<>();
         for (RecordData record : inserts(changes, "REDEMPTION")) {
-            Redemption redemption = record.as(Redemption.class);
+            final Redemption redemption;
+            try {
+                redemption = record.as(Redemption.class);
+            } catch (RuntimeException ex) {
+                return Result.rejected("INVALID_INPUT", "Cannot read redemption: " + ex.getMessage());
+            }
             if (!header.documentId().equals(redemption.aftersaleId())) {
                 return Result.rejected("REFERENCE_INVALID", "Redemption aftersaleId mismatch");
             }
