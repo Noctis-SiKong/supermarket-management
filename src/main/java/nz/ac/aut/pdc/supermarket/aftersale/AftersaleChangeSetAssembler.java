@@ -41,10 +41,9 @@ public final class AftersaleChangeSetAssembler {
         out.add(RecordData.of("DOCUMENT", aftersaleId, new DocumentHeader(
                 aftersaleId, "AFTERSALE", "CONFIRMED", operation.requestKey(), fingerprint,
                 actor.accountId(), null, actor.accountId(), null, null)));
-        out.add(RecordData.of("AFTERSALE", aftersaleId,
-                java.util.Map.of("status", "CONFIRMED", "requestKey", operation.requestKey())));
+        out.add(RecordData.of("AFTERSALE", aftersaleId, java.util.Map.of()));
         out.add(RecordData.of("DOC_EVENT", aftersaleId + "-EVENT", new DocEvent(
-                aftersaleId + "-EVENT", aftersaleId, 1, "AFTERSALE_CONFIRM",
+                aftersaleId + "-EVENT", aftersaleId, 1, "CONFIRM",
                 actor.accountId(), null, "{}")));
 
         for (Redemption redemption : prepared.redemptions()) {

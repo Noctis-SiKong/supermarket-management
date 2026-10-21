@@ -178,7 +178,7 @@ public final class CuiApp {
         }
         AftersaleRequest request = new AftersaleRequest(
                 saleLineId.trim(), kind, quantity, opened, qualityProblem,
-                reasonKind, reasonText, replacementBarcode, replacementQuantity);
+                reasonKind, reasonText, replacementBarcode, replacementQuantity, null);
         try {
             print(operations.aftersale(actor, request));
         } catch (RuntimeException ex) {

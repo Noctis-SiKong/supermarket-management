@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.18，2026-10-21（含 §6–§24 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链与 review 修复）
+版本/日期：v0.19，2026-10-21（含 §6–§25 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链与两轮 review 修复）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -190,3 +190,11 @@
 - **装配**：`BApplication` 注入 `IdClock` 并传给 `SharedOperations`；角色映射统一到 `SharedRoles`。
 - 测试：合并树累计 **147 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 未修：IF-11 读取追溯/CR07-11 草稿取消、幂等重试通道、恢复校验覆盖、ERD 数据形状、死代码清理。
+
+## 25. 2026-10-21 代码审查修复（第二轮）
+
+- **幂等重试**：`AftersaleRequest` 增加可选 `requestKey`；`SharedOperations` 使用同一 requestKey 重试时走 `lookupResult`，集成测试连续两次调用只产生 1 条 REDEMPTION。
+- **恢复校验**：新增 `AftersaleIntegrityValidator`，检查 AFTERSALE/REDEMPTION/REPLACEMENT/MONEY_ENTRY 的文档与核销关联、数量/金额/来源行；接入 `BApplication` 完整性链。
+- **数据形状**：AFTERSALE 扩展不再写多余 status/requestKey；DOC_EVENT 动作改为 `CONFIRM`。
+- 测试：新增 `AftersaleIntegrityValidatorTest`(2)；合并树累计 **149 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 未修：IF-11 `READ_FOR_AFTERSALE` 读取追溯、CR07-11 草稿创建/取消编排。

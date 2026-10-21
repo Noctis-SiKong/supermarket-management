@@ -15,7 +15,13 @@ public record AftersaleRequest(
         AftersaleReasonKind reasonKind,
         String reasonText,
         String replacementBarcode,
-        int replacementQuantity) {
+        int replacementQuantity,
+        String requestKey) {
+
+    public AftersaleRequest withRequestKey(String key) {
+        return new AftersaleRequest(saleLineId, kind, quantity, opened, qualityProblem,
+                reasonKind, reasonText, replacementBarcode, replacementQuantity, key);
+    }
 
     public AftersaleRequest {
         if (saleLineId == null || saleLineId.isBlank()) {

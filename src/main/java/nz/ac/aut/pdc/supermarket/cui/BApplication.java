@@ -15,6 +15,7 @@ import nz.ac.aut.pdc.shared.IdClock;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.Result;
 import nz.ac.aut.pdc.shared.SubmissionPort;
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleIntegrityValidator;
 import nz.ac.aut.pdc.supermarket.aftersale.BCommitValidators;
 import nz.ac.aut.pdc.supermarket.app.AOperations;
 import nz.ac.aut.pdc.supermarket.auth.AuthService;
@@ -57,6 +58,7 @@ public final class BApplication implements AutoCloseable {
         };
 
         SharedStockAdapter stockAdapter = new SharedStockAdapter();
+        AftersaleIntegrityValidator aftersaleIntegrity = new AftersaleIntegrityValidator();
         AOperations aOperations = new AOperations(idClock, identityResolver, stockAdapter);
         Map<String, SubmissionPort.CommitValidator> validators = new HashMap<>(aOperations.validators());
         validators.putAll(BCommitValidators.create(stockAdapter));
@@ -68,6 +70,7 @@ public final class BApplication implements AutoCloseable {
                 state -> {
                     aOperations.validateRecovered(state);
                     stockAdapter.validateRecovered(state);
+                    aftersaleIntegrity.validate(state);
                 },
                 path -> { },
                 JsonStore.RecoveryMode.CURRENT,

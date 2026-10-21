@@ -55,7 +55,8 @@ public final class SharedOperations implements Operations {
     public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
         Objects.requireNonNull(actor, "actor");
         Objects.requireNonNull(request, "request");
-        String requestKey = idClock.newRequestKey();
+        String requestKey = request.requestKey() == null || request.requestKey().isBlank()
+                ? idClock.newRequestKey() : request.requestKey();
         String aftersaleId = idClock.entityId(requestKey, "aftersale");
         OperationContext operation = new OperationContext(
                 actor.session(), requestKey, AftersaleChangeSetAssembler.OPERATION, aftersaleId);
