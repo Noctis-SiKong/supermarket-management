@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.21，2026-10-21（含 §6–§27 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复、IF-11/CR07-11 草稿链与 CUI 取消）
+版本/日期：v0.22，2026-10-21（含 §6–§28 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复、IF-11/CR07-11、CUI 取消与补货/报损）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -215,3 +215,12 @@
 - 新增 `docs/coordination/B_TO_A_IF11_ALIGNMENT_2026-10-21.md`，就 IF-11 读取准入、事件形状、DRAFT 最终提交、取消/删除边界向 A 提明确确认请求，不把推断当 A 接口。
 - 测试：`CuiAppTest` 新增取消分派 1 项；合并树累计 **151 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 未声称：A 侧 IF-11 接口已交付、真实跨人授权联调、AC 验收。
+
+## 28. 2026-10-21 补货/报损真实 ChangeSet
+
+- 新增 `StockChangeSetAssembler`：补货 DOCUMENT/DOC_LINE/DOC_EVENT + 两条平衡库存腿；报损 DOCUMENT/DOC_LINE/LOSS_RECORD/DOC_EVENT + 负库存腿。
+- 新增 `StockOperationValidator` 并注册 `REPLENISHMENT`/`LOSS`：校验单据/行、库存腿平衡、来源行、报损事实与禁止售后事实。
+- `SharedOperations.replenish`/`recordLoss` 改为真实 `StockService` 候选 → ChangeSet → A `submit`，不再返回“未接线”。
+- 新增 `StockOperationsIntegrationTest`：A 种子商品/期初 → B 补货 3 → B 报损 2 → 真实 JSON 状态（LOSS_RECORD=1、STOCK_ENTRY=5）。
+- 测试：合并树累计 **152 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：IF-11 读取准入仍待 A 对齐；AC 尚未执行。

@@ -1,6 +1,7 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import nz.ac.aut.pdc.infrastructure.JsonStore;
@@ -47,12 +48,79 @@ public final class SharedOperations implements Operations {
 
     @Override
     public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
-        return OperationFeedback.fail("补货真实 ChangeSet 尚未接线；本次未提交。");
+        String requestKey = idClock.newRequestKey();
+        String documentId = idClock.entityId(requestKey, "document");
+        OperationContext operation = new OperationContext(
+                actor.session(), requestKey,
+                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT, documentId);
+        Result<WorkingCopy> opened = store.open(operation);
+        if (!opened.hasValue()) {
+            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
+        }
+        WorkingCopy workingCopy = opened.value();
+        SharedIdGenerator ids = new SharedIdGenerator(idClock, requestKey);
+        StockService stock = new StockService(new SharedProductCatalog(workingCopy), ids, new StockValidator());
+        var result = new nz.ac.aut.pdc.supermarket.stock.ReplenishmentService(stock, ids)
+                .replenish(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(workingCopy),
+                        List.of(), barcode, quantity);
+        if (!(result instanceof nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Prepared prepared)) {
+            if (result instanceof nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Rejected rejected) {
+                return OperationFeedback.fail("补货被拒绝：" + rejected.code() + " " + rejected.message());
+            }
+            var failed = (nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Failed) result;
+            return OperationFeedback.fail("补货失败：" + failed.code() + " " + failed.message());
+        }
+        String lineId = ids.nextId("LINE");
+        OperationContext.ActorContext sharedActor =
+                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
+        BusinessRequest request = BusinessRequest.of(Map.of("barcode", barcode, "quantity", quantity));
+        var changes = new nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler()
+                .assembleReplenishment(prepared, documentId, lineId, operation, sharedActor, request);
+        Result<SubmissionPort.CommitReceipt> submitted = store.submit(
+                operation, request, workingCopy, changes);
+        if (!submitted.hasValue()) {
+            return OperationFeedback.fail("补货未提交：" + submitted.code() + " " + submitted.detail());
+        }
+        return OperationFeedback.ok("补货已提交：" + submitted.value().requestKey());
     }
 
     @Override
     public OperationFeedback recordLoss(CuiActor actor, String barcode, Position position, int quantity) {
-        return OperationFeedback.fail("报损真实 ChangeSet 尚未接线；本次未提交。");
+        String requestKey = idClock.newRequestKey();
+        String documentId = idClock.entityId(requestKey, "document");
+        OperationContext operation = new OperationContext(
+                actor.session(), requestKey,
+                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS, documentId);
+        Result<WorkingCopy> opened = store.open(operation);
+        if (!opened.hasValue()) {
+            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
+        }
+        WorkingCopy workingCopy = opened.value();
+        SharedIdGenerator ids = new SharedIdGenerator(idClock, requestKey);
+        StockService stock = new StockService(new SharedProductCatalog(workingCopy), ids, new StockValidator());
+        var result = new nz.ac.aut.pdc.supermarket.stock.LossService(stock, ids)
+                .recordLoss(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(workingCopy),
+                        List.of(), barcode, position, quantity);
+        if (!(result instanceof nz.ac.aut.pdc.supermarket.stock.LossResult.Prepared prepared)) {
+            if (result instanceof nz.ac.aut.pdc.supermarket.stock.LossResult.Rejected rejected) {
+                return OperationFeedback.fail("报损被拒绝：" + rejected.code() + " " + rejected.message());
+            }
+            var failed = (nz.ac.aut.pdc.supermarket.stock.LossResult.Failed) result;
+            return OperationFeedback.fail("报损失败：" + failed.code() + " " + failed.message());
+        }
+        String lineId = ids.nextId("LINE");
+        OperationContext.ActorContext sharedActor =
+                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
+        BusinessRequest request = BusinessRequest.of(Map.of(
+                "barcode", barcode, "position", position.name(), "quantity", quantity));
+        var changes = new nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler()
+                .assembleLoss(prepared, documentId, lineId, operation, sharedActor, request);
+        Result<SubmissionPort.CommitReceipt> submitted = store.submit(
+                operation, request, workingCopy, changes);
+        if (!submitted.hasValue()) {
+            return OperationFeedback.fail("报损未提交：" + submitted.code() + " " + submitted.detail());
+        }
+        return OperationFeedback.ok("报损已提交：" + submitted.value().requestKey());
     }
 
     @Override

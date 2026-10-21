@@ -24,6 +24,12 @@ public final class BCommitValidators {
                 AftersaleDraftOperations.READ,
                 new AftersaleDraftValidator(AftersaleDraftOperations.READ),
                 AftersaleDraftOperations.CANCEL,
-                new AftersaleDraftValidator(AftersaleDraftOperations.CANCEL));
+                new AftersaleDraftValidator(AftersaleDraftOperations.CANCEL),
+                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT,
+                new nz.ac.aut.pdc.supermarket.stock.StockOperationValidator(
+                        nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT),
+                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS,
+                new nz.ac.aut.pdc.supermarket.stock.StockOperationValidator(
+                        nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS));
     }
 }
