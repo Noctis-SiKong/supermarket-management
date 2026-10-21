@@ -73,7 +73,7 @@ public final class CuiApp {
         CuiActor actor = new CuiActor(session.accountId(), session.role(), session.session());
         while (true) {
             output.println();
-            output.println("1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   5) 删除未读取草稿   0) 退出登录");
+            output.println("1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   5) 删除未读取草稿   6) 整单冲销   0) 退出登录");
             String choice = prompt("请选择：");
             if (choice == null || EXIT_COMMAND.equalsIgnoreCase(choice.trim())) {
                 return;
@@ -88,6 +88,7 @@ public final class CuiApp {
                 case "3" -> aftersale(actor);
                 case "4" -> cancelAftersaleDraft(actor);
                 case "5" -> deleteAftersaleDraft(actor);
+                case "6" -> reverseDocument(actor);
                 default -> output.println("无效选项，请重新选择");
             }
         }
@@ -183,6 +184,23 @@ public final class CuiApp {
                 reasonKind, reasonText, replacementBarcode, replacementQuantity, null);
         try {
             print(operations.aftersale(actor, request));
+        } catch (RuntimeException ex) {
+            output.println("操作失败：" + ex.getMessage());
+        }
+    }
+
+    private void reverseDocument(CuiActor actor) {
+        String targetId = prompt("待冲销单据 ID：");
+        if (targetId == null || targetId.isBlank()) {
+            return;
+        }
+        String reason = prompt("冲销原因（必填）：");
+        if (reason == null || reason.isBlank()) {
+            output.println("输入错误：冲销原因必须填写");
+            return;
+        }
+        try {
+            print(operations.reverseDocument(actor, targetId.trim(), reason.trim()));
         } catch (RuntimeException ex) {
             output.println("操作失败：" + ex.getMessage());
         }

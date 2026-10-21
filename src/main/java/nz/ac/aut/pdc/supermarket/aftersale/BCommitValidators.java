@@ -30,6 +30,8 @@ public final class BCommitValidators {
                         nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT),
                 nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS,
                 new nz.ac.aut.pdc.supermarket.stock.StockOperationValidator(
-                        nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS));
+                        nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS),
+                nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler.OPERATION,
+                new nz.ac.aut.pdc.supermarket.reversal.ReversalCommitValidator());
     }
 }

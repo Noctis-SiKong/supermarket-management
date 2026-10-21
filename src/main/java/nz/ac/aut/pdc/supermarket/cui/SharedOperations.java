@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import nz.ac.aut.pdc.infrastructure.JsonStore;
+import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.IdClock;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
@@ -239,6 +240,42 @@ public final class SharedOperations implements Operations {
             return OperationFeedback.fail("删除失败：" + result.code() + " " + result.detail());
         }
         return OperationFeedback.ok("售后草稿已删除：" + draftId.trim());
+    }
+
+    @Override
+    public OperationFeedback reverseDocument(CuiActor actor, String targetDocumentId, String reason) {
+        Objects.requireNonNull(actor, "actor");
+        if (targetDocumentId == null || targetDocumentId.isBlank()
+                || reason == null || reason.isBlank()) {
+            return OperationFeedback.fail("冲销目标单和原因不能为空");
+        }
+        String requestKey = idClock.newRequestKey();
+        String target = targetDocumentId.trim();
+        var command = new nz.ac.aut.pdc.supermarket.reversal.DocumentReversalCommand(
+                target, reason.trim(), requestKey);
+        BusinessRequest request = BusinessRequest.of(command);
+        OperationContext operation = new OperationContext(
+                actor.session(), requestKey,
+                nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler.OPERATION, target);
+        Result<WorkingCopy> opened = store.open(operation);
+        if (!opened.hasValue()) {
+            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
+        }
+        OperationContext.ActorContext sharedActor =
+                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
+        ChangeSet changes;
+        try {
+            changes = new nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler()
+                    .assemble(opened.value(), target, operation, sharedActor, request, idClock);
+        } catch (RuntimeException ex) {
+            return OperationFeedback.fail("冲销候选失败：" + ex.getMessage());
+        }
+        Result<SubmissionPort.CommitReceipt> submitted = store.submit(
+                operation, request, opened.value(), changes);
+        if (!submitted.hasValue()) {
+            return OperationFeedback.fail("冲销未提交：" + submitted.code() + " " + submitted.detail());
+        }
+        return OperationFeedback.ok("整单冲销已提交：" + submitted.value().requestKey());
     }
 
     private String derivedKey(String baseKey, String purpose) {

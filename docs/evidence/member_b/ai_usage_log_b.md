@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#38） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#39） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -122,3 +122,6 @@
 
 | 38 | AC-79 尾差回归 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 复现同原行三条各1件的3.33/3.33/3.34 | AftersaleServiceTest；161 tests | 用户要求继续；B-10 冲销未完成 |
 - #38 AC-79 尾差回归、`implementation_log.md` §32（2026-10-21，161 项测试）
+
+| 39 | B-10 整单冲销 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 实现 REVERSAL 单据、反向库存/款项/核销释放、D1 检查与 CUI | ReversalChangeSetAssembler/ReversalCommitValidator/SharedOperations/CuiApp + ReversalIntegrationTest；163 tests | 用户要求继续；D1/重复冲销独立测试未补；B-06 待 A |
+- #39 B-10 整单冲销、`implementation_log.md` §33（2026-10-21，163 项测试）

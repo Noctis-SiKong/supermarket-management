@@ -259,3 +259,12 @@
 - `AftersaleServiceTest` 增加同一原销售行 3 件、三条各 1 件的用例；核销金额按稳定顺序得到 **3.33 / 3.33 / 3.34**，AC-79 尾差可复现。
 - 合并树累计 **161 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 剩余：B-10 整单冲销仍未完成；B-06 待 A。
+
+## 33. 2026-10-21 B-10 整单冲销真实链路
+
+- 新增 `ReversalChangeSetAssembler`：对已确认非冲销单据生成 REVERSAL 单、反向 DOC_LINE/STOCK_ENTRY、反向 MONEY_ENTRY、REDEMPTION RELEASE，并把目标单补丁为 VOIDED。
+- 新增 `ReversalCommitValidator` 并注册 `REVERSAL`：校验店长/管理员、目标已确认、唯一 REVERSAL 扩展、反向数量/金额/核销关系，以及 D1 后续库存/售后依赖阻断。
+- `SharedOperations.reverseDocument` + CUI 菜单「6) 整单冲销」（目标单 ID + 原因）。
+- 新增 `ReversalIntegrationTest`：A 种子商品/期初/销售 → B 整单冲销 → 目标 VOIDED、REVERSAL=1、MONEY_ENTRY 正反成对、库存反向。
+- 测试：合并树累计 **163 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：尚未覆盖整单冲销失败/重复授权/D1 阻断的独立测试；CUI 冲销尚无原键重试入口；B-06 仍待 A。

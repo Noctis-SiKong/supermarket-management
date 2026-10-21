@@ -120,6 +120,17 @@ public class CuiAppTest {
         assertEquals("AF-2", operations.deletedDraftId);
     }
 
+    @Test
+    public void reversalMenuDispatchesTargetAndReason() {
+        RecordingOperations operations = new RecordingOperations();
+
+        String output = run("alice\nsecret\n6\nDOC-1\n原因\n0\nexit\n", operations);
+
+        assertTrue(output.contains("登录成功"));
+        assertEquals("DOC-1", operations.reversedTargetId);
+        assertEquals("原因", operations.reversalReason);
+    }
+
     private String run(String input, RecordingOperations operations) {
         Sha256PasswordHasher hasher = new Sha256PasswordHasher();
         InMemoryCredentialStore credentialStore = new InMemoryCredentialStore();
@@ -157,6 +168,8 @@ public class CuiAppTest {
         private int replacementQuantity;
         private String cancelledDraftId;
         private String deletedDraftId;
+        private String reversedTargetId;
+        private String reversalReason;
 
         @Override
         public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
@@ -191,6 +204,14 @@ public class CuiAppTest {
         }
 
         @Override
+        public OperationFeedback reverseDocument(CuiActor actor, String targetDocumentId, String reason) {
+            lastActor = actor;
+            reversedTargetId = targetDocumentId;
+            reversalReason = reason;
+            return OperationFeedback.ok("测试替身未提交冲销");
+        }
+
+        @Override
         public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
             lastActor = actor;
             this.saleLineId = request.saleLineId();
@@ -206,6 +227,8 @@ public class CuiAppTest {
         }
     }
 }
+
+
 
 
 

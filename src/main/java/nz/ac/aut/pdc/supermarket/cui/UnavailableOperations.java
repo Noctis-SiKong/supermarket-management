@@ -37,4 +37,9 @@ public final class UnavailableOperations implements Operations {
     public OperationFeedback deleteAftersaleDraft(CuiActor actor, String draftId) {
         return OperationFeedback.fail(MESSAGE);
     }
+
+    @Override
+    public OperationFeedback reverseDocument(CuiActor actor, String targetDocumentId, String reason) {
+        return OperationFeedback.fail(MESSAGE);
+    }
 }
