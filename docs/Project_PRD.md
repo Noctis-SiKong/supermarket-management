@@ -1,401 +1,330 @@
-# 超市管理系统功能需求 PRD
+# Supermarket Management System Functional PRD
 
-## 1 文档信息与权威关系
+## 1 Document Information and Authority
 
-| 项目 | 内容 |
+| Item | Content |
 |---|---|
-| 版本/日期 | 0.7，2026-10-20，Asia/Shanghai；HEAD基线＋本轮限额授权重建 |
-| 功能基线 | [当前副本Spec](./Project_Spec.md) v0.7；共同维护主线为仓库docs/ |
-| 本文件 | [PRD当前副本](./Project_PRD.md)；仓库相对路径`docs/Project_PRD.md` |
-| 状态 | v0.7已冻结为需求基线（2026-10-20，随本次提交生效）；批准及待决状态唯一以Spec §17为准，D1/D2已获用户明确批准；CR07-09已撤销，CR07-10生效；无代码/正式分工 |
-| 修订/历史 | v0.7从HEAD受控重建并同步D1/D2；2026-10-20用户明确批准D1/D2后冻结为需求基线；2026-10-20受控同步SYNC-01–05并新增AC-86/87（版本号不变）；2026-10-20新增CR07-09店长退换资格个案例外（版本号不变）；2026-10-20 CR07-10撤销该例外，新增“质量/其他”原因选择及其他原因文本（版本号不变）；批准状态只见Spec §17；历史版本由Git记录，本文档不记录外部备份位置 |
+| Version/Date | 0.7, 2026-10-20, Asia/Shanghai; HEAD baseline + this round's quota-authorization rebuild |
+| Functional baseline | [Current copy of the Spec](./Project_Spec.md) v0.7; the jointly maintained mainline is the repository docs/ |
+| This document | [Current copy of the PRD](./Project_PRD.md); repository-relative path `docs/Project_PRD.md` |
+| Status | v0.7 is frozen as the requirements baseline (2026-10-20, effective with this commit); approved and pending status is governed solely by Spec §17; D1/D2 have received explicit user approval; CR07-09 has been revoked and CR07-10 is in effect; no code/formal division of work |
+| Revision/History | v0.7 was rebuilt under control from HEAD and synchronized with D1/D2; on 2026-10-20, after the user explicitly approved D1/D2, it was frozen as the requirements baseline; on 2026-10-20 SYNC-01–05 were synchronized under control and AC-86/87 were added (version number unchanged); on 2026-10-20 CR07-09 was added for an individual exception to store-manager return/exchange eligibility (version number unchanged); on 2026-10-20 CR07-10 revoked that exception and added the "Quality/Other" reason selection and other-reason text (version number unchanged); approval status appears only in Spec §17; historical versions are recorded by Git, and this document does not record external backup locations |
 
-课程PDF硬约束优先；Spec是功能基线。U4为2026-10-20逐项审计消息，最新决策已先写入Spec，本稿据其同步。U3为当时的原始会话附件（未纳入仓库），§II授权将此前用户单一建议作为决定，§IV–VI列Q/A决策。U2为前轮原始会话附件（未纳入仓库），其单一建议现依U3授权纳入；不因旧Spec未记载或“建议”字样重新挂起。
+Course PDF hard constraints take precedence; the Spec is the functional baseline. U4 is the item-by-item audit message of 2026-10-20; the latest decisions were first written into the Spec, and this draft is synchronized accordingly. U3 is the original session attachment from that time (not included in the repository); §II authorizes taking the user's earlier single recommendation as a decision, and §IV–VI list the Q/A decisions. U2 is the original session attachment from the previous round (not included in the repository); its single recommendation is now incorporated under the U3 authorization, and is not re-suspended because an old Spec did not record it or because of the word "recommendation".
 
-此前版本记录完整阅读；历史建模阶段读取当时指定Spec/PRD，复核C p3–5/p7–8及T全文与表格；原版本曾完整读取C：C `Projects1and2.pdf`（15页）及T `Assignment1_Report_Template_CJLU2026.docx`（正文/13表/页脚/脚注尾注）、原Spec/PRD及两份用户附件，均可读取。C引用为阅读器/印刷同页1–15；T按标题/Figure/表格字段定位，不猜分页。DOCX以只读OOXML核查，未验证打印分页；没有改动PDF或模板。Canvas和实际商品数据证据缺口只查Spec §17（历史映射见§13），不宣称已核验。
+Previous version records were read in full; during the historical modelling phase the then-designated Spec/PRD were read, and C p3–5/p7–8 and the full text and tables of T were reviewed; the original version had fully read C: C `Projects1and2.pdf` (15 pages) and T `Assignment1_Report_Template_CJLU2026.docx` (body/13 tables/footer/footnotes and endnotes), the original Spec/PRD and the two user attachments, all of which are readable. C citations refer to the same pages 1–15 in reader and print; T is located by heading/Figure/table field, without guessing pagination. The DOCX was checked as read-only OOXML; print pagination was not verified; no PDF or template was modified. Evidence gaps for Canvas and actual product data are checked only in Spec §17 (historical mapping in §13), and no claim of verification is made.
 
-E=Essential，当前P1必须提供的能力；D=Desirable，可选增强。确认业务规则、排期优先级、是否已实现是不同维度：PRD-14原三个子能力已由U6全部撤销，P1/P2均不提供；PRD-15附件支持E沿用已确认必需能力及原Spec映射，单次图片非必传不使能力成为D。本稿只编写文档，未生成业务代码、图表、最终报告或测试结果，学生反思不得代写/AI翻译提交。
+E=Essential, a capability that P1 must currently provide; D=Desirable, an optional enhancement. Confirming a business rule, scheduling priority, and whether something is already implemented are different dimensions: the three original sub-capabilities of PRD-14 have all been revoked by U6 and are provided in neither P1 nor P2; the attachment support E in PRD-15 follows the already-confirmed essential capability and the original Spec mapping, and a single non-mandatory image upload does not make the capability D. This draft only writes documentation; no business code, diagrams, final report or test results were produced, and student reflection must not be ghost-written or submitted as AI translation.
 
-路径口径：本仓库是唯一文档主副本，仓库根目录由`README.md`、`.gitignore`和`docs/`确定；业务规则和课程提交要求不变。报告安排改为工作阶段使用仓库`docs/`中文稿协作、提交前转英文并移除中文工作稿。课程资料未纳入仓库。
+Path conventions: this repository is the single master copy of the documentation; the repository root is determined by `README.md`, `.gitignore` and `docs/`; business rules and course submission requirements are unchanged. The report arrangement is unchanged: during the working phase the repository's English version is the collaborative mainline, and the corresponding Chinese version is kept by the owner outside the repository in the designated Chinese-version directory (user documentation convention, see S §17.6); before submission, the final English report and the submission package still do not contain Chinese working drafts. Course materials are not included in the repository.
 
-U5为本轮促销分摊及售后双额度决策；U6为随后补充的最终范围决定。以U6为准，商品生产/保质期/到期数据、临期/过期提醒、批次管理/选择和过期销售拦截在P1、P2均取消，不列待定或未来预留。基础库存只按商品＋在售/在仓数量处理，不推断过期商品销售规则。经办时间、促销有效期和既有30天售后期限继续有效。
+U5 is this round's decision on promotion allocation and the dual after-sales quota; U6 is the subsequently added final scope decision. U6 governs: product production/shelf-life/expiry data, near-expiry/expired reminders, batch management/selection and expired-sale blocking are cancelled in both P1 and P2, and are not listed as pending or reserved for the future. Base stock is handled only as product + on-shelf/in-warehouse quantity, and no rule for selling expired products is inferred. The operator time, the promotion validity period and the existing 30-day after-sales period remain in effect.
 
-### 路径口径与副本身份
+### Path Conventions and Copy Identity
 
 <!-- PATH-COPY-BEGIN -->
-路径口径：本文件位于仓库`docs/`；Markdown链接相对本文件所在目录解析，代码样式的`docs/evidence/...`、`docs/design/...`、`docs/decisions...`均为**仓库相对路径**。仓库根目录下不再套一层`Project1`；不在文档中记录或管理仓库外目录。
+Path conventions: this file resides in the repository `docs/`; Markdown links are resolved relative to the directory containing this file, and the code-style `docs/evidence/...`, `docs/design/...`, `docs/decisions...` are all **repository-relative paths**. There is no additional `Project1` level under the repository root; directories outside the repository are neither recorded nor managed in the documentation.
 <!-- PATH-COPY-END -->
 
-文档历史由Git记录，本文档不定义仓库外备份位置。运行时快照备份以`DATA_ROOT`为基准。当前`docs/evidence/`、`docs/design/`、`docs/decisions/`及`docs/decisions.md`尚未创建，均为计划路径，不能作为已完成证据。
+Document history is recorded by Git, and this document does not define backup locations outside the repository. Runtime snapshot backups are based on `DATA_ROOT`. Currently `docs/evidence/`, `docs/design/`, `docs/decisions/` and `docs/decisions.md` have not yet been created; all are planned paths and cannot serve as evidence of completed work.
 
-## 2 产品概述与目标
+## 2 Product Overview and Objectives
 
-为单家实体超市的管理员、店长和店员提供PC Java CUI本地业务：实际收货审核、两位置数量库存、销售付款确认、单活动择优、顾客退换及损耗/作废追溯。目标是让库存、原成交实付及售后结果可核对，同时保留课程真实设计/HAI证据。以轻量、好用、刚需组织既有需求，不新增商城/连锁或生产指标。
+Provide local PC Java CUI operations for the administrator, store manager and staff of a single physical supermarket: actual receipt review, two-position quantity stock, sales payment confirmation, single-promotion selection, customer returns and exchanges, and loss/voiding traceability. The goal is to make stock, the actual paid amount of the original transaction and after-sales outcomes verifiable, while retaining genuine course design/HAI evidence. Existing requirements are organized around what is lightweight, usable and genuinely needed, without adding mall/chain features or production metrics.
 
-单机单进程、核心离线、Maven/JDK17/JUnit4.13.2、Jackson UTF-8 JSON/schemaVersion、BigDecimal/RMB、Asia/Shanghai均为当前基线；课程规定Java/CUI、集合、File I/O和标准构建，具体库/版本是用户选择，不冒称课程指定。首次获取构建依赖与业务离线运行分开验证。未来只保留扫码/硬件接口，不连接专用设备，不做支付网关或挂单。
+Single machine, single process, core offline, Maven/JDK17/JUnit4.13.2, Jackson UTF-8 JSON/schemaVersion, BigDecimal/RMB and Asia/Shanghai are all current baselines; the course prescribes Java/CUI, collections, File I/O and a standard build, while specific libraries/versions are user choices and are not misrepresented as course-specified. First-time acquisition of build dependencies and offline business operation are verified separately. In the future only a barcode-scanning/hardware interface is retained; no dedicated device is connected, and there is no payment gateway or held order.
 
-## 3 用户角色与权限
+## 3 User Roles and Permissions
 
-| 正式角色 | 已定职责/权限与操作策略 | Spec依据 |
+| Formal role | Established responsibilities/permissions and operating policy | Spec basis |
 |---|---|---|
-| 管理员 | 以管理员身份进入，系统维护修复；技术可审收货、原则不担日常审核；可看全部单据、修正报损、授权作废 | §5；Q02/Q10、Q05（含C） |
-| 店长 | 采购/收货登记审核，自审允许/无双人强制；全部单据查询；登记报损、授权作废；可查询/审计退换，不设资格例外，不逐笔审批 | §5；Q04/Q05/Q08/Q10；CR07-10 |
-| 店员 | 日常退换可直接提交确认，无逐笔等店长；仅查本人经办单据 | §5；Q08/Q09/Q10 |
+| Administrator | Enters as administrator and performs system maintenance and repair; may technically review receipts but in principle does not handle routine review; may view all documents, correct loss registration and authorize voiding | §5; Q02/Q10, Q05 (including C) |
+| Store manager | Purchasing/receipt registration and review, self-review permitted/no two-person requirement; query of all documents; loss registration and voiding authorization; may query/audit returns and exchanges, with no eligibility exception and no per-transaction approval | §5; Q04/Q05/Q08/Q10; CR07-10 |
+| Staff | May submit and confirm routine returns and exchanges directly, without waiting for the store manager per transaction; may query only documents they handled themselves | §5; Q08/Q09/Q10 |
 
-具体经办人必须可追溯，后台为CUI。本地预置管理员/店长/店员账号，用户名+密码、密码哈希保存，无网络认证。商品维护/促销配置：店长，管理员可维护修正；销售/补货：店员和店长；报损：店长登记、管理员修正；查询：店长/管理员全部、店员本人；管理员技术可审核收货，原则不担日常审核。其他既有授权不扩大。 收货登记沿用店长职责，未授权角色默认不开放对应操作。
+The specific operator must be traceable, and the back end is a CUI. Administrator/store-manager/staff accounts are preconfigured locally, with username + password and passwords stored as hashes, and there is no network authentication. Product maintenance/promotion configuration: store manager, with the administrator able to maintain and correct; sales/replenishment: staff and store manager; loss registration: registered by the store manager, corrected by the administrator; query: all for the store manager/administrator and own only for staff; the administrator may technically review receipts but in principle does not handle routine review. Other existing authorizations are not expanded. Receipt registration follows the store manager's responsibilities, and the corresponding operations are by default not open to unauthorized roles.
 
-## 4 P1范围、排除与P2预留
+## 4 P1 Scope, Exclusions and P2 Extensions
 
-### 4.1 P1范围
+### 4.1 P1 Scope
 
-原编号映射保留；PRD-14三个子项均已撤销，其余PRD对应Spec同号FR。FR-14三个子项已由U6撤销；其余既有必需能力保持E。授权逆向作废已属于P1，不再作为阶段未决或单纯P2候选。
+The original numbering mapping is retained; all three PRD-14 sub-items have been revoked, and the remaining PRDs correspond to the same-numbered FRs in the Spec. The three FR-14 sub-items have been revoked by U6; the remaining existing essential capabilities stay E. Authorized reversal voiding already belongs to P1 and is no longer a phase-pending item or a mere P2 candidate.
 
-### 4.2 排除及边界
+### 4.2 Exclusions and Boundaries
 
-不做连锁/商城、称重小数数量、采购申请/采购订单事前审批、强制双人审核、日常退换逐笔店长批准、第三不可售库存桶、依赖专用硬件的扫码、支付网关、挂单、GUI上传页。补充／修正与供应商退货分开，采购退供未纳入P1。财务税务/薪资/会员等原无确认功能不新增。商品过期销售拦截已由U6取消，不推断过期销售规则。
+Not doing: chain/mall, fractional weighed quantities, purchase requisition/purchase order pre-approval, mandatory two-person review, per-transaction store-manager approval of routine returns and exchanges, a third non-sellable stock bucket, barcode scanning that depends on dedicated hardware, payment gateways, held orders, GUI upload pages. Replenishment/correction is separate from supplier returns, and purchase returns to suppliers are not included in P1. Finance/tax/payroll/membership and other functions that were never confirmed are not added. Blocking of expired-product sales has been cancelled by U6, and no rule for expired sales is inferred.
 
-### 4.3 课程要求映射
+### 4.3 Course Requirement Mapping
 
-| 课程映射ID | 核对结论 | Spec及课程位置 |
+| Course mapping ID | Verification conclusion | Spec and course location |
 |---|---|---|
-| K1 需求 | 适当规模、核心功能/范围/用户交互；需求编号及Essential/Desirable | S CR-01/15；C p3 §1.1、p4 rubric；T §2.1/2.2 |
-| K2 设计 | 用例图、范围/约束/假设；含属性方法关系的类图；AI审查与至少两次设计迭代；学生独立反思 | S CR-02–05；C p3 §1.1/1.2、p5 rubric；T §2.6、3.1–3.7 |
-| K3 实现 | Java、工作CUI；封装/继承/多态/抽象；接口/抽象类/具体类；SOLID、模块化、与最终设计对应 | S TC-01–03/06；C p4 §1.3、p5 rubric |
-| K4 构建与数据 | 标准Maven或Gradle，编译运行，无项目专属手工配置；合适Java集合及真实File I/O持久化 | S TC-04/05；C p4–5、p13 Submission Format；T §1 |
-| K5 交互质量 | 非法输入明确反馈，各步可退出，无未处理异常，是优秀档评价目标 | S FR-11、BR-18、NF-02；C p5 rubric 1.3 |
-| K6 过程交付 | AI日志、≤5分钟视频、源码、Word/PDF报告、团队贡献、版本备份和单ZIP | S CR-10–14；C p4 §1.4、p6、p12–13；T 附录A/B |
+| K1 Requirements | Appropriate scale, core functions/scope/user interaction; requirement numbering and Essential/Desirable | S CR-01/15; C p3 §1.1, p4 rubric; T §2.1/2.2 |
+| K2 Design | Use case diagram, scope/constraints/assumptions; class diagram including attribute-method relations; AI review and at least two design iterations; independent student reflection | S CR-02–05; C p3 §1.1/1.2, p5 rubric; T §2.6, 3.1–3.7 |
+| K3 Implementation | Java, working CUI; encapsulation/inheritance/polymorphism/abstraction; interfaces/abstract classes/concrete classes; SOLID, modularity, correspondence with the final design | S TC-01–03/06; C p4 §1.3, p5 rubric |
+| K4 Build and Data | Standard Maven or Gradle, compile and run, no project-specific manual configuration; appropriate Java collections and genuine File I/O persistence | S TC-04/05; C p4–5, p13 Submission Format; T §1 |
+| K5 Interaction Quality | Clear feedback for invalid input, each step can be exited, no unhandled exceptions; an evaluation target for the excellent band | S FR-11, BR-18, NF-02; C p5 rubric 1.3 |
+| K6 Process Deliverables | AI log, ≤5-minute video, source code, Word/PDF report, team contributions, version backup and a single ZIP | S CR-10–14; C p4 §1.4, p6, p12–13; T Appendix A/B |
 
-文中S即本次Spec。JDK17、RMB和十进制货币来自S TC-07、BR-09，是Spec用户约束，不冒称课程指定版本或币种。项目已按U3选Maven和Jackson/JSON；固定包名、MVC和额外模式没有被擅加为P1课程硬要求。P1权重为课程40%，其内部需求20%、设计30%、实现30%、日志视频20%（S §3；C p3–6）。
+In this text, S denotes this round's Spec. JDK17, RMB and decimal currency come from S TC-07 and BR-09 and are Spec user constraints; they are not misrepresented as course-specified versions or currencies. The project has chosen Maven and Jackson/JSON per U3; fixed package names, MVC and additional patterns have not been added as P1 course hard requirements. The P1 weight is 40% of the course, within which requirements are 20%, design 30%, implementation 30% and log/video 20% (S §3; C p3–6).
 
-### 4.4 P2仅预留
+### 4.4 P2 Extensions Only
 
-只引用Spec §14：P2-01 Java GUI（Swing/JavaFX）；P2-02 Derby Embedded/JDBC或Hibernate/数据访问层；P2-03分层与适配模式；P2-04 JUnit4至少5个数据库/关键业务测试；P2-05真实Git演进/.git/结对GitHub链接；P2-07数据库优秀档超过3类不同读与3类不同写。P2-06仅未来盘点差异/调整候选，普通授权作废已在P1，不重复预留。没有自动迁移承诺。
+Only references Spec §14: P2-01 Java GUI (Swing/JavaFX); P2-02 Derby Embedded/JDBC or Hibernate/data access layer; P2-03 layering and adapter patterns; P2-04 JUnit4 with at least 5 database/key business tests; P2-05 genuine Git evolution/.git/paired GitHub links; P2-07 database excellent band with more than 3 distinct reads and 3 distinct writes. P2-06 is only a future stocktake discrepancy/adjustment candidate; ordinary authorized voiding is already in P1 and is not reserved again. There is no automatic migration commitment.
 
-P2为同题显著扩展，特殊改题需事前讲师批准（C p7）。P1不提前实现GUI/Derby；P1使用用户选定JUnit4.13.2不等于提前承担P2数据库测试门槛。收货/图片/补货/促销/售后/损耗/普通作废不能拖到P2。
+P2 is a significant extension of the same topic, and any special topic change requires prior lecturer approval (C p7). P1 does not implement GUI/Derby early; P1's use of the user-selected JUnit4.13.2 does not mean it takes on the P2 database test threshold early. Receipt/image/replenishment/promotion/after-sales/loss/ordinary voiding cannot be deferred to P2.
 
-### 4.5 P2评分核对
+### 4.5 P2 Marking Check
 
-此前版本已核对C阅读器/印刷第7–10页，本轮复核相关硬约束，不改评分，结果如下，均为P2内部权重，不能混同P2占课程60%的外部权重。
+The previous version checked C reader/print pages 7–10; this round re-verified the relevant hard constraints without changing the marking; the results below are all P2 internal weights and must not be conflated with the external weight of P2 as 60% of the course.
 
-| PDF实际项目名称 | 位置 | 权重 | 与Spec比较 |
+| Actual PDF item name | Location | Weight | Comparison with Spec |
 |---|---|---:|---|
-| Component 2.1 Graphical User Interface (GUI) | p7要求；p9评分表 | 20% | S §14 GUI20%，一致 |
-| Component 2.2 Database | p7要求；p9评分表 | 20% | S §14 DB20%，一致 |
-| Component 2.3 Software Functionality, Design, Implementation & Testing | p8总标题 | 40% | S §14“功能/设计/实现/测试40%”，一致 |
-| 2.3.1 Functionality & Usability | p8要求；p9评分表 | 15% | S §14首个子项15%，一致，不改归为架构 |
-| 2.3.2 Architecture；评分表作Architecture & Design Patterns | p8；p10 | 10% | S §14第二子项10%及P2-03模式/分层，符合，两处PDF名称差异原样记录 |
-| 2.3.3 Version Control (Git / GitHub) | p8；p10 | 5% | S §14第三子项5%及P2-05，符合 |
-| 2.3.4 Testing (JUnit Framework)；评分表Testing, JUnit | p8；p10 | 10% | S §14第四子项10%及P2-04，符合 |
-| Component 2.4 AI Usage Log and Demonstration Video | p8–9要求；p10评分表 | 20% | S §14“日志视频20%”，一致 |
+| Component 2.1 Graphical User Interface (GUI) | p7 requirement; p9 marking table | 20% | S §14 GUI 20%, consistent |
+| Component 2.2 Database | p7 requirement; p9 marking table | 20% | S §14 DB 20%, consistent |
+| Component 2.3 Software Functionality, Design, Implementation & Testing | p8 overall heading | 40% | S §14 "functionality/design/implementation/testing 40%", consistent |
+| 2.3.1 Functionality & Usability | p8 requirement; p9 marking table | 15% | S §14 first sub-item 15%, consistent; not reclassified as architecture |
+| 2.3.2 Architecture; the marking table gives Architecture & Design Patterns | p8; p10 | 10% | S §14 second sub-item 10% and P2-03 patterns/layering, compliant; the naming difference between the two PDF places is recorded as-is |
+| 2.3.3 Version Control (Git / GitHub) | p8; p10 | 5% | S §14 third sub-item 5% and P2-05, compliant |
+| 2.3.4 Testing (JUnit Framework); the marking table gives Testing, JUnit | p8; p10 | 10% | S §14 fourth sub-item 10% and P2-04, compliant |
+| Component 2.4 AI Usage Log and Demonstration Video | p8–9 requirement; p10 marking table | 20% | S §14 "log and video 20%", consistent |
 
-PDF支持既有评分项，评分原文未改；结论已在Spec §13 P2-SCORE关闭。本轮Spec的业务收口来自U3授权，不属于评分修正。
+The PDF supports the existing marking items and the marking text is unchanged; the conclusion was closed in Spec §13 P2-SCORE. The business closure in this round's Spec comes from the U3 authorization and is not a marking correction.
 
-## 5 功能需求与追踪
+## 5 Functional Requirements and Traceability
 
-以下编号沿用原PRD，原FR-14后缀仅保留撤销追踪，不是功能。每项目的/前置/流程/规则/结果均源于Spec，操作者范围按§3/Spec §5；历史边界追踪引用Spec §13；当前批准状态仅见Spec §17，不复制另一份问题描述或状态。
+The numbering below follows the original PRD; the original FR-14 suffix is retained only for revocation traceability and is not a function. Each item's purpose/preconditions/flow/rules/outcome come from the Spec, and the operator scope follows §3/Spec §5; historical boundary traceability cites Spec §13; current approval status appears only in Spec §17, and no duplicate problem description or status is copied.
 
-### PRD-01 角色、管理员策略和经办追溯
+### PRD-01 Roles, Administrator Policy and Operator Traceability
 
-对应Spec FR-01、BR-04/21、§5；E。三角色/经办可识别；管理员身份维护修复，技术可审但原则由店长日常审核；店员直接办理日常退换，不要求店长在线。按角色进入/操作并留具体经办人；查询按全部/本人。身份交互按R-AUTH本地账号登录。
+Corresponds to Spec FR-01, BR-04/21, §5; E. Three roles/operators are identifiable; the administrator performs maintenance and repair, may technically review, but routine review is in principle done by the store manager; staff handle routine returns and exchanges directly, without requiring the store manager to be online. Entry/operations follow the role and the specific operator is recorded; queries are all/own. Identity interaction follows R-AUTH local account login.
 
-追踪：Spec §13 Q02；正式场景AC-09/10/28。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q02; formal scenarios AC-09/10/28. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still relate to detailed issues.
 
-### PRD-02 条码整数商品
+### PRD-02 Barcode Products with Integer Quantities
 
-对应Spec FR-02、BR-05/06、§9；E。固定包装全业务整数；条形码为唯一主键、名称品牌＋商品名。以条码定位，拒绝小数业务数量。纳入商品均有有效唯一条码；上线前抽样，异常商品人工例外或暂不纳入，实际数据证据检查引用Q03-DATA，不重开主键决定；输入边界只见R-INPUT。
+Corresponds to Spec FR-02, BR-05/06, §9; E. Fixed packaging means integers throughout the business; the barcode is the sole primary key, and the name is brand + product name. Items are located by barcode, and fractional business quantities are rejected. Every included product has a valid unique barcode; sampling is done before go-live, abnormal products are handled as manual exceptions or excluded for the time being, and actual data evidence checking cites Q03-DATA without reopening the primary key decision; for input boundaries see only R-INPUT.
 
-追踪：Spec §13 Q03；正式场景AC-21/29。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q03; formal scenarios AC-21/29. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still relate to detailed issues.
 
-### PRD-03 实收待审与审核入仓
+### PRD-03 Pending Actual Receipts and Approved Warehouse Entry
 
-对应Spec FR-03、BR-03/07/19、§7.1；E。实际到货→创建待审、数量单列且不计在售/在仓→店长（允许自审）或技术有权管理员审核→通过一次入在仓/退回补充修正不入账。待审不可卖补、补正再通过只记一次、重复审核幂等；无图不拒审。不是采购事前审批或供应商退货。
+Corresponds to Spec FR-03, BR-03/07/19, §7.1; E. Actual arrival → create a pending record, with the quantity listed separately and not counted as on-shelf/in-warehouse → review by the store manager (self-review permitted) or a technically authorized administrator → on approval, a single entry into in-warehouse / on return for correction, nothing is booked. Pending records cannot be sold or replenished; re-approval after correction is recorded only once; repeated review is idempotent; absence of an image does not cause rejection. This is not purchase pre-approval or a supplier return.
 
-追踪：Spec §13 Q04（含A）；Q02；正式场景AC-04/11/24/26。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q04 (including A); Q02; formal scenarios AC-04/11/24/26. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still relate to detailed issues.
 
-### PRD-04 两位置与期初流水
+### PRD-04 Two Positions and Opening Stock Entries
 
-对应Spec FR-04、BR-06/08/20、§7.1；E。期初店长/管理员可登记，店员不可；批准及同步见Spec §17 SYNC-01。在售货架/在仓仓库互斥、非负；期初通过期初入库流水，余额汇总流水、缓存可重建。查余额→来源流水→该商品入库记录核对异常；对应位置出库不足拒绝，不能用合计绕过。位置不是商品启用状态。
+Corresponds to Spec FR-04, BR-06/08/20, §7.1; E. Opening stock may be registered by the store manager/administrator, not by staff; for approval and synchronization see Spec §17 SYNC-01. The on-shelf and in-warehouse positions are mutually exclusive and non-negative; opening stock is recorded through opening inbound ledger entries, and balances aggregate ledger entries, so the cache can be rebuilt. Check balance → source ledger entries → inbound records for that product to verify anomalies; a stock-out at the corresponding position is rejected when insufficient, and totals cannot be used to bypass this. Position is not a product enabled status.
 
-追踪：Spec §13 Q05；Q02权限关联R-AUTH；正式场景AC-12/13/22/30。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q05; the Q02 permission relation is R-AUTH; formal scenarios AC-12/13/22/30. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still relate to detailed issues.
 
-### PRD-05 在售销售、收款确认与原子出库
+### PRD-05 On-shelf Sales, Payment Confirmation and Atomic Stock-out
 
-对应Spec FR-05、BR-03/07/10/24/28；E。只有在售可卖，在仓先补货；整数、库存足够、付款已完成。选品→同品同价合并保持稳定行ID→候选计价→整单确认已收款/一次扣存→保存名称/单价/数量/促销/分摊折扣/实付及稳定行ID快照。任一行失败整单不生效；不接网关、不挂单。
+Corresponds to Spec FR-05, BR-03/07/10/24/28; E. Only on-shelf items can be sold; in-warehouse items must first be replenished; quantities are integers, stock must be sufficient, and payment must be completed. Select items → merge the same product at the same price while keeping a stable line ID → candidate pricing → confirm payment received for the whole order/deduct stock once → save a snapshot of name/unit price/quantity/promotion/allocated discount/actual paid and the stable line ID. If any line fails, the whole order does not take effect; no gateway is connected and no orders are held.
 
-追踪：Spec §13 Q01/Q06；Q02权限关联R-AUTH；正式场景AC-04/13/27/31。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q01/Q06; the Q02 permission relation is R-AUTH; formal scenarios AC-04/13/27/31. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still relate to detailed issues.
 
-### PRD-06 整单单活动促销
+### PRD-06 Single-promotion Order Pricing
 
-对应Spec FR-06、BR-09/11/28、§7.3、ERD-C01/02；E。整单先定优惠/应付，单活动不叠加择优；仅适用行按优惠前小计权重，以整数分简单最大余数分摊，同余数按稳定销售行ID升序。无多轮封顶重算；行优惠/实付非负、优惠不超原额、合计守恒，否则整次拒绝。保存稳定ID及行级实付快照，退款不按标价。CR07-02及AC-41/77/78。
+Corresponds to Spec FR-06, BR-09/11/28, §7.3, ERD-C01/02; E. For the whole order the discount/amount payable is determined first, and a single promotion is selected without stacking; only applicable lines participate, weighted by the pre-discount subtotal, and are allocated using simple largest remainder in integer cents, with ties broken by ascending stable sales line ID. There is no multi-round capped recalculation; line discount/actual paid are non-negative, the discount does not exceed the original amount, and the total is conserved, otherwise the entire operation is rejected. The stable ID and the line-level actual paid snapshot are saved, and refunds are not based on the list price. CR07-02 and AC-41/77/78.
 
-追踪：Q07/M-ROUND/R-PROMO；AC-16/32/41/44/54/55。
+Traceability: Q07/M-ROUND/R-PROMO; AC-16/32/41/44/54/55.
 
-售后专用读取例外按Spec §17 SYNC-02及CR07-11执行，凭顾客原销售凭证专用精确定位，仅返回必要字段，不扩大普通跨人历史权限。IF-11 追溯经 IF-05 可靠保存成功后，才返回办理售后所需的最少原销售数据；保存失败暂不返回。已成功保存读取追溯的售后草稿取消时进入 CANCELLED，保留实际读取经办人—原销售单—目标售后单关联，不物理删除；无读取追溯的草稿仍按原规则删除。取消不产生退款、库存或额度变化，已完成售后不适用此取消流程。具体字段/事务步骤见A方案和共享规范§5.4，集中审计与真实联调仍待完成。
+The after-sales-specific read exception is executed per Spec §17 SYNC-02 and CR07-11: it locates precisely by the customer's original sales voucher, returns only the necessary fields, and does not expand ordinary cross-person historical permissions. IF-11 traceability returns the minimum original sales data needed to process after-sales only after IF-05 has saved reliably and successfully; if saving fails, nothing is returned for the time being. When an after-sales draft that has already successfully saved read traceability is cancelled, it enters CANCELLED, retaining the association between the actual reading operator—original sales order—target after-sales order, without physical deletion; drafts without read traceability are still deleted under the original rules. Cancellation produces no refund, stock or quota change, and this cancellation flow does not apply to completed after-sales. Specific fields/transaction steps are given in plan A and shared specification §5.4; centralized audit and real integration testing remain outstanding.
 
-### PRD-07 原销售退货及部分退款
+### PRD-07 Original-sale Returns and Partial Refunds
 
-对应Spec FR-07、BR-12/13/14/21/26/29、§7.4及ERD-C03–09；E。店员关联原销售、核验既有30天与资格规则；不符时一律拒绝，不设店长个案例外；退换原因选择“质量/其他”，其他须填写原因文本，文本不改变资格；读取原行实付及双剩余额度→按P×q/Q两位HALF_UP并封顶、最后结清用剩余金额→原子记录退款/核销/损耗去向。每条原销售行独立维护售后核销台账。设原购买数量Q、原行实付P；有效已退数量Qr/金额Mr、已换数量Qx/原商品抵扣金额Mx；剩余数量=Q−Qr−Qx，剩余金额=P−Mr−Mx。必须同时满足0≤Qr+Qx≤Q、0≤Mr+Mx≤P。换货先占用原销售行数量和实付金额，后续退货只能使用剩余额度；已生效核销不能被后续换货覆盖。部分退/换数量q必须为正且≤剩余数量；未结清时本次占用金额=min(HALF_UP(P×q÷Q,2),剩余金额)，最后一次结清剩余数量时占用全部剩余金额。退款直接使用原销售行保存的实付，不跨行重新分摊退款预算、不按原价或当前活动重算。换货占用的是原商品抵扣额度，不是新品售价或实际补退差；同款同数量质量换零补差也必须核销原数量及对应实付额度。每次核销记录原销售行、来源退/换单及明细、数量、金额、类型、经办人、时间、幂等标识及状态；同一请求重复提交不再次占用。退款、核销及替换品在售扣减按既有原子/防重规则同步，失败不留下部分生效。合法授权冲销以关联反向记录释放原数量/金额，保留原记录及原因，不物理删除、不重复释放。
+Corresponding Spec FR-07, BR-12/13/14/21/26/29, §7.4 and ERD-C03–09; E. The store clerk links the original sale and verifies the existing 30-day and eligibility rules; any non-compliance is rejected outright, with no case-by-case exception for the store manager; the return/exchange reason is selected as "quality/other", and "other" requires reason text, with the text not changing eligibility; read the original line's actual paid and both remaining quotas → compute at two decimals HALF_UP on P×q/Q with capping, use the remaining amount for the final settlement → atomically record the refund/redemption/loss disposition. Each original sale line maintains its after-sales redemption ledger independently. Let Q be the original purchase quantity and P the original line's actual paid; valid returned quantity Qr/amount Mr, exchanged quantity Qx/original-product offset amount Mx; remaining quantity = Q−Qr−Qx, remaining amount = P−Mr−Mx. Both 0≤Qr+Qx≤Q and 0≤Mr+Mx≤P must hold. An exchange first occupies the original sale line's quantity and actual paid amount, and subsequent returns may use only the remaining quota; an effective redemption must not be overwritten by a later exchange. The partial return/exchange quantity q must be positive and ≤ the remaining quantity; when not settled, the amount occupied this time = min(HALF_UP(P×q÷Q,2), remaining amount), and settling the remaining quantity for the last time occupies the entire remaining amount. A refund directly uses the actual paid stored on the original sale line, does not re-allocate the refund budget across lines, and does not recompute by original price or the current campaign. An exchange occupies the original product's offset quota, not the new product's selling price or the actual top-up/refund difference; an identical-item, identical-quantity quality exchange with zero difference must also redeem the original quantity and the corresponding actual paid quota. Each redemption records the original sale line, the source return/exchange document and its details, quantity, amount, type, operator, time, idempotency key and status; repeated submission of the same request does not occupy again. Refunds, redemptions and replacement on-shelf deductions are synchronized under the existing atomicity/duplicate-prevention rules, and a failure leaves nothing partially effective. A legally authorized reversal releases the original quantity/amount through linked reverse records, retaining the original record and reason, without physical deletion or duplicate release.
 
-追踪：Q08/R-REFUND/R-AFTERSALE-LEDGER；AC-09/15/17/33/46/54/56–59。
+Traceability: Q08/R-REFUND/R-AFTERSALE-LEDGER; AC-09/15/17/33/46/54/56–59.
 
-### PRD-08 跨品种换货和差额
+### PRD-08 Cross-product Exchanges and Price Differences
 
-对应Spec FR-08、BR-12/14/15/22/26/29、§7.4及ERD-C03–09；E。既有30天、开封/质量资格及在售库存校验不变；不设店长资格例外。换货原因选择“质量/其他”，其他须填写原因文本，文本不改变资格。换货先核原行剩余数量/金额，按原实付P/Q计算并占用本次抵扣；新品现价减本次抵扣正补负退零换，同款同数量质量换零差但仍占用原行额度。替换品只扣在售，交回不回库记损耗/去向；退货只使用换后剩余数量/金额，重复请求不重复核销。
+Corresponding Spec FR-08, BR-12/14/15/22/26/29, §7.4 and ERD-C03–09; E. The existing 30-day, opened/quality eligibility and on-shelf stock checks remain unchanged; no store-manager eligibility exception is set. The exchange reason is selected as "quality/other", and "other" requires reason text, with the text not changing eligibility. An exchange first checks the original line's remaining quantity/amount, computes by the original actual paid P/Q and occupies this offset; the new product's current price minus this offset yields a positive top-up, a negative refund or a zero exchange, and an identical-item, identical-quantity quality exchange with zero difference still occupies the original line's quota. Replacements deduct on-shelf only, and items handed back are not returned to the warehouse but recorded as loss/disposition; a return uses only the post-exchange remaining quantity/amount, and repeated requests are not redeemed twice.
 
-追踪：Q09/R-AFTERSALE-LEDGER；AC-14/18–20/34/56–59。
+Traceability: Q09/R-AFTERSALE-LEDGER; AC-14/18–20/34/56–59.
 
-### PRD-09 记录权限、删除与授权作废
+### PRD-09 Record Permissions, Deletion and Authorized Voiding
 
-对应Spec FR-09、BR-16/21；E。店长/管理员查全部单据，店员本人；售后经办/时间/原销售/商品数量/原因/结果/去向/状态完整。草稿通常可删；已成功保存IF-11读取追溯的未完成售后草稿取消进入CANCELLED并保留三方关联，取消不产生退款/库存/额度变化，已完成售后不适用（CR07-11）；确认单不物删；店长或管理员授权作废留原因→反向流水→退款/库存同步冲销。不能仅改状态、不能负库存；库存依赖按Spec §7.5 D1：同商品、同位置、更大commit_ordinal的有效负流水；新增收货不直接阻断、不清除已有负向依赖，同序号不互为后续。仅完整授权冲销且成对反向、自身无售后依赖的下游业务整组排除；原单任一行失败全拒绝，不做部分作废。
+Corresponding Spec FR-09, BR-16/21; E. The store manager/administrator views all documents and a store clerk only their own; after-sales operator/time/original sale/product quantity/reason/result/disposition/status are complete. Drafts are generally deletable; an incomplete after-sales draft that has been successfully saved and is read for traceability by IF-11 is cancelled into CANCELLED with the three-way link retained, cancellation produces no refund/stock/quota change, and completed after-sales does not apply (CR07-11); confirmed documents are not physically deleted; store-manager or administrator authorized voiding retains the reason → reverse ledger entries → refund/stock synchronized reversal. Status-only changes are not allowed, and negative stock is not allowed; stock dependency follows Spec §7.5 D1: a valid negative ledger entry for the same product, the same location and a larger commit_ordinal; a newly added receipt neither directly blocks nor clears existing negative dependencies, and equal ordinals are not subsequent to each other. Only fully authorized reversals that are paired-reverse and have no after-sales dependency of their own exclude the entire downstream business group; failure of any line of the original document rejects all, with no partial voiding.
 
-追踪：Spec §13 Q10；正式场景AC-10/28/35。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q10; formal scenarios AC-10/28/35. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-### PRD-10 本地JSON与离线恢复
+### PRD-10 Local JSON and Offline Recovery
 
-对应Spec FR-10、BR-17/24、TC-04/05/07–09；E。Maven/JDK17/JUnit4.13.2，Jackson UTF-8 JSON单快照/schemaVersion。启动校验→业务快照临时写＋原子替换/保上一版→重启恢复；损坏阻写并提示恢复，恢复查关联和原实付完整性。存储顺序按Spec §10.2 D2：根last_commit_ordinal、流水必填commit_ordinal，同次同号、单写者、计数和业务/流水同快照原子生效；失败last不前进且无部分可见，重启/完整备份恢复校验last≥最大流水序号，无库存成功提交也递增。锁竞争另一进程只读或拒写；恢复缺附件/引用或哈希/序号异常阻写。不新增COMMIT实体或独立计数文件。核心业务离线，附件相对路径/哈希关联；硬件只有未来接口边界，无已实现设备或网关。
+Corresponding Spec FR-10, BR-17/24, TC-04/05/07–09; E. Maven/JDK17/JUnit4.13.2, Jackson UTF-8 JSON single snapshot/schemaVersion. Startup validation → business snapshot temporary write + atomic replacement/keep the previous version → restart recovery; corruption blocks writes and prompts recovery, and recovery checks referential and original actual-paid integrity. Storage ordering follows Spec §10.2 D2: root last_commit_ordinal, ledger entries require commit_ordinal, the same number within one commit, a single writer, and the counter and business/ledger taking effect atomically in the same snapshot; on failure last does not advance and nothing is partially visible, restart/full-backup recovery validates last ≥ the maximum ledger sequence number, and a successful commit with no stock also increments it. Under lock contention another process is read-only or write-refused; recovery blocks writes when attachments/references are missing or hashes/sequence numbers are abnormal. No COMMIT entity or separate counter file is added. Core business is offline, with attachments linked by relative path/hash; hardware has only a future interface boundary, with no implemented device or gateway.
 
-追踪：Spec §13 Q01/Q11/Q12；正式场景AC-02/03/23/36。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 Q01/Q11/Q12; formal scenarios AC-02/03/23/36. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-### PRD-11 CUI导航与错误反馈
+### PRD-11 CUI Navigation, Error Feedback and Public English/Chinese
 
-对应Spec FR-11、BR-18、TC-01；E。全员在CUI按提示输入/返回/退出；菜单或数字错误清楚反馈、可重试，各步退出且无未处理异常。P1继续CUI，模板JavaFX仅占位，不开发GUI上传页。草稿删除按Q10，具体导航布局留后续设计，不重开CUI决定。
+Corresponding Spec FR-11, BR-18, TC-01; E. All users enter/return/exit in the CUI following the prompts; menu or numeric errors give clear feedback and are retryable, each step can be exited and no unhandled exception occurs. P1 continues with the CUI, the JavaFX template is a placeholder only, and no GUI upload page is developed. Draft deletion follows Q10, the concrete navigation layout is left to later design, and the CUI decision is not reopened.
 
-追踪：Spec §13 B；正式场景AC-05。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Traceability: Spec §13 B; formal scenario AC-05. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-### PRD-12 在仓补货到在售
+Language flow (explicit user decision, Spec §17 CR07-12): English at startup when no language is specified, with planned support for `--lang en`/`--lang zh`; the login screen and the post-login menu can switch, logging out retains this run's choice, and a restart follows the parameter or defaults to English. Language is not persisted and does not change the current unsubmitted input/identity/business facts; preservation of user data in its original language, missing-text fallback and business-result independence are only referenced from Spec §10.3. The body of AC-91–100 is maintained only in Spec §11, and its expectations are settled but not executed; the language requirement is approved and not yet implemented. This paragraph does not change other PRD business processes/permissions/calculations.
 
-对应Spec FR-12、BR-06/20、§7.1；E。在仓有足够整数数量，选择商品和数量→在仓−q在售+q→关联同次双向流水。总量不变、不重复计；来源不足拒绝。不选批次，授权按R-AUTH。
+### PRD-12 Warehouse-to-shelf Replenishment
 
-追踪：Spec §13 Q05/Q06；Q02权限关联R-AUTH；正式场景AC-12/21。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Corresponding Spec FR-12, BR-06/20, §7.1; E. With sufficient integer quantity in-warehouse, select the product and quantity → in-warehouse −q, on-shelf +q → link the two-way ledger entries of the same commit. The total is unchanged and not double-counted; an insufficient source is rejected. No batch is selected, and authorization follows R-AUTH.
 
-### PRD-13 损耗、报损与实际处置
+Traceability: Spec §13 Q05/Q06; Q02 permissions linked to R-AUTH; formal scenarios AC-12/21. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-对应Spec FR-13、BR-14/25、§7.1；E。店长登记报损、管理员可修正，无逐级审批，记录经办时间原因。现有库存按来源位置扣一次；顾客交回品不回库、不再扣现有货；后续处置不重扣，无第三桶。修正不丢关联、不产生负库存；修正保留原记录及修正版本、差额、经办/时间/原因。
+### PRD-13 Loss, Loss Registration and Actual Disposition
 
-追踪：Spec §13 Q05（含C）；Q02权限已定部分；正式场景AC-15/18/37。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Corresponding Spec FR-13, BR-14/25, §7.1; E. The store manager registers the loss and the administrator may correct it, with no tier-by-tier approval, recording operator, time and reason. Existing stock is deducted once at the source location; an item handed back by a customer is not returned to the warehouse and does not deduct existing goods again; later disposition does not deduct again, and there is no third bucket. A correction loses no links and produces no negative stock; a correction retains the original record plus the corrected version, the difference, and operator/time/reason.
 
-### PRD-14 日期、提醒和批次三个独立能力
+Traceability: Spec §13 Q05 (including C); the settled part of Q02 permissions; formal scenarios AC-15/18/37. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-已撤销：商品日期、临期/过期、批次及过期销售拦截从P1和P2完全删除；不保留扩展点。编号只作历史追踪，不是功能或验收要求。 对应Spec FR-14各原后缀、BR-23、§7.2、ERD-C10。原PRD-14-DATE/REMIND/BATCH编号仅作撤销映射；无产品流程、角色授权、P2预留或有效验收。
+### PRD-14 Dates, Reminders and Batches (Withdrawn)
 
-### PRD-15 CUI发票图片支持
+Withdrawn: product dates, near-expiry/expiry, batches and expired-sale blocking are removed entirely from P1 and P2; no extension point is retained. The numbering serves historical traceability only and is not a functional or acceptance requirement. Corresponding to the original suffixes of Spec FR-14, BR-23, §7.2, ERD-C10. The original PRD-14-DATE/REMIND/BATCH numbers serve only as withdrawal mapping; there is no product flow, role authorization, P2 reservation or effective acceptance.
 
-对应Spec FR-15、BR-19/27、§7.1；E。系统必须支持图片附件（E），但每单非必传，由店长据情况判断。关联收货记录→CUI输入本地路径导入或跳过→有图复制到DATA_ROOT/attachments/并存相对路径/哈希。无图仍可审核，无GUI上传页面；不是销售退款凭证。格式限JPG/PNG、单张≤5,000,000字节、每单≤3张；使用独立ID命名，内容人工审核，系统仅保存及技术有效性检查，不做OCR/自动验票/内容审核，不重开支持能力/非必传/优先级。
+### PRD-15 CUI Invoice Image Support
 
-追踪：Spec §13 Q04（含A）/Q11/ATTACH-PRIORITY；Q02权限关联R-AUTH；正式场景AC-11/40。业务规范已纳入基线，不因这些条目还关联细节问题而重问整项。
+Corresponding Spec FR-15, BR-19/27, §7.1; E. The system must support image attachments (E), but they are not mandatory per document and are judged by the store manager as appropriate. Link the receipt record → at the CUI enter a local path to import or skip → if an image exists, copy it to DATA_ROOT/attachments/ and store the relative path/hash. Review remains possible without an image, and there is no GUI upload page; it is not a sales refund voucher. Formats are limited to JPG/PNG, ≤5,000,000 bytes per image and ≤3 per document; independent IDs are used for naming, content is reviewed manually, and the system only stores and performs technical validity checks, with no OCR/automatic voucher verification/content review, and the support capability/non-mandatory nature/priority are not reopened.
 
-### 5.1 功能追踪矩阵
+Traceability: Spec §13 Q04 (including A)/Q11/ATTACH-PRIORITY; Q02 permissions linked to R-AUTH; formal scenarios AC-11/40. The business specification has been incorporated into the baseline, and the whole item is not re-questioned merely because these entries still link to detailed issues.
 
-K为下列课程表达/实现义务，不代表课程逐项规定超市业务。问题ID只引用Spec §13；父Q不充当重复待审清单。
+### 5.1 Functional Traceability Matrix
 
-| PRD | Spec | 课程来源（如适用） | AC/唯一问题引用 |
+K denotes the following course expression/implementation obligations and does not mean the course specifies supermarket business item by item. Question IDs reference only Spec §13; a parent Q does not serve as a duplicate pending-review list.
+
+| PRD | Spec | Course source (if applicable) | AC/single question reference |
 |---|---|---|---|
-| PRD-01 | FR-01、BR-04/21、§5 | K1通用，C p3；无该超市专项课程条款 | AC-09/10/28；Q02 |
-| PRD-02 | FR-02、BR-05/06、§9 | K1通用，C p3；无该超市专项课程条款 | AC-21/29；Q03 |
-| PRD-03 | FR-03、BR-03/07/19、§7.1 | K1通用，C p3；无该超市专项课程条款 | AC-04/11/24/26；Q04（含A）；Q02 |
-| PRD-04 | FR-04、BR-06/08/20、§7.1 | K1通用，C p3；无该超市专项课程条款 | AC-12/13/22/30；Q05；Q02权限关联R-AUTH |
-| PRD-05 | FR-05、BR-03/07/10/24 | K1通用，C p3；无该超市专项课程条款 | AC-04/13/27/31；Q01/Q06；Q02权限关联R-AUTH |
-| PRD-06 | FR-06、BR-09/11、§7.3 | K1通用，C p3；无该超市专项课程条款 | AC-16/32；Q07/Q12 |
-| PRD-07 | FR-07、BR-12/13/14/21/26、§7.4 | K1通用，C p3；无该超市专项课程条款 | AC-09/15/17/33/41；Q08 |
-| PRD-08 | FR-08、BR-12/14/15/22/26、§7.4 | K1通用，C p3；无该超市专项课程条款 | AC-14/18–20/34；Q09 |
-| PRD-09 | FR-09、BR-16/21 | K1通用，C p3；无该超市专项课程条款 | AC-10/28/35；Q10 |
-| PRD-10 | FR-10、BR-17/24、TC-04/05/07–09 | K4，C p4–5/p13 | AC-02/03/23/36；Q01/Q11/Q12 |
-| PRD-11 | FR-11、BR-18、TC-01 | K3/K5，C p4–5 | AC-05；B |
-| PRD-12 | FR-12、BR-06/20、§7.1 | K1通用，C p3；无该超市专项课程条款 | AC-12/21；Q05/Q06；Q02权限关联R-AUTH |
-| PRD-13 | FR-13、BR-14/25、§7.1 | K1通用，C p3；无该超市专项课程条款 | AC-15/18/37；Q05（含C）；Q02权限已定部分 |
-| PRD-15 | FR-15、BR-19/27、§7.1 | K1通用，C p3；无该超市专项课程条款 | AC-11/40；Q04（含A）/Q11/ATTACH-PRIORITY；Q02权限关联R-AUTH |
+| PRD-01 | FR-01, BR-04/21, §5 | K1 general, C p3; no course clause specific to this supermarket | AC-09/10/28; Q02 |
+| PRD-02 | FR-02, BR-05/06, §9 | K1 general, C p3; no course clause specific to this supermarket | AC-21/29; Q03 |
+| PRD-03 | FR-03, BR-03/07/19, §7.1 | K1 general, C p3; no course clause specific to this supermarket | AC-04/11/24/26; Q04 (including A); Q02 |
+| PRD-04 | FR-04, BR-06/08/20, §7.1 | K1 general, C p3; no course clause specific to this supermarket | AC-12/13/22/30; Q05; Q02 permissions linked to R-AUTH |
+| PRD-05 | FR-05, BR-03/07/10/24 | K1 general, C p3; no course clause specific to this supermarket | AC-04/13/27/31; Q01/Q06; Q02 permissions linked to R-AUTH |
+| PRD-06 | FR-06, BR-09/11, §7.3 | K1 general, C p3; no course clause specific to this supermarket | AC-16/32; Q07/Q12 |
+| PRD-07 | FR-07, BR-12/13/14/21/26, §7.4 | K1 general, C p3; no course clause specific to this supermarket | AC-09/15/17/33/41; Q08 |
+| PRD-08 | FR-08, BR-12/14/15/22/26, §7.4 | K1 general, C p3; no course clause specific to this supermarket | AC-14/18–20/34; Q09 |
+| PRD-09 | FR-09, BR-16/21 | K1 general, C p3; no course clause specific to this supermarket | AC-10/28/35; Q10 |
+| PRD-10 | FR-10, BR-17/24, TC-04/05/07–09 | K4, C p4–5/p13 | AC-02/03/23/36; Q01/Q11/Q12 |
+| PRD-11 | FR-11, BR-18, TC-01 | K3/K5, C p4–5 | AC-05; B |
+| PRD-12 | FR-12, BR-06/20, §7.1 | K1 general, C p3; no course clause specific to this supermarket | AC-12/21; Q05/Q06; Q02 permissions linked to R-AUTH |
+| PRD-13 | FR-13, BR-14/25, §7.1 | K1 general, C p3; no course clause specific to this supermarket | AC-15/18/37; Q05 (including C); settled part of Q02 permissions |
+| PRD-15 | FR-15, BR-19/27, §7.1 | K1 general, C p3; no course clause specific to this supermarket | AC-11/40; Q04 (including A)/Q11/ATTACH-PRIORITY; Q02 permissions linked to R-AUTH |
 
-### 5.2 v0.7规则同步与补充验收追踪
+### 5.2 v0.7 Rule Synchronization and Supplementary Acceptance Traceability
 
-Spec v0.7 §7.3/7.4为唯一算法定义，§9.1为后续ERD约束；批准及待决状态只查Spec §17。
+Spec v0.7 §7.3/7.4 is the single algorithm definition, and §9.1 holds the subsequent ERD constraints; approval and pending status are found only in Spec §17.
 
-| PRD | Spec | ERD约束 | 验收 |
+| PRD | Spec | ERD constraint | Acceptance |
 |---|---|---|---|
-| PRD-05/06 | FR-05/06；BR-09/10/28；§7.3 | ERD-C01/02/09 | AC-31/41/44/54/55 |
-| PRD-07/08 | FR-07/08；BR-12/13/15/29；§7.4 | ERD-C03–07/09 | AC-46/54/56–58 |
-| PRD-09/10 | FR-09/10；BR-07/17/29；R-VOID | ERD-C07–09 | AC-35/36/52/57/59 |
-| PRD-14原编号撤销 | FR-14/BR-23；U6；§7.2 | ERD-C10；P1/P2均不保留 | AC-42/43为范围核对，其余旧场景撤销 |
+| PRD-05/06 | FR-05/06; BR-09/10/28; §7.3 | ERD-C01/02/09 | AC-31/41/44/54/55 |
+| PRD-07/08 | FR-07/08; BR-12/13/15/29; §7.4 | ERD-C03–07/09 | AC-46/54/56–58 |
+| PRD-09/10 | FR-09/10; BR-07/17/29; R-VOID | ERD-C07–09 | AC-35/36/52/57/59 |
+| PRD-14 original numbering withdrawn | FR-14/BR-23; U6; §7.2 | ERD-C10; retained in neither P1 nor P2 | AC-42/43 are scope checks, the remaining old scenarios are withdrawn |
 
-### 5.3 运行路径边界引用
+### 5.3 Runtime Path Boundary Reference
 
-附件路径相对于明确的运行数据逻辑根DATA_ROOT，不是仓库/Markdown目录。源图片导入路径与持久化`attachments/<文件名>`分开；DATA_ROOT已定为仓库根data/，附件独立ID命名、单张≤5,000,000字节；剩余根解析/子布局及一般失败流程仅引用[Spec §10.1](./Project_Spec.md#101-运行路径契约与待确认设计) PATH-D01/02，不另建问题表，不改变无图可审；这些待完成设计项不阻塞ERD关系评审。
+Attachment paths are relative to the explicit runtime data logical root DATA_ROOT, not the repository/Markdown directory. The source image import path is separate from the persisted `attachments/<filename>`; DATA_ROOT is set to the repository root data/, attachments are named with independent IDs and each image is ≤5,000,000 bytes; the remaining root resolution/sub-layout and the general failure flow reference only [Spec §10.1](./Project_Spec.md#101-runtime-path-contract-and-pending-design) PATH-D01/02, no separate question table is built, and review without an image is not changed; these pending design items do not block the ERD relationship review.
 
-## 6 主要业务流程与数量影响
+## 6 Main Business Flows and Quantity Effects
 
-1. 收货登记待审，不计两位置；店长审核通过一次入在仓，无图仍可审；不录商品日期或选批次。
-2. 补货在仓−q/在售+q，总量不变，只按商品及位置数量校验；不足拒绝。
-3. 销售选商品/数量→同品同价合并→候选单活动择优→按适用行原额比例分摊并保存优惠/实付快照→确认收款和在售扣减整单原子生效。
-4. 退货关联原行→核验期限/资格和共享剩余数量/金额→按原行P×q/Q及尾款规则退款→保存核销及损耗去向；交回不回库。
-5. 换货关联原行→先占用数量/实付额度→计算新品与抵扣的补退差（同款同数量质量换0差仍占额度）→扣替换品在售→记交回去向；后续退款只用剩余额度。
-6. 报损及授权作废沿用既定权限；冲销关联原核销记录并反向释放数量/金额，保留历史，幂等且不负库存。查询权限不变。
+1. The receipt is registered as pending review and is not counted in either location; once the store manager approves, it enters in-warehouse in one step, and review is still possible without an image; no product date is entered and no batch is selected.
+2. Replenishment moves in-warehouse −q/on-shelf +q, the total is unchanged, and only product and location quantities are validated; insufficient is rejected.
+3. A sale selects products/quantities → identical product at identical price is merged → the candidate document picks the best promotion → the discount is allocated by the applicable line's original amount ratio and the discount/actual-paid snapshot is saved → confirming payment and the on-shelf deduction take effect atomically for the whole document.
+4. A return links the original line → verify the period/eligibility and the shared remaining quantity/amount → refund per the original line's P×q/Q and the final-payment rule → save the redemption and loss disposition; items handed back are not returned to the warehouse.
+5. An exchange links the original line → first occupies quantity/actual-paid quota → compute the top-up/refund difference between the new product and the offset (an identical-item, identical-quantity quality exchange with 0 difference still occupies quota) → deduct the replacement's on-shelf → record the handed-back disposition; subsequent refunds use only the remaining quota.
+6. Loss registration and authorized voiding follow the established permissions; a reversal links the original redemption record and releases the quantity/amount in reverse, retains history, is idempotent and does not go negative on stock. Query permissions are unchanged.
 
-P1、P2均无商品日期、批次、过期处理步骤。经办时间、促销有效期和30天售后期限保留。
+Neither P1 nor P2 has product date, batch or expiry-handling steps. Operator time, the promotion validity period and the 30-day after-sales period are retained.
 
-## 7 验收标准与执行状态
+## 7 Acceptance Criteria and Execution Status
 
-以下表直接同步Spec v0.7 §11的AC-01–59及AC-77–90，保持相同文本、来源及规则状态。Ready只表示当前规则可确定预期，本轮均未执行，不声称已通过。旧PRD广泛Conditional/TBD已依本次关闭结论撤销；当前仅明确授权边界有效；批准依据只查Spec §17；已撤销场景不作通过/失败标准，AC-42/43仅检查范围边界。
+The only formal scenario body and rule status are in Spec §11, and approval status is in Spec §17; this PRD only traces FR/PRD→AC and does not maintain a parallel acceptance table. The AC mirror previously in this section was checked item by item against Spec and found identical at 73 entries, and the Chinese original has been saved; removing the duplicate body deletes/modifies none of its normative rules and expectations.
 
-| ID | Given / When / Then | 来源 | 规则状态 |
-|---|---|---|---|
-| AC-01 | Given 审阅稿；When 核范围；Then 单店PC、三角色、无连锁商城、无称重，P2要求单列 | BR-01/06，U | Ready（未执行） |
-| AC-02 | Given 干净目录、JDK17及已准备的Maven依赖；When 按正式报告实际Maven命令构建运行；Then 编译成功出现Java CUI，无手工加JAR、改本机绝对路径、手工建立业务数据或启动数据库服务 | TC-01/04/07；C p4/p13、U3 Q12 | Ready（未执行） |
-| AC-03 | Given 一份合法已保存业务记录；When 正常退出并重启查询；Then File I/O恢复同一标识及内容，非仅控制台日志 | BR-02，C p4–5 | Ready（未执行） |
-| AC-04 | Given 商品在售5、在仓0，实际收货3件；When 登记待审核；Then 两位置仍5/0；When 店长审核通过；Then 在仓3、合计8；When 合法确认已付款销售2；Then 在售3、在仓3、合计6 | BR-03；U3 Q4/6 | Ready（未执行） |
-| AC-05 | Given 菜单/数字输入处；When 输入非法编号或字母；Then 有说明，可重试或退出，无未处理异常；各交互步骤均提供退出路径 | BR-18，C p5优秀档 | Ready（未执行） |
-| AC-06 | Given 最终类图及代码；When 评审调用路径；Then 图与实现对应，封装/继承/多态/抽象、接口/抽象类/具体类有实际用途，集合使用适当 | TC-02/03/05，C p3–5 | Ready（未执行） |
-| AC-07 | Given 最终视频及AI日志；When 计时与检查；Then ≤5分钟，覆盖AI使用、主要功能、代码结构；日志覆盖主要阶段并分清人机贡献 | CR-10/11，C p4–6 | Ready（未执行） |
-| AC-08 | Given 待提交包；When 解压检查；Then 单ZIP正确命名，完整Maven/Gradle项目、Word/PDF报告、视频及模板必需内容齐全，学生本人反思声明完成 | CR-12/13，C p12–13，T | Ready（未执行） |
-| AC-09 | Given 可识别的店员、5天前原销售实付8元的一件商品且未曾退换、店长未在线；When 店员关联原销售并确认普通退货1；Then 无需店长逐笔批准完成、退款8元，记录经办/时间/原销售/商品数量/原因/结果/去向/状态 | BR-04/13/21/26；U3 Q8、U1权限 | Ready（未执行） |
-| AC-10 | Given 同一店员已完成退货和换货记录；When 店长或管理员分别进入后台CUI查询；Then 两种角色均可查看该两份记录及处理状态、经办/时间/销售/商品数量/原因/结果/去向 | BR-04/21，U1 §III.1 | Ready（未执行） |
-| AC-11 | Given 店长审核一份信息可供判断的实际收货记录且无发票图片；When 记录审核通过或退回补充／修正；Then 可保存所选结果，不因缺图阻止，也不自动强制通过；补正状态不被记作供应商退货 | BR-19，U1 §III.4；入账另见PD-05 | Ready（未执行） |
-| AC-12 | Given 在售5、在仓10；When 合法补货3从在仓到在售；Then 在售8、在仓7、合计15，记录关联的在仓−3与在售+3，不重复增加总量、不建立第三库存余额 | BR-20，U1 §III.5 | Ready（未执行） |
-| AC-13 | Given 商品在售2、在仓10；When 请求销售3；Then 拒绝整单并提示在售不足，在售仍2、在仓仍10，不使用合计12绕过；在仓商品须先补货才能参与销售 | BR-03/06/07；U3 Q6 | Ready（未执行） |
-| AC-14 | Given 5天前已购买2件的同款质量换货、替换品在售2在仓10；When 请求替换品3；Then 超原购/在售不足拒绝、两位置不变；When 按原购量确认同款同数量质量换货2；Then 差额0，在售0、在仓10，交回品不回库且替换流水关联换货 | BR-12/15/26；U3 Q9 | Ready（未执行） |
-| AC-15 | Given 在售5、在仓10，原售商品实付8元，合法退货1件残次品；When 店员确认退货；Then 退款8元，在售5在仓10均不变，记录1件损耗及实际去向，不能进“不可售”桶，也不再从这15件中扣1 | BR-13/14/25，U1 §III.5/7 | Ready（未执行） |
-| AC-16 | Given 同一100元订单全部商品适用九折和满100减15活动；When 各候选只用一活动计算；Then 应付90和85，选85、不叠为75或76.5；若满减10则两者均90，同价按BR-11处理，另见AC-32 | BR-09/11；U3 Q7/12 | Ready（未执行） |
-| AC-17 | Given 顾客原销售记录一件标价10、促销实付8，当前售价12、采购成本6，无整单分摊歧义；When 合法退货1件；Then 退款RMB8，不退10/12/6，不使用供应商采购发票金额；该商品不回两位置 | BR-09/13/14，U1 §III.7/9 | Ready（未执行） |
-| AC-18 | Given 5天前购买的同款商品质量问题换货1件，在售5在仓10、交回残次1；When 店员确认同款同数量替换且店长不在线；Then 差额0、在售4在仓10，交回品损耗/去向完整；仅登记其后续实际处置时两位置不再变化 | BR-04/14/15/21/25；U3 Q5/9/C | Ready（未执行） |
-| AC-19 | Given 食品或洗衣液属于开封影响再售类别，已开封且非质量原因；When 选择“其他”并填写原因后请求退货、同款换货或换其他品种；Then 均拒绝，不扣替换品、不增加交回品库存，保留可解释的拒绝原因；When 未填写其他原因文本；Then 拒绝保存，不产生售后 | BR-22，U1 §III.8，CR07-10 | Ready（未执行） |
-| AC-20 | Given 5天前购买的开封影响再售商品因本身质量问题换货、原量1未核销、同款替换在售充足；When 校验开封/品种资格并作同款同数量替换；Then 不因开封拒绝且差额0；在售不足时仍按AC-14阻止 | BR-15/22/26；U3 Q9 | Ready（未执行） |
-| AC-21 | Given 采购/销售/退货/换货/补货中任一种需要录入数量的操作；When 输入1.5；Then 不作为业务数量接受，提示整数输入，不执行相应库存变更 | BR-06，U1 §III.3 | Ready（未执行） |
-| AC-22 | Given 商品出现库存不足或账实异常；When 操作者查看核对信息；Then 可取得该商品入库记录及来源关联，不以允许负库存作为继续路径 | BR-08，U1 §III.5 | Ready（未执行） |
-| AC-23 | Given JDK17及运行所需本地文件/依赖已准备、网络断开；When 启动并执行一组已定合法核心业务及重启读取；Then 不调用必需的云/网络服务即可完成，金额按RMB十进制运算；十进制0.10+0.20在货币运算中等于0.30，不出现二进制浮点误差 | BR-09/24，U1 §III.2/9 | Ready（未执行） |
-| AC-24 | Given 店长本人负责采购并登记实际到货；When 该店长审核到货记录；Then 不要求另一个独立审批人或事前采购订单审批；可记审核结果，退换货权限不受该采购审核流程牵连 | BR-19/04，U1 §III.1/4 | Ready（未执行） |
-| AC-25 | 撤销：原商品日期/提醒/批次场景从P1、P2删除，不转作P2验收，不判通过/失败；原文见v0.4备份 | U6；BR-23/ERD-C10 | 已撤销（非验收） |
-| AC-26 | Given 在售0在仓5，实收3；When 保存待审核记录或退回补充／修正；Then 两位置0/5，待审数量单列且不可补/卖；When 补正并通过审核再重复提交同一次通过；Then 在仓8而非11，仅一份入库影响 | BR-03/07/19；U3 Q4 | Ready（未执行） |
-| AC-27 | Given 商品A在售3、B在售0，各自请求销售2和1；When 确认整单；Then 因B不足整单不生效，A仍3、B仍0，不记成功已收款单；Given 一笔库存足够但付款尚未完成的业务；Then 不能确认其为已收款销售 | BR-07/24；U3 Q1/6 | Ready（未执行） |
-| AC-28 | Given 店员甲乙各有本人经办单据；When 甲查乙单；Then 不可见，甲单可见；When 店长和管理员分别查询；Then 可查全部单据；管理员技术可审收货，但界面/报告说明原则上由店长承担日常审核 | BR-04/16；U3 Q2/10 | Ready（未执行） |
-| AC-29 | Given 纳入数据满足有效唯一条码假设、商品名称按品牌＋商品名；When 按条码定位商品；Then 唯一对应商品；When 试图保存与已有商品相同主键的另一商品；Then 不形成两个同主键商品；本场景不决定无条码或规格共码的替代处理 | BR-05；U3 Q3 | Ready（未执行） |
-| AC-30 | Given 期初以期初入库流水在仓10，随后补货3到在售，无其他生效业务；When 汇总流水及重建缓存；Then 在仓7、在售3、合计10，重建前后相同，期初有来源记录 | BR-08/20；U3 Q5 | Ready（未执行） |
-| AC-31 | Given 商品单价2.00，同品同价两次输入数量1和2、无优惠且库存充足；When 合并并确认销售；Then 合并为数量3、行金额6.00，原行ID保持稳定，保存名称/单价/促销/实付快照；后续商品调价不改此快照 | BR-09/10；U3 Q6/12 | Ready（未执行） |
-| AC-32 | Given 候选应付均90.00且A显式优先级高于B；When 择优；Then 选A；Given 两候选无明确优先级且A活动ID确定小于B；When 择优；Then 选A；相同显式优先级也选ID较小者；仅A有显式优先级且应付相同时选A | BR-11；U3 Q7 | Ready（未执行） |
-| AC-33 | Given 原销售行数量3，已退1已换1；When 再退2或换2；Then 因仅余1未核销而拒绝；Given 5天前1件实付8元、未退换；When 确认退货并重复提交同一业务；Then 累计只退款8、只核销1；普通非质量退货在第31天一律超期拒绝，不设店长例外 | BR-12/13/26；U3 Q8/9；第30天边界见AC-47；CR07-10 | Ready（未执行） |
-| AC-34 | Given 5天前未开封原商品1件实付48，选择“其他”并填写原因，替换新品在售充足；When 换为现价55/30/48的另一品种1件；Then 分别补7、退18、零差，交回均不回库；同款同数量质量换货即使现价55仍差额0；同一换货重复提交不重复扣存或退款 | BR-12/14/15/22/26；U3 Q9；CR07-10 | Ready（未执行） |
-| AC-35 | Given 销售前在售10，销售2后在售8，D1无后提交有效负向依赖且无未解除售后；When 授权整单作废留原因；Then 反向恢复在售10，原单保留，重复不再恢复；同一commit_ordinal内流水不互为依赖。售后作废同时验证原款项/补差、核销和库存的反向记录，不能只改状态 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-36 | Given UTF-8 JSON快照含schemaVersion及完整关联/实付；When 保存；Then 临时文件加原子替换生效且保留上一版；When 启动读取损坏数据；Then 阻断写入并提示恢复，不写成功空快照覆盖；恢复校验关联及实付完整性 | BR-17；U3 Q11 | Ready（未执行） |
-| AC-37 | Given 在仓5、在售2，店长登记在仓报损2并填写经办/时间/原因；When 确认；Then 在仓3、在售2，无逐级审批；后续处置不再扣存；管理员可执行修正并保留关联，修正不得产生负库存 | BR-25；U3 Q5/C | Ready（未执行） |
-| AC-38 | 撤销：原商品日期/提醒/批次场景从P1、P2删除，不转作P2验收，不判通过/失败；原文见v0.4备份 | U6；BR-23/ERD-C10 | 已撤销（非验收） |
-| AC-39 | 撤销：原商品日期/提醒/批次场景从P1、P2删除，不转作P2验收，不判通过/失败；原文见v0.4备份 | U6；BR-23/ERD-C10 | 已撤销（非验收） |
-| AC-40 | Given 可读JPG/PNG发票图片及对应收货记录；When 通过CUI输入本地路径导入；Then 副本以独立ID命名保存在仓库根data/attachments/，relative_path保存attachments/<ID命名文件>并关联哈希；不做OCR/自动验票/系统内容审核。When 跳过图片；Then 仍可人工审核；无GUI上传页 | BR-19/27；§17 SYNC-03/04 | Ready（未执行） |
-| AC-41 | Given 适用行L1/L2/L3按稳定ID升序，折扣前各10元，满30减10；When 分摊销售优惠；Then 行折扣3.34/3.33/3.33，行实付6.66/6.67/6.67，订单实付20.00；最大余数同值时尾分给稳定ID最小适用行，而非临时创建跨行退款预算 | U5/U6；BR-09/10/12/13/15/28/29；ERD-C01–10 | Ready（未执行） |
-| AC-42 | Given P1同商品在售5、在仓10，无商品日期/批次记录；When 正常收货、补货及销售；Then 仅按商品和对应位置数量校验和记账，不要求日期录入、批次ID或选批次；P2也无这些强制依赖 | U5/U6；BR-09/10/12/13/15/28/29；ERD-C01–10 | Ready（未执行） |
-| AC-43 | Given 当前Spec/PRD及后续数据模型评审材料；When 检查P1/P2范围；Then 均无商品日期记录、临期/过期提醒、批次选择或过期拦截的有效功能/验收/外键要求；不从库存数量推断商品是否过期；原到期日当天/次日规则已撤销；经办时间、促销有效期和售后期限仍保留 | U5/U6；BR-09/10/12/13/15/28/29；ERD-C01–10 | Ready（未执行） |
-| AC-44 | Given 两行各1件、售价各0.05，活动A为90%支付比例、活动B为满0.10减0.01；When 计价；Then 原行各0.05、原总额0.10，A落分0.09、B落分0.09，以优先级/ID决胜，入账总额0.09、行分摊合计0.09；不得以舍入前精度改变胜者 | U4；M-ROUND；R-PROMO | Ready（未执行） |
-| AC-45 | Given 行单价1.23、数量3及另一行单价0.10数量1，无优惠；When 结算；Then 中间值3.6900/0.1000，行金额3.69/0.10，订单379分即3.79 | U4；M-ROUND | Ready（未执行） |
-| AC-46 | Given 一条原销售行Q=3、P=10.00且均未核销；When 连续各退1件；Then 前两次各3.33，最后一次3.34，累计3件/10.00，最后一次使用该行剩余实付，不能跨行调账 | U5/U6；BR-09/10/12/13/15/28/29；ERD-C01–10 | Ready（未执行） |
-| AC-47 | Given 销售日2026-10-01，Asia/Shanghai，非质量退换其余条件合法；When 2026-10-31 23:59:59申请；Then 在期限内；When 2026-11-01 00:00:00申请；Then 超期一律拒绝（含质量问题），不设店长例外 | U4；R-WINDOW；CR07-10 | Ready（未执行） |
-| AC-48 | Given 应付相同的活动A/B；When 仅A有显式优先级；Then 选A；When 两者都有；Then 先高优先级，同级按小ID；When 都无；Then 小ID；活动在开始日00:00:00及结束日23:59:59均有效，次日不再有效 | U4；R-PROMO | Ready（未执行） |
-| AC-49 | 撤销：原商品日期/提醒/批次场景从P1、P2删除，不转作P2验收，不判通过/失败；原文见v0.4备份 | U6；BR-23/ERD-C10 | 已撤销（非验收） |
-| AC-50 | 撤销：原商品日期/提醒/批次场景从P1、P2删除，不转作P2验收，不判通过/失败；原文见v0.4备份 | U6；BR-23/ERD-C10 | 已撤销（非验收） |
-| AC-51 | Given 本地预置三角色账号；When 合法密码离线登录；Then 进入对应角色，持久化凭证不是明文密码；错误密码拒绝；店员可销售/补货而不可配置促销，店长可配置，管理员可维护修正；查询仍遵守全部/本人 | U4；R-AUTH | Ready（未执行） |
-| AC-52 | Given 旧收货入W；When 后续有同商品W负向补货或在仓报损；Then 阻断旧收货整单冲销。销售/换出/在售报损S−不直接阻断W收货，但有效补货W−仍阻断；后续新增收货不清除它。部分退货/换货/仅退款不算原销售完整冲销；只有授权整单冲销且逐条反向匹配、自身售后依赖解除的业务才整组排除 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-53 | Given 数量输入0、10000、小数或负数；When 保存业务；Then 提示且不写库；1和9999通过数量校验（仍须库存充足）；售价0须明确零价/赠品、999999.99合法、负价/1000000拒绝；8/14位唯一数字条码通过格式校验，7/15位或非数字/重复拒绝；折扣1%/99%合法，0%/100%拒绝；满减0或超过门槛拒绝；JPG/PNG单张≤5,000,000字节每单≤3张合法，5,000,001字节拒绝，超限/其他格式拒绝；无图仍可审核 | U4；R-INPUT；FR-02/03/06/15 | Ready（未执行） |
-| AC-54 | Given 适用行L1为60元、L2为40元，非适用行L3为20元，满100减15；When 确认销售；Then L1/L2折扣9/6、实付51/34，L3折扣0实付20，订单实付105；随后合法退L1全部数量退款51而非60，退L2全部数量退款34而非40，原快照不随现价改变 | U5；BR-10/12/13/15/28/29；ERD-C01–09 | Ready（未执行） |
-| AC-55 | Given 一条商品标价10元、90%支付折扣后行实付9元；When 确认销售后商品现价改12元再合法退货；Then 保留商品名、单价10、促销、折扣1、实付9和原稳定行ID，退款9而非10/12 | U5；BR-10/12/13/15/28/29；ERD-C01–09 | Ready（未执行） |
-| AC-56 | Given 原销售行Q=3、P=10.00，未核销且替换品在售足够；When 先换1件；Then 原行占用Qx=1、Mx=3.33，剩余2件/6.67，替换品仅从在售扣、交回品不回库；When 再退剩余2件；Then 退款6.67，累计换货抵扣+退款=10.00、数量=3，剩余0件/0元；不得按10元再次退款，不能只检查数量上限 | U5；BR-10/12/13/15/28/29；ERD-C01–09 | Ready（未执行） |
-| AC-57 | Given AC-56换货已成功，幂等标识K；When 重复提交K；Then 仍只占1件/3.33，不重复扣替换库存/收补差；When 再以新请求退3件或使核销金额超过剩余额度；Then 拒绝且不写部分记录，原余额不变 | U5；BR-10/12/13/15/28/29；ERD-C01–09 | Ready（未执行） |
-| AC-58 | Given 原销售行Q=1、P=8，发生同款同数量质量换货，补差0；When 确认；Then 原行已换1件/抵扣8，剩余0件/0；之后对该原行再次退货拒绝，不能因换货无补差而保留8元可退额度 | U5；BR-10/12/13/15/28/29；ERD-C01–09 | Ready（未执行） |
-| AC-59 | Given 一笔售后核销及款项/库存影响；When 保存失败；Then 同快照核销/款项/库存/计数均不部分生效；When 获合法授权、通过D1同商品/同位置/后提交有效负流水检查且其他售后关联已解除后整单冲销；Then 反向只释放原数量/原商品金额一次，保留原记录/人/时间/原因，重试不重复释放，重启校验双额度/关联/序号 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-77 | Given 四条适用行原额各0.01、整单优惠0.02；When 简单最大余数分摊；Then 按稳定销售行ID升序优惠0.01/0.01/0/0，实付0/0/0.01/0.01，不运行封顶循环 | CR07-02；FR-06；ERD-C02 | Ready（未执行） |
-| AC-78 | Given 已计算的候选分摊存在行优惠为负/超适用原额/行实付为负或合计不守恒；When 确认前校验；Then 拒绝整次计算，不产生部分销售记录；这是不变量断言，不要求制造业务可达封顶状态 | CR07-02；FR-05/06 | 技术断言（未执行） |
-| AC-79 | Given 原行3件实付10.00、无历史核销，同次3条同类别各1件；When 按稳定核销ID升序结清；Then 3.33/3.33/3.34，最后明细仅承接当前提交剩余分值 | CR07-03；FR-07/08；ERD-C05 | Ready（未执行） |
-| AC-80 | Given 原行3件实付10.00且历史已退1件3.33；When 当前只再退1件；Then 本次3.33、剩余1件3.34，历史及本次已确认金额不变；未来结清才使用届时3.34，不回写过去 | CR07-03；BR-13 | Ready（未执行） |
-| AC-81 | Given 原行3件实付10.00无历史占额，同单换1件退2件；When 分别按先录退后录换、先录换后录退提交；Then 两种均先换占1件3.33，再退2件6.67，合计3件10.00，替换品扣在售 | CR07-04新增业务规则；FR-07/08；ERD-C03–06 | Ready（未执行） |
-| AC-82 | Given 同单不同商品资格事实不同；When 确认质量同款零差配对及普通售后；Then 各核销独立保留opened/quality_problem及reason_text（其他原因必填），特殊替换明细显式关联同单质量换核销；条码/数量不同或差额非0不得以特殊类型确认，不用单头覆盖全单资格 | CR07-01/10；FR-07/08；ERD-C03/09 | Ready（未执行） |
-| AC-83 | Given 原收货单含A/B入W，A无依赖，B之后有同商品同位置更大commit_ordinal的有效补货W−；When 申请原单冲销；Then 整单拒绝，A/B均不冲销，库存/流水/原单状态均不变，不生成部分反向记录 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-84 | Case A：Given 旧收货W+10后只有同码新收货W+5，无同位置后提交有效负向依赖及其他未解除关联；When 授权整单冲销旧收货；Then 允许，W从15到5。Case B：Given 旧收货后存在有效补货W−及其后销售/换出；When 冲销旧收货；Then 拒绝；先解除售后并整单逆序冲销销售/换出，再冲补货，最后通过D1及非负校验才可冲旧收货 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-85 | Given D2快照及单写者；When 逐项检验；Then ①收货A后补货B，重启仍A序号<B；②同次全部流水同号、不互为D1依赖；③校验/序列化/临时写/原子替换失败，旧快照可读、last不变、无部分记录；④替换成功响应前崩溃，重启可见该提交，幂等重试不重记；⑤恢复完整备份和附件后计数/流水/关联一致，next=last+1；⑥构造last<max阻写并提示恢复；⑦双进程仅一个持写锁，另一只读或拒写；⑧不以时间戳/流水ID/单据版本/排列替代提交序；⑨无库存成功提交仍推进last，last>max合法；⑩缺附件/引用或哈希异常的恢复阻写，不混拼来源 | CR07-06/07；FR-09/10；ERD-C08/09；批准见§17 | Ready（未执行） |
-| AC-86 | Given 店长/管理员/店员分别登录，商品有效且期初数量合法；When 登记期初；Then 店长/管理员可办理并保留来源流水，店员拒绝且无库存/单据部分变更 | §17 SYNC-01；FR-04；BR-08 | Ready（未执行） |
-| AC-87 | Given 店员甲乙的销售记录及顾客提供的原销售凭证；When 甲走普通历史查询查乙单；Then 不可见，店长/管理员普通查询仍可查全部。When 甲从售后专用流程按凭证定位乙单办理售后；Then 可读取办理该售后所需的最少原单字段，不能扩成一般跨人列表；业务关联可追溯经办人、原销售与该售后。追溯保存失败/取消/删除及重试预期按已批准 CR07-11、AC-88–90 | §17 SYNC-02；FR-01/07/08/09；原AC-28角色范围保持 | Ready（已批准，未执行；接口实现/集中审计/真实联调分别交付） |
-| AC-88 | Given 合法身份、顾客精确原销售凭证及目标售后草稿；When IF-11 读取；Then 先经 IF-05 原子保存实际读取人/原销售/目标售后及读取事件，再返回最少字段；注入追溯保存失败时暂不返回原销售数据、不显示追溯或售后成功、不留下本次部分生效记录 | §17 CR07-11；FR-07/08/10；IF-11 | Ready（已批准，未执行） |
-| AC-89 | Given 已成功保存 IF-11 读取追溯且尚未完成的售后草稿；When 取消；Then 经 IF-05 进入 CANCELLED，保留读取经办人/原销售/目标售后及事件，不物理删除，不产生退款、库存或额度变化；取消保存失败则保留原状态。无读取追溯的草稿仍按原规则删除；对已完成售后请求此取消流程应拒绝，沿既有授权冲销规则处理 | §17 CR07-11；FR-09/10；BR-16 | Ready（已批准，未执行） |
-| AC-90 | Given IF-11 追溯替换成功后响应前中断；When 沿原键及原始请求查询/重试；Then 返回原追溯提交结果，不重复追溯/退款/扣存/核销；重新验证身份和目标状态后才返回数据，后续售后使用追溯提交后的新 WorkingCopy；结果查询失败仍保留未知状态，不换键重复提交 | §17 CR07-11；FR-10；IF-04/05/11；D2 | Ready（已批准，未执行） |
+The existing AC-01–59, AC-77–90 and the withdrawn/technical-assertion statuses all reference Spec §11 directly, and a historical Ready is not equated with an actual test pass. The new language scenarios AC-91–100 link PRD-11, FR-11/NF-07 and CR07-12: the requirement is approved, the language feature is not yet implemented, and the tests are not executed. Other tests actually executed remain with their original evidence and are not retested or rewritten in this round.
 
+## 8 Report Evidence Collection Plan
 
-## 8 报告材料收集计划
+Per T's full template and S §15. The template has 13 table/figure containers: cover, §2.2 requirements, §2.6 declaration, §3.1/3.3/3.5 figures, §3.4 review, §3.6 evolution, §3.7 declaration, A.1/A.2/A.3, B. The jump from 2.2 to 2.6 is the template’s actual numbering; 2.3–2.5 are not invented.
 
-依据T全模板及S §15。模板有13个表格/图容器：封面、§2.2需求、§2.6声明、§3.1/3.3/3.5图、§3.4评审、§3.6演化、§3.7声明、A.1/A.2/A.3、B。正文从2.2跳到2.6是实际编号，不虚构2.3–2.5。
-
-| 模板定位与必填信息 | 收集阶段与材料 | 沿用Spec的记录位置/责任 |
+| Template location and mandatory information | Collection stage and materials | Reused Spec record location/responsibility |
 |---|---|---|
-| 封面Project title、Canvas Group ID、Student1/2姓名学号 | 需求审阅及提交前核对真实身份 | 学生填写，未确认的组号/身份不猜测 |
-| How to use、Table of contents | 报告装配时删蓝色说明框/灰色占位/示例行，保留编号；不适用写Not applicable及一行原因；更新TOC | `docs/evidence/report_checklist.md`；Word/PDF最终版检查 |
-| §1 Project Setup / How to build and run | 开发获准后、实际实现时记Maven/JDK17/JUnit4.13.2、工具、主类、真实构建运行命令、适用凭证；验证干净目录与离线运行 | README、`docs/evidence/build_run.md`；不复制未经验证的示例命令 |
-| §2.1 topic and scope justification | 当前起记录服务对象、范围、规模依据和排除项 | Spec、PRD版本、`docs/decisions.md`；决定及未执行状态保持一致 |
-| §2.2表ID / Requirement / Description-acceptance criteria / Priority | 需求确认及每次变更时，登记PRD→FR→AC及确认/条件状态；FR-14原能力按U6撤销，不由每单附件是否必填推断E/D | Spec编号为基线；本PRD映射；不将PD结果写通过 |
-| §2.6.1必要需求及why；2.6.2排除/不现实功能及why；2.6.3取舍理由 | 需求讨论当时学生自行记观察与真实拒绝建议，需求阶段结束后独立成文 | 学生个人便笺；AI不生成反思、不伪造决定 |
-| §2.6声明表Student name / Student ID / Signature / Date | 学生完成独立反思后签署 | 本人填写，不代签 |
-| §3.1 Figure1 Use case diagram；§3.2范围约束假设 | 需求批准后初始设计，后续变更同步边界及已批准角色 | `docs/design/use_cases.*`及可读PNG/JPG；Spec约束与决定 |
-| §3.3 Figure2 Class diagram Iteration1及初始说明 | 首次实际设计完成时立即留存原版 | `docs/design/v1/`；类/属性/方法/关系、时间、职责理由 |
-| §3.4表# / Prompt summary / GenAI suggestion / Accepted-Rejected / Reason | V1后的真实AI审查当时记录提示、产物、人的采纳/拒绝及原因 | `docs/evidence/design_reviews.md`、原会话定位；不制造AI错误 |
-| §3.5 Figure3 Class diagram Iteration2 final及结构说明 | 审查修订后形成V2；实现结构再改时同步最终版 | `docs/design/v2/`及后续版本；接口/抽象类/具体类和关系与实现对应 |
-| §3.6表Change / Iteration1 / Iteration2 / Reason | 每次实质设计变更当时记录前后差异与原因 | `docs/evidence/design_evolution.md`；不以改颜色代替迭代 |
-| §3.7.1 AI建议；3.7.2错误/局限；3.7.3改进；3.7.4最终设计适用理由 | 设计审查/实现问题暴露时收集事实，学生后续独立分析具体类/关系/改进 | 学生个人便笺，关联真实设计证据；不能当前预写项目结论 |
-| §3.7声明正文及表Student name / Student ID | 独立反思完成后由本人声明；正文要求签署而表缺签名日期，本人签名照片按用户推荐准备；提交Word/PDF随单ZIP，引用Spec §13 Q14-FORM | 保留原章节及声明，不改模板结构、按教师具体形式处理 |
-| A.1表Tool / Model-version / Mainly used for | 从当前协作起记录实际工具和可见模型，未知写不详 | `docs/evidence/ai_usage_log.md`；不沿用示例GPT-5为事实 |
-| A.2表# / Stage / Tool / Main prompt / What GenAI produced / What you changed-rejected and why | 需求、设计、实现、调试每次关键交互当时记录代表性提示及人的修改理由 | 同上及原记录；本轮如实记U3授权后的Spec/PRD统一收口，不记业务实现完成 |
-| A.3表Part / Mainly human-designed / Mainly AI-generated then reviewed / Notes | 每阶段核对真实人机贡献 | 学生确认，AI起草不归人工原创 |
-| B表Member name / Student ID / Main contributions / Contribution% | 各阶段留设计/代码/测试/报告/视频真实贡献，最后确认合计100%；单人按模板写Individual project并删表 | `docs/evidence/contributions.md`；不能预填50/50 |
-| 实现和测试证据（模板无单独测试必填章） | 后续获准开发后采集构建、业务前后余额/实付/流水、输入输出；对规则Ready的AC执行时记环境、版本、预期/实际、缺陷与复测 | `docs/evidence/acceptance_results.md`、`docs/evidence/screenshots/`、`docs/evidence/console/`；当前无结果，不伪造截图 |
-| ≤5分钟视频及提交检查（课程交付） | 实现验证后真实演示AI使用、功能、结构；提交前检查单ZIP/命名/源码/报告/视频及备份 | `docs/evidence/demo_plan.md`、`docs/evidence/submission_checklist.md`；C p4/p6/p12–13 |
+| Cover Project title, Canvas Group ID, Student1/2 name and student ID | Check the real identity during requirements review and before submission | Filled in by the student; unconfirmed group number/identity is not guessed |
+| How to use, Table of contents | During report assembly delete the blue instruction boxes/grey placeholders/example rows and keep the numbering; where not applicable write Not applicable plus a one-line reason; update the TOC | `docs/evidence/report_checklist.md`; check the final Word/PDF version |
+| §1 Project Setup / How to build and run | After development is approved, when actually implemented, record Maven/JDK17/JUnit4.13.2, tools, main class, the real build and run commands and applicable credentials; verify a clean directory and offline running | README, `docs/evidence/build_run.md`; do not copy unverified example commands |
+| §2.1 topic and scope justification | From now on record the served user, scope, sizing basis and exclusions | Spec, PRD version, `docs/decisions.md`; decisions and not-executed status stay consistent |
+| §2.2 table ID / Requirement / Description-acceptance criteria / Priority | At requirements confirmation and on every change, register PRD→FR→AC and the confirmation/conditional status; the original FR-14 capability is withdrawn per U6, and E/D is not inferred from whether an attachment is mandatory per document | Spec numbering is the baseline; this PRD maps it; do not write PD results as passed |
+| §2.6.1 necessary requirements and why; 2.6.2 excluded/unrealistic features and why; 2.6.3 trade-off rationale | The student personally records observations and genuinely rejected suggestions at the time of the requirements discussion, and writes them up independently after the requirements phase ends | Student's personal notes; AI does not generate reflections or fabricate decisions |
+| §2.6 declaration table Student name / Student ID / Signature / Date | Signed by the student after the independent reflection is complete | Filled in by the person; no signing on their behalf |
+| §3.1 Figure1 Use case diagram; §3.2 scope constraints and assumptions | Initial design after requirements approval, with later changes synchronized to the boundary and approved roles | `docs/design/use_cases.*` and readable PNG/JPG; Spec constraints and decisions |
+| §3.3 Figure2 Class diagram Iteration1 and initial description | Immediately preserve the original when the first actual design is completed | `docs/design/v1/`; classes/attributes/methods/relationships, time, rationale for responsibilities |
+| §3.4 table # / Prompt summary / GenAI suggestion / Accepted-Rejected / Reason | At the time of the real AI review after V1, record the prompt, the product, the human acceptance/rejection and the reason | `docs/evidence/design_reviews.md`, the original session reference; do not manufacture AI errors |
+| §3.5 Figure3 Class diagram Iteration2 final and structural description | V2 is formed after review revisions; when the implementation structure changes again, synchronize the final version | `docs/design/v2/` and later versions; interfaces/abstract classes/concrete classes and relationships correspond to the implementation |
+| §3.6 table Change / Iteration1 / Iteration2 / Reason | Record the before/after difference and the reason at the time of each substantive design change | `docs/evidence/design_evolution.md`; do not substitute color changes for iteration |
+| §3.7.1 AI suggestions; 3.7.2 errors/limitations; 3.7.3 improvements; 3.7.4 reasons for the final design's applicability | Collect facts when design reviews/implementation problems surface, and the student later independently analyses the specific classes/relationships/improvements | Student's personal notes linked to real design evidence; project conclusions must not be pre-written now |
+| §3.7 declaration body and table Student name / Student ID | Declared by the person after the independent reflection is complete; the body requires a signature while the table lacks a signature date, so a photo of the person's signature is prepared per the user's recommendation; submit Word/PDF with the single ZIP, referencing Spec §13 Q14-FORM | Keep the original section and declaration, do not change the template structure, and handle it in the teacher's specific form |
+| A.1 table Tool / Model-version / Mainly used for | From this collaboration onward record the actual tools and visible models, writing not specified for unknowns | `docs/evidence/ai_usage_log.md`; do not treat the example GPT-5 as fact |
+| A.2 table # / Stage / Tool / Main prompt / What GenAI produced / What you changed-rejected and why | At the time of each key interaction in requirements, design, implementation and debugging, record a representative prompt and the human's reason for the change | Same as above plus the original records; in this round truthfully record the unified Spec/PRD convergence after U3 authorization, and do not record business implementation as complete |
+| A.3 table Part / Mainly human-designed / Mainly AI-generated then reviewed / Notes | Check the real human-machine contribution at each stage | Student confirms; AI drafting is not attributed to human originality |
+| B table Member name / Student ID / Main contributions / Contribution% | Retain the real design/code/test/report/video contributions at each stage, and finally confirm a total of 100%; for a single person write Individual project per the template and delete the table | `docs/evidence/contributions.md`; 50/50 must not be pre-filled |
+| Implementation and test evidence (the template has no separate mandatory test chapter) | After development is later approved, collect builds, before/after business balances/actual paid/ledger entries, inputs and outputs; when executing AC with rule status Ready, record environment, version, expected/actual, defects and retest | `docs/evidence/acceptance_results.md`, `docs/evidence/screenshots/`, `docs/evidence/console/`; there are currently no results, and screenshots are not fabricated |
+| ≤5-minute video and submission check (course deliverable) | After implementation is verified, genuinely demonstrate AI use, functionality and structure; before submission check the single ZIP/naming/source code/report/video and backup | `docs/evidence/demo_plan.md`, `docs/evidence/submission_checklist.md`; C p4/p6/p12–13 |
 
-以上日志/证据路径为S §15的计划位置，本轮不创建空证据冒充完成。各阶段持续记事实，报告装配阶段整理已有证据。重点留收货无图/自审、补货数量守恒、负库存拒绝、店员退换、后台可见、非叠加候选、原实付退款、残次去向；历史边界追踪引用Spec §13；当前批准状态仅见Spec §17，已批准规则可确定预期；D1/D2相关场景规则状态见Spec §17及本表，均未执行；后续才记录实际测试结果。
+The log/evidence paths above are the planned locations in S §15, and this round creates no empty evidence pretending completion. Facts are recorded continuously at each stage, and existing evidence is organized at the report assembly stage. Focus on retaining receipt without image/self-review, replenishment quantity conservation, negative-stock rejection, clerk returns and exchanges, back-office visibility, non-stacking candidates, refund of the original actual paid, and defective-item disposition; historical boundary traceability references Spec §13; current approval status is found only in Spec §17, and approved rules may have settled expectations; the rule status of D1/D2-related scenarios is in Spec §17 and this table, and none is executed; actual test results are recorded only later.
 
-报告安排以S §15.4为准：工作阶段以仓库docs/中文稿协作；提交前转英文并移除中文工作稿，英文最终报告使用仓库根目录下的英文报告存放位置；报告安排不变；历史版本由Git记录，不维护仓库外报告副本。最终文件名在装配阶段确定，平台规范只引用Spec §13 Q13；本轮不生成报告。工作稿与英文最终报告保持章节/FR/BR/AC/Q/图号、事实和状态对应，使用同一真实证据索引（计划 `docs/evidence/report_evidence_index.md`）。§2.6与§3.7的正式反思及声明只在英文最终报告中由学生独立完成；中文工作稿可保留素材，但不替代正式声明；不由AI代写或翻译生成提交反思文本（S §15.4）；语言工具许可问题由人工向教师核实。文档历史由Git记录，本文档不定义仓库外备份位置，不混入`docs`（S §1变更记录）。
+Report arrangements follow S §15.4: during the working stage collaborate on the English version in the repository (the corresponding Chinese version is kept in a designated directory outside the repository); the English final report is produced before submission, the Chinese working draft is not submitted, and the English final report uses the English report location under the repository root; report arrangements are unchanged; historical versions are recorded by Git, and no report copies are maintained outside the repository. The final file name is determined at the assembly stage, and the platform specification is referenced only from Spec §13 Q13; this round generates no report. The working draft and the English final report keep section/FR/BR/AC/Q/figure-number, fact and status correspondence and use the same real evidence index (planned `docs/evidence/report_evidence_index.md`). The formal reflections and declarations of §2.6 and §3.7 are completed independently by the student only in the English final report; the Chinese working draft may retain source material but does not replace the formal declaration; submission reflection text is not ghost-written or machine-translated by AI (S §15.4); language-tool licensing questions are verified with the teacher by a human. Document history is recorded by Git, and this document defines no backup location outside the repository and is not mixed into `docs` (S §1 change record).
 
-## 9 决策来源与历史迁移
+## 9 Decision Sources and Historical Migration
 
-此前U3 §II已授权将此前用户单一建议纳入Spec。旧PRO-Q01–14、PRO-A/B/C及附件优先级候选不再作为待确认正文，完整历史由Git保留；原Q01–Q14以及A/B/C标签均已定位，无猜测映射。A已归入Spec Q04，C归入Q05，B是独立CUI决定。普通授权作废现已明确属于P1，原与P2候选重合的内容按新授权撤出未来项。
+Previously, U3 §II authorized incorporating the user's earlier single suggestion into the Spec. The old PRO-Q01–14, PRO-A/B/C and attachment-priority candidates no longer serve as text pending confirmation; the complete history is retained by Git; the original Q01–Q14 and the A/B/C labels have all been located, with no speculative mapping. A has been assigned to Spec Q04, C to Q05, and B is an independent CUI decision. Voiding of ordinary authorization is now explicitly part of P1, and content that originally overlapped with P2 candidates is withdrawn from future items under the new authorization.
 
-Spec §13保留历史映射，§17为本轮变更/待决主登记。本稿不再次登记“答案待写入Spec”的方案；FR-14撤销决定和其他已关闭决策只引用原条目，附件支持E的依据在Spec §4/ATTACH-PRIORITY，不再把是否支持/每单必附重复开问。P2评分只引用Spec P2-SCORE，已核验一致不作为待处理项。
+Spec §13 retains the historical mapping, and §17 is the main register of changes/open items for this round. This draft does not register again the options whose "answers are to be written into the Spec"; the decision to revoke FR-14 and other closed decisions reference only the original entries, the basis for attachment support E is in Spec §4/ATTACH-PRIORITY, and whether support is required/whether every order must attach it is no longer asked repeatedly. P2 scoring references only Spec P2-SCORE, which has been verified as consistent and is not treated as a pending item.
 
-## 10 问题状态的唯一引用
+## 10 Single Reference for Decision Status
 
-Spec §13保留原问题映射，§17为本轮唯一变更/待决登记，原Q1–Q14及A/B/C映射保留。U4原12项业务子问题维持已确认映射，本轮状态以Spec §17为准；本稿不另立待决选择。
+Spec §13 retains the original issue mapping, §17 is the sole change/open-item register for this round, and the original Q1–Q14 and A/B/C mappings are retained. The original 12 business sub-questions of U4 keep their confirmed mapping, and this round's status follows Spec §17; this draft establishes no separate pending options.
 
-商品数据抽样、Canvas组号/身份/平台时区/语言版本及实际签署完整性转为执行或提交检查，不能声称已核验。用户确认23号结束前、最好22号交，当前计划2026-10-22提交、2026-10-23结束前完成；课程仍以Canvas为准。本人签名照片按用户推荐在报告装配时准备；PDF只要求Word/PDF报告随源码和视频装入单ZIP，不规定照片签名形式。
+Product data sampling, Canvas group number/identity/platform time zone/language version and actual signing completeness are converted into execution or submission checks, and must not be claimed as verified. The user confirmed delivery before the end of the 23rd, preferably on the 22nd; the current plan is to submit on 2026-10-22 and complete before the end of 2026-10-23; the course still takes Canvas as authoritative. The signed photo of the student is prepared at report assembly as recommended by the user; the PDF only requires the Word/PDF report to be packed with the source code and video into a single ZIP, and does not prescribe the form of the photo signature.
 
-## 11 初步实施分工与图表计划
+## 11 Preliminary Work Distribution and Diagram Plan
 
-### 11.1 责任范围与交接
+### 11.1 Responsibilities and Handoffs
 
-本阶段不实现；具体人员、姓名、人数及贡献比例由真实团队在实施时分配，不虚构。职责是工作范围，可以一人多项；课程组队时各成员应显著参与设计和实现（C p2）。
+No implementation is performed in this stage; specific personnel, names, headcount and contribution ratios are assigned by the real team at implementation time and are not fabricated. A responsibility is a work scope, and one person may hold several; when the course team is formed, each member should participate significantly in design and implementation (C p2).
 
-| 工作范围（人员未分配） | 模块/材料 | 依赖 | 交接产物 |
+| Work scope (personnel unassigned) | Modules/materials | Dependencies | Handoff artifacts |
 |---|---|---|---|
-| 需求/决议与设计 | FR/BR、Spec唯一状态表、用例/V1/评审/V2 | 当前v0.7已冻结为需求基线；D1/D2依据及批准状态只查Spec §17 CR07-06/07 | 采用版本/已定规则、真实图版本/决定、已关闭ID，不重问已答Q |
-| 收货/附件/位置（原分工记录，仅作历史） | FR-03/04/12/15，FR-14已撤销 | 本轮不进行开发分工；原记录只同步移除撤销范围 | 不新增或细分任务 |
-| 销售/促销 | FR-05/06 | 已定在售/原子/快照；精确阶段只引用M-ROUND等 | 原销售行/实付快照、候选计价、库存影响，交售后/测试 |
-| 退换/损耗/查询/作废 | FR-07/08/09/13 | 原销售、已定30天/差额/权限；已定边界引用Spec原ID | 共享核销、退款/交回去向、反向联动，交库存/集成/测试 |
-| 公共CUI/持久化/集成 | FR-10/11 | Maven/JDK17/JUnit4.13.2/Jackson基线、领域设计 | 真正可运行构建命令、快照/附件关联和恢复、跨模块一致性，交全模块/测试 |
-| 验收/缺陷 | Ready AC及本轮新增边界场景 | 真实实现版本与数据；本轮无代码 | 实际预期/实际、输出、缺陷复测；不补造通过 |
-| 报告/日志/视频 | T全模板、Spec §15、本PRD §8 | 每阶段真实证据、本人反思/身份/贡献 | 中文工作稿提供素材，提交前英文最终报告保持同事实；真实≤5分钟演示、提交包检查；不由AI代写反思 |
+| Requirements/decisions and design | FR/BR, the Spec single status table, use cases/V1/review/V2 | The current v0.7 is frozen as the requirements baseline; the basis and approval status of D1/D2 are looked up only in Spec §17 CR07-06/07 | Adopted version/settled rules, actual diagram versions/decisions, closed IDs; answered Qs are not re-asked |
+| Receiving/attachments/location (original division record, historical only) | FR-03/04/12/15, FR-14 revoked | No development division of labour in this round; the original record only synchronizes the removal of the revoked scope | No new or subdivided tasks |
+| Sales/promotion | FR-05/06 | Settled on-shelf/atomic/snapshot; the exact stage references only M-ROUND etc. | Original sales line/actual paid snapshot, candidate pricing, stock impact; handed to after-sales/testing |
+| Returns/exchanges/loss/query/voiding | FR-07/08/09/13 | Original sales, settled 30 days/difference/permissions; settled boundaries reference the original Spec IDs | Shared redemption, refund/return destination, reverse linkage; handed to stock/integration/testing |
+| Common CUI/persistence/integration | FR-10/11 | Maven/JDK17/JUnit4.13.2/Jackson baseline, domain design | Genuinely runnable build commands, snapshot/attachment association and recovery, cross-module consistency; handed to all modules/testing |
+| Acceptance/defects | Ready ACs and the boundary scenarios added in this round | Actual implementation version and data; no code in this round | Actual expected/actual, output, defect retest; no fabricated passes |
+| Report/log/video | All T templates, Spec §15, §8 of this PRD | Real evidence for each stage, the student's own reflection/identity/contribution | The Chinese version (outside the repository) provides source material; before submission the English final report keeps the same facts; a genuine demonstration of ≤5 minutes, submission package check; reflection is not written by AI |
 
-交接记录版本、模块依赖、真实验证结果及Spec决策ID；不能把业务规则已定误写成实现已完成，也不能把一个残余边界变成整项功能仍未回答。
+The handoff records versions, module dependencies, real verification results and Spec decision IDs; settled business rules must not be miswritten as completed implementation, nor may one residual boundary be turned into the whole feature being still unanswered.
 
-### 11.2 图表计划与课程核对
+### 11.2 Diagram Plan and Course Requirements
 
-P1计划1张用例图（T §3.1 Figure1）＋2张类图（§3.3 Figure2初版、§3.5 Figure3最终）；C p3要求至少两次真实设计迭代、AI批判与修订，T §3.4/3.6记录评审/演化。保存可读PNG/JPG和图源，数量不代替实质变化。
+P1 plans 1 use case diagram (T §3.1 Figure1) plus 2 class diagrams (§3.3 Figure2 initial version, §3.5 Figure3 final); C p3 requires at least two genuine design iterations, AI critique and revision, with T §3.4/3.6 recording the reviews/evolution. Readable PNG/JPG files and diagram sources are kept; quantity does not replace substantive change.
 
-保留用户先生成代码再从代码生图的倾向；但C p4 §1.3明确基于最终设计实现，故倾向只能在不省略前置设计/真实迭代的范围内落实：需求和V1设计留痕→真实AI评审/人工决定→V2设计→获准后实现→从实际代码辅助生成类图并对照Spec/最终设计校验同步。不能先完成全部实现再伪造两版历史；这是课程已有边界，引用Spec PLAN-ORDER，不再泛泛要求用户重答或默认需要教师豁免。
+The user's preference for generating code first and then generating diagrams from the code is retained; however, C p4 §1.3 explicitly requires implementation based on the final design, so the preference can only be realized within the scope that does not omit the preceding design/genuine iterations: requirements and V1 design recorded → genuine AI review/manual decision → V2 design → implementation after approval → class diagrams aided-generated from the actual code and checked for synchronization against the Spec/final design. All implementation must not be completed first and then two versions of history fabricated; this is an existing course boundary, referencing Spec PLAN-ORDER, and the user is no longer asked to answer in general terms or assumed by default to need a teacher exemption.
 
-类图可由真实代码生成后校验属性/方法/关系及语义；用例图以已确认角色/需求/系统边界为依据，不声称菜单或代码能完整还原用户目标、权限及用例。当前只记录计划，不生成代码或图表。
+Class diagrams may be generated from real code and then checked for attributes/methods/relationships and semantics; use case diagrams are based on confirmed actors/requirements/system boundaries, and it is not claimed that menus or code can fully reconstruct user goals, permissions and use cases. At present only the plan is recorded; no code or diagrams are generated.
 
-### 11.3 同步与交付检查
+### 11.3 Synchronization and Delivery Checks
 
-当前仅更新Spec/PRD/ERD文档，历史版本由Git记录，没有代码、图表、最终报告或业务测试。课程资料/模板只读；评分项已核验一致，原评分名称/分类/权重不改。已定业务及工具同步进正文/矩阵/AC，不再留PRO候选；Spec是唯一状态表，PRD只引用。12项业务子问题已按U4全部关闭；实际商品数据及平台证据仍未核实，作为后续执行检查如实保留。
+At present only the Spec/PRD/ERD documents are updated, historical versions are recorded by Git, and there is no code, diagram, final report or business test. Course materials/templates are read-only; the scoring items have been verified as consistent, and the original scoring names/categories/weights are unchanged. Settled business rules and tools are synchronized into the body/matrix/ACs, and no PRO candidates remain; the Spec is the single status table, and the PRD only references it. All 12 business sub-questions have been closed per U4; actual product data and platform evidence are still unverified and are truthfully retained as subsequent execution checks.
 
 
-## 12 本轮变更与ERD约束引用
+## 12 Changes and ERD Constraint References
 
-本轮范围和AC撤销/改写原因统一见Spec §16，PRD不建立另一份问题表。后续ERD按Spec §9.1 ERD-C01–10：销售行促销分摊/实付快照、原行1:N售后核销、数量与金额双上限、幂等审计及冲销、库存仅商品＋位置。原商品日期/过期/批次能力已在P1/P2全部撤销，不绘ERD、不细分任务。报告材料按T §2.1/2.2/3.2/3.4–3.6及附录A持续记录本轮决定和真实证据，反思仍由学生本人独立写；不安排撤销能力的实现/测试证据。
+The scope of this round and the reasons for AC revocation/rewriting are uniformly in Spec §16, and the PRD does not establish another issue table. The subsequent ERD follows Spec §9.1 ERD-C01–10: sales line promotion allocation/actual paid snapshot, original line 1:N after-sales redemption, dual caps on quantity and amount, idempotent auditing and reversal, stock by product plus location only. The original product date/expiry/batch capabilities have been fully revoked in both P1 and P2, with no ERD drawn and no task subdivision. Report materials continuously record this round's decisions and real evidence per T §2.1/2.2/3.2/3.4–3.6 and Appendix A, and the reflection is still written independently by the student; no implementation/test evidence is arranged for the revoked capabilities.
 
-本轮报告材料补充：需求阶段保存U5/U6原决定、范围删减的用户理由及版本差异；设计阶段记录销售行分摊快照、双额度台账/幂等/冲销约束（Spec §9.1）；后续获准开发和测试后才采集AC-54–59的真实输入输出、余额、缺陷及复测。映射T §2.1/2.2、§3.2/3.4–3.6和附录A；不再安排商品日期/批次/过期能力的实现或测试取证。反思及签名仍由本人完成，本阶段不生成最终报告或项目结论。
+Report material additions for this round: the requirements stage preserves the original U5/U6 decisions, the user's reasons for the scope reduction and the version differences; the design stage records the sales line allocation snapshot and the dual-quota ledger/idempotency/reversal constraints (Spec §9.1); only after subsequent approved development and testing are the real inputs and outputs, balances, defects and retests of AC-54–59 collected. Mapping T §2.1/2.2, §3.2/3.4–3.6 and Appendix A; implementation or test evidence for product date/batch/expiry capabilities is no longer arranged. The reflection and signature are still completed by the student, and no final report or project conclusion is produced at this stage.
 
-## 13 v0.7受控同步说明
+## 13 v0.7 Controlled Synchronization Notes
 
-本版仅由HEAD已确认需求加Spec §17明确授权重建；版本、变更请求、未决事项唯一登记见[Spec §17](./Project_Spec.md#17-v07-变更控制与唯一待决登记)，不另建Q。售后资格逐核销、exchange_kind逐替换明细，质量同款零差配对显式关联，见CR07-01/AC-82；同类别拆分依原行实付公式及稳定核销ID、当前提交结清语义见CR07-03/AC-79/80；同单换货优先是新增业务规则CR07-04，见AC-81，不追溯历史。整单冲销任一行失败均不生效，CR07-05/AC-83；D1/D2规范见Spec §7.5/10.2，批准唯一见Spec §17 CR07-06/07；CR07-10撤销CR07-09店长资格例外，其他原因只记录reason_text、不改变资格；已冻结为需求基线，不开始正式分工/开发。AC-60–76为未批准稿占号，不是正式标准。报告收集按§8及Spec §15/17保存真实授权、差异、设计评审和实际后续结果；不预填测试或学生反思。商品日期/批次能力在P1/P2均排除且不预留。
+This version is rebuilt only from the requirements confirmed at HEAD plus the explicit authorization in Spec §17; the single register of versions, change requests and open items is [Spec §17](./Project_Spec.md#17-v07-change-control-and-single-pending-decision-register), and no separate Qs are created. After-sales eligibility per redemption and exchange_kind per replacement detail, with explicit linkage of same-quality zero-difference pairings, see CR07-01/AC-82; same-category splitting follows the original line's actual paid formula and the stable redemption ID, and the current submission settlement semantics see CR07-03/AC-79/80; same-order exchange priority is a new business rule CR07-04, see AC-81, and is not applied retroactively. Whole-order reversal takes no effect if any line fails, CR07-05/AC-83; D1/D2 specifications see Spec §7.5/10.2, and the sole approval see Spec §17 CR07-06/07; CR07-10 revokes the CR07-09 store-manager eligibility exception, and other reasons only record reason_text without changing eligibility; it is frozen as the requirements baseline, and formal division of labour/development does not start. AC-60–76 are placeholder numbers in an unapproved draft, not formal standards. Report collection per §8 and Spec §15/17 preserves real authorization, differences, design reviews and actual subsequent results; tests or student reflections are not pre-filled. Product date/batch capabilities are excluded in both P1 and P2 and are not reserved.
 
-本轮M1–M5一致性修订及D1/D2影响记录见Spec §17.3。AC-35/52/59/83–85按Spec §11逐字同步，Ready不表示已执行；获准实现后再收集锁竞争、快照失败/重启/完整恢复真实证据，映射报告T §1/2.2/3.2/3.4/3.6及附录A，反思由学生独立完成。
+The M1–M5 consistency revisions and D1/D2 impact records of this round see Spec §17.3. AC-35/52/59/83–85 are synchronized verbatim per Spec §11, and Ready does not mean executed; after implementation is approved, real evidence of lock contention, snapshot failure/restart/complete recovery will be collected, mapped to report T §1/2.2/3.2/3.4/3.6 and Appendix A, and the reflection is completed independently by the student.
 
-受控同步记录引用Spec §17 SYNC-01–05及CR07-11：读取准入与已读取草稿取消留存两项已批准；AC-87更新引用并补AC-88–90，预期Ready但未执行。v0.7版本口径不变，不以批准代替接口实现、集中审计、真实联调或验收。
+The controlled synchronization record references Spec §17 SYNC-01–05 and CR07-11: the two items read admission and retention cancellation of read drafts are approved; AC-87 updates references and AC-88–90 are added, expected Ready but not executed. The v0.7 version designation is unchanged, and approval is not a substitute for interface implementation, centralized auditing, real integration testing or acceptance.
+
+Controlled revision CR07-12 (2026-10-22, v0.7 unchanged): the language process see PRD-11, the specification see Spec §10.3, and the sole acceptance AC-91–100 see Spec §11; the requirements are approved, not yet implemented/verified. That affected repository files are in English and the corresponding Chinese is stored outside the repository is a user management convention, not a course requirement; substantive source-code comments are bilingual Chinese-English, and the source code is not translated in this round.

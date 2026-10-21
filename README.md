@@ -1,153 +1,161 @@
-# 超市管理系统 · Supermarket Management
+# Supermarket Management System
 
-单店离线 Java CUI 课程项目。现有单体已装配真实 JSON 存储、认证、商品、收货、促销、销售、库存、售后与整单冲销；运行与本次验证状态见 [统一实现日志](./docs/P1_Implementation_Log.md)。自动化验证不代替用户验收、课程报告、视频或本人签署。
+A single-store offline Java CUI course project. The existing monolith is already wired with real JSON storage, authentication, products, receiving, promotions, sales, stock, after-sales and whole-order reversal; for run status and the verification status of this round, see the [unified implementation log](./docs/P1_Implementation_Log.md). Automated verification does not replace user acceptance, the course report, the video or the student's own signature.
 
-## 快速开始（Quick Start）
+## Quick Start
 
-适用于 Windows + JDK 17；完整说明见下文[构建与运行](#构建与运行)。
+Applies to Windows + JDK 17; full instructions are in [Build and run](#build-and-run) below.
 
-1. 确认 `JAVA_HOME` 指向 JDK 17（Enforcer 会拒绝 Java 8 等其他主版本；PATH 里的 `java` 未必是 17）。
-2. 构建：`.\mvnw.cmd -B --no-transfer-progress clean package`
-3. 首次初始化账号（**需要真实终端**，交互输入，无默认账号）：
+1. Make sure `JAVA_HOME` points to JDK 17 (Enforcer rejects Java 8 and other major versions; the `java` on `PATH` is not necessarily 17).
+2. Build: `.\mvnw.cmd -B --no-transfer-progress clean package`
+3. Initialise the accounts once (**a real terminal is required**, interactive input, no default accounts):
    `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --init-accounts`
-   按提示为 ADMIN/MANAGER/CLERK 各设用户名和密码；创建完成后**直接进入 CUI**，可立即登录。
-4. 以后启动：`& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`
-5. 只检查存储恢复与注册校验、不进入业务：在启动命令后追加 `--check`；查看参数：追加 `--help`。
+   Follow the prompts to set a username and password for ADMIN/MANAGER/CLERK; once creation finishes you **go straight into the CUI** and can log in immediately.
+4. Start it later: `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`
+5. To check storage recovery and registration validation only, without entering the business flow: append `--check` to the start command; to view the options: append `--help`.
 
-说明：`--init-accounts` 只初始化空存储，已有快照时拒绝执行，不会覆盖已有账号；密码不回显，只保存 SHA-256 哈希。IDE 或重定向环境没有控制台，请改用 `--accounts <本地凭证JSON>` 预置账号。带依赖的 JAR 才能单独启动，不要使用普通 JAR。
+Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR.
 
-## 阅读顺序
+## Reading Order
 
-1. [Spec：需求和业务规则基线](./docs/Project_Spec.md)（v0.7，已冻结为需求基线）。
-2. [PRD：功能需求和验收映射](./docs/Project_PRD.md)（v0.7，已冻结为需求基线）。
-3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
-4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
+1. [Spec: requirements and business-rule baseline](./docs/Project_Spec.md) (v0.7, frozen as the requirements baseline).
+2. [PRD: functional requirements and acceptance mapping](./docs/Project_PRD.md) (v0.7, frozen as the requirements baseline).
+3. [ERD: logical entities, relationships and data dictionary](./docs/Project_ERD.md) (v0.7, in sync with the requirements baseline; design review items are in section 8).
+4. [P1 preliminary work distribution and interface list](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md) (v0.3, work packages and shared-asset ownership; the current cross-module conventions and local coding gates are in the formal interface specification).
 
-5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.0.4正式版及代码交付附录；CR07-11的IF-11准入与取消留存已批准，接口实现/审计/联调分别交付）。
+5. [Shared boundaries and interface specification](./docs/Shared_Boundaries_and_Interface_Spec.md) (v1.0.4 formal release plus the code-delivery appendix; the IF-11 admission and cancellation retention for CR07-11 are approved, with interface implementation / audit / integration delivered separately).
 
-ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
+The core ERD review items are in section 8 of the ERD; the work packages are in item 4, and the formal cross-module calling conventions are maintained only in item 5.
 
-## 范围与技术边界
+## Scope and Technical Boundaries
 
-P1为Java CUI，采用集合与文件持久化；已选Maven、JDK 17、UTF-8 JSON/Jackson。P2才扩展GUI和Derby；课程允许的GUI选型以Spec为准。ERD表达逻辑关系，不表示P1必须使用关系数据库。
+P1 is a Java CUI using collection and file persistence; Maven, JDK 17 and UTF-8 JSON/Jackson have been chosen. Only P2 extends to a GUI and Derby; the GUI options the course allows are governed by the Spec. The ERD expresses logical relationships and does not mean P1 must use a relational database.
 
-已确认范围以Spec为准，包括收货审核、在售/在仓库存、补货、销售促销、按原销售行实付办理退换、数量及金额双额度核销和审计。当前基线从P1、P2均移除了商品日期、临期/过期、批次及过期拦截；不因发布到GitHub重新扩展范围。
+The confirmed scope is governed by the Spec and covers receipt review, on-shelf/in-warehouse stock, replenishment, sales promotions, returns and exchanges settled against the actual paid amount of the original sales line, redemption against both quantity and amount quotas, and auditing. The current baseline removes product dates, near-expiry/expiry, batches and expiry blocking from both P1 and P2; publishing to GitHub does not bring that scope back.
 
-## ERD图源与查看方式
+## ERD Diagram Sources and How to View Them
 
-ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文](./docs/Project_ERD.md)；`.mmd`链接用于下载或编辑源码，不保证单独打开文件时GitHub会自动渲染。
+The ERD body contains four `mermaid` code blocks. Prefer opening the [ERD Markdown body](./docs/Project_ERD.md); the `.mmd` links are for downloading or editing the sources, and GitHub is not guaranteed to render them automatically when the file is opened on its own.
 
-| 分视图 | 可编辑源码 |
+| Sub-view | Editable source |
 |---|---|
-| 公共单据与审计 | [01_common.mmd](./docs/erd/01_common.mmd) |
-| 到货审核与库存 | [02_receipt_stock.mmd](./docs/erd/02_receipt_stock.mmd) |
-| 销售与促销 | [03_sale_promotion.mmd](./docs/erd/03_sale_promotion.mmd) |
-| 售后双额度 | [04_aftersale.mmd](./docs/erd/04_aftersale.mmd) |
+| Common documents and audit | [01_common.mmd](./docs/erd/01_common.mmd) |
+| Receipt review and stock | [02_receipt_stock.mmd](./docs/erd/02_receipt_stock.mmd) |
+| Sales and promotions | [03_sale_promotion.mmd](./docs/erd/03_sale_promotion.mmd) |
+| After-sales dual quota | [04_aftersale.mmd](./docs/erd/04_aftersale.mmd) |
 
 
-## 路径基准与维护规则
+## Path Baseline and Maintenance Rules
 
-以下定义仅适用于本仓库。**仓库根目录是包含`README.md`、`.gitignore`和`docs/`的顶层目录；clone后不再套一层`Project1`。**所有文档中的代码样式路径均为仓库相对路径；不记录或管理仓库外目录。
+The definitions below apply only to this repository. **The repository root is the top-level directory containing `README.md`, `.gitignore` and `docs/`; after cloning there is no extra `Project1` level.** Code-style paths in all documents are repository-relative paths; directories outside the repository are neither recorded nor managed.
 
-| 名称 | 逻辑定义与归属 |
+| Name | Logical definition and ownership |
 |---|---|
-| 仓库根目录 | 仓库顶层；本机checkout名为`Project1`，README、.gitignore、docs直接位于此处 |
-| 仓库文档目录 | **仓库相对路径**`docs/`；共同维护的Spec/PRD/ERD主副本，可含中文，不是仅英文文件目录 |
-| Markdown相对链接 | 只相对于该Markdown文件所在目录解析；代码样式的仓库相对路径不是同一种链接 |
-| 运行数据根目录 | `DATA_ROOT`=仓库根目录下`data/`；由 DataRoot 校验项目标记、真实路径与可写性，不等于Markdown目录 |
+| Repository root | Top level of the repository; the local checkout is named `Project1`, with README, .gitignore and docs directly here |
+| Repository docs directory | **repository-relative path** `docs/`; the jointly maintained master copies of the Spec/PRD/ERD, may contain Chinese, and is not an English-only file directory |
+| Markdown relative links | Resolved only relative to the directory containing that Markdown file; a code-style repository-relative path is not the same kind of link |
+| Runtime data root | `DATA_ROOT` = `data/` under the repository root; `DataRoot` validates the project marker, the real path and writability, and is not the Markdown directory |
 
-### 文档主副本
+### Document Master Copies
 
-仓库`docs/`是Spec/PRD/ERD的唯一协作主副本；不再维护仓库外副本，也不在文档中记录外部归档或备份位置。修改需求/设计时直接在仓库内评审，历史版本由Git记录。
+The repository's `docs/` is the single collaborative master copy of the Spec/PRD/ERD; no copies outside the repository are maintained, and external archive or backup locations are not recorded in the documents. Requirement/design changes are reviewed directly in the repository, and Git records historical versions.
 
-### 计划路径与报告安排
+### Planned Paths and Report Arrangements
 
-文档中代码样式的`docs/evidence/...`、`docs/design/...`、`docs/decisions.md`或`docs/decisions/...`均为**仓库相对路径**。现有文档包括Spec/PRD/ERD/分工清单/共享规范，`docs/erd/`四个图源以及已创建的`docs/design/member_b/`和`docs/evidence/member_b/`（含B的V1/V2、AI评审、设计演进和框架复现记录）；仅`docs/decisions/`和`docs/decisions.md`仍为尚未创建的计划位置。不为了让计划“看起来完成”而创建空证据文件；也不新建重复路径治理记录。
+Code-style paths in the documents such as `docs/evidence/...`, `docs/design/...`, `docs/decisions.md` or `docs/decisions/...` are all **repository-relative paths**. The existing documents comprise the Spec/PRD/ERD/work-distribution list/shared specification, the four diagram sources under `docs/erd/`, and the already created `docs/design/member_b/` and `docs/evidence/member_b/` (containing B's V1/V2, AI review, design evolution and framework reproduction records); only `docs/decisions/` and `docs/decisions.md` remain planned locations that have not been created yet. Empty evidence files are not created just to make the plan "look complete", and no duplicate path-governance record is added.
 
-工作阶段以仓库`docs/`的中文Spec/PRD/ERD为协作主副本；提交前将最终报告转为英文，并从提交包/最终交付目录移除中文工作稿，中文稿不作为并行最终报告。中文工作稿不是提交报告，不设正式§2.6/§3.7声明；正式声明只在英文最终报告中由本人按模板要求完成并签署，中文工作稿不替代声明。英文最终报告使用仓库根目录下的英文报告存放位置；最终文件名在报告装配时确定，本轮不新增报告子目录或改变Canvas安排；仓库根目录可包含中英文工作文档、代码和构建文件。
+During the working phase the English Spec/PRD/ERD in the repository's `docs/` are the collaborative main line (the corresponding Chinese versions are kept in a designated directory outside the repository); before submission the final report is converted to English and the Chinese working drafts are removed from the submission package/final delivery directory, so the Chinese drafts are not a parallel final report. A Chinese working draft is not a submission report and carries no formal §2.6/§3.7 declaration; the formal declaration is completed and signed by the student only in the English final report, following the template requirements, and a Chinese working draft does not replace it. The English final report uses the English report location under the repository root; the final file name is settled when the report is assembled, and this round adds no report subdirectory and does not change the Canvas arrangement; the repository root may contain English working documents, code and build files.
 
-文档历史由Git记录，本文档不定义仓库外备份位置。运行数据上一版JSON快照、临时写文件及附件恢复副本属于运行时存储，使用下述已实现的`DATA_ROOT`子布局，**不得复制进仓库**。提交课程作业的ZIP/报告/演示证据不是运行数据，不用全局日志或压缩包通配符忽略它们。
+Document history is recorded by Git, and this document does not define backup locations outside the repository. The previous-version JSON snapshot of runtime data, temporary write files and attachment recovery copies are runtime storage, use the implemented `DATA_ROOT` sub-layout described below, and **must not be copied into the repository**. The ZIP/report/demo evidence submitted for the course assignment is not runtime data, so do not ignore it with global log or archive wildcards.
 
-### 运行数据与附件：当前布局和安全契约
+### Runtime Data and Attachments: Current Layout and Security Contract
 
-已确认的是UTF-8 JSON单快照/schemaVersion、原子替换/上版恢复和附件相对路径＋哈希；`DATA_ROOT`已定为仓库根目录下`data/`，根解析与安全检查由 DataRoot 实现，损坏或不可写时明确阻断启动。详见[Spec运行路径设计待确认项](./docs/Project_Spec.md#101-运行路径契约与待确认设计)；不把剩余技术方案当作已批准部署规则，也不增加课程手工配置门槛。
+What has been confirmed is a single UTF-8 JSON snapshot/schemaVersion, atomic replacement/previous-version recovery, and attachment relative paths plus hashes; `DATA_ROOT` is set to `data/` under the repository root, root resolution and the security checks are implemented by `DataRoot`, and corruption or a non-writable location blocks start-up explicitly. See [Spec runtime path design open items](./docs/Project_Spec.md#101-runtime-path-contract-and-pending-design) for details; the remaining technical options are not treated as approved deployment rules, and no manual configuration hurdle is added for the course.
 
-旧文中的`data/`仅指运行数据逻辑根`DATA_ROOT`，旧`data/attachments/`统一表达为`DATA_ROOT/attachments/`；附件记录内只保存`attachments/<文件名>`，**相对于DATA_ROOT而非工作目录、JAR、仓库或Markdown目录**。根位置已定为仓库根`data/`；运行子布局为 snapshot.json、previous.json、writer.lock、*.next.json 和 attachments/；不自动创建业务货物。
+The `data/` in older text refers only to the runtime data logical root `DATA_ROOT`, and the old `data/attachments/` is uniformly expressed as `DATA_ROOT/attachments/`; an attachment record stores only `attachments/<filename>`, **relative to DATA_ROOT rather than to the working directory, the JAR, the repository or the Markdown directory**. The root location is set to `data/` under the repository root; the runtime sub-layout is snapshot.json, previous.json, writer.lock, *.next.json and attachments/; business goods are not created automatically.
 
-路径安全契约：落盘的附件`relative_path`统一用`/`；拒绝盘符/UNC/根路径等绝对引用、URI、空路径、反斜杠、`.`/`..`段及解析后越出DATA_ROOT的引用。将根与目标规范化并校验最终真实位置（包括符号链接/联接点），以路径组成部分判断包含关系，不能用字符串前缀冒充。写入前及实际打开时均核查，避免链接把目标引到根外。CUI选择待导入源图片可使用用户本机路径，但**源绝对路径不得序列化成附件引用或写入Git材料**。
+Path security contract: the `relative_path` of a persisted attachment always uses `/`; absolute references such as drive letters/UNC/root paths, URIs, empty paths, backslashes, `.`/`..` segments and references that resolve outside DATA_ROOT are rejected. The root and the target are normalised and the final real location is validated (including symbolic links/junctions), with containment decided by path components — a string prefix must not pass for it. Checks happen before writing and when actually opening, so that a link cannot point the target outside the root. When choosing a source image to import in the CUI, a user-local path may be used, but **the source absolute path must not be serialised into an attachment reference or written into Git material**.
 
-中文和空格是合法文件名字符，不用按空格分词或拼接Shell命令操作文件；目标使用独立 UUID 与 CREATE_NEW，碰撞或导入失败拒绝保存引用，不能默默覆盖现有文件或把源目录/用户名编码进目标名。复制/读取/校验失败不得保存“附件成功”引用，不覆盖已验证副本；没有附件时仍按既有规则允许审核，不因路径治理新增强制上传。对既有引用缺文件或哈希不符，不把它当作正常附件、不偷偷移除历史关联；完整恢复遇附件缺失、引用异常或哈希不符时阻写；未引用的导入副本不自动清理，不能擅改收货审核或业务恢复规则。附件单张上限已按`5,000,000`字节同步；失败不覆盖已验证副本，不发布无效引用。
+Chinese characters and spaces are legal filename characters; do not split on spaces or concatenate shell commands to operate on files. Targets use an independent UUID with CREATE_NEW; on collision or import failure the reference is refused, and existing files must not be silently overwritten nor the source directory/user name encoded into the target name. A copy/read/validation failure must not store an "attachment succeeded" reference, and a validated copy must not be overwritten; when there is no attachment, review is still allowed under the existing rules, and no mandatory upload is added for path governance. For an existing reference whose file is missing or whose hash does not match, do not treat it as a normal attachment and do not silently remove the historical association; a full restore blocks writing when an attachment is missing, a reference is abnormal or a hash does not match; unreferenced imported copies are not cleaned up automatically, and receipt review or business recovery rules must not be changed at will. The per-attachment limit has been synced at `5,000,000` bytes; a failure does not overwrite a validated copy and does not publish an invalid reference.
 
-### 忽略规则与提交前检查
+### Ignore Rules and Pre-Submission Checks
 
-当前未发现被跟踪的业务JSON、图片附件、课程PDF/DOCX或本地备份。`.gitignore`只对未跟踪文件生效，不会清除已经提交的路径/个人引用；本轮不重写历史或取消跟踪文件。旧提交仍可能保留原文引用，历史处理需要另行明确授权。
+No tracked business JSON, image attachments, course PDF/DOCX or local backups have been found so far. `.gitignore` applies only to untracked files and will not clear paths/personal references that are already committed; this round does not rewrite history or untrack files. Older commits may still retain references to the original text, and handling history requires separate explicit authorisation.
 
-运行数据根已定为仓库根`data/`；忽略规则只覆盖仓库内路径，提交前仍须复查。当前针对仓库内误生成数据保留窄范围防线：根目录`data/`、`runtime/`、`attachments/`、`logs/`、`tmp/`、`backups/`、`.local/`，以及构建产物和明确的本机设置。课程源文件只按已知文件名防误拷贝，不全局忽略PDF/DOCX。样例请放明确跟踪的`docs/examples/`或后续测试样例位置，使用虚构/脱敏数据；目前没有这些样例文件。不要在真实运行数据目录中保存需要跟踪的唯一证据。
+The runtime data root is set to `data/` under the repository root; the ignore rules cover only in-repository paths, so checks are still required before submission. A narrow defence line is currently kept for data mistakenly generated inside the repository: the root-level `data/`, `runtime/`, `attachments/`, `logs/`, `tmp/`, `backups/`, `.local/`, plus build outputs and explicit machine-local settings. Course source files are guarded against accidental copying only by known filenames; PDF/DOCX are not ignored globally. Put samples in the explicitly tracked `docs/examples/` or in the later test-sample location, using fictitious/desensitised data; there are currently no such sample files. Do not keep unique evidence that needs to be tracked inside a real runtime data directory.
 
-发布前检查Git diff、待提交清单、相对链接、路径/个人信息和数据文件；`.gitignore`不是敏感信息扫描器，改动不会自动上传GitHub。本轮v1.02发布后勘误提交的最终状态，以`git status`、`git log`和`git ls-remote`核验为准。
+Before release, check the Git diff, the pending-commit list, relative links, paths/personal information and data files; `.gitignore` is not a sensitive-information scanner, and changes are not uploaded to GitHub automatically. The final state of the post-release errata commits for this round's v1.02 release is determined by verification with `git status`, `git log` and `git ls-remote`.
 
-### 本轮Git核验记录
+### Git Verification Record for This Round
 
-v1.02已发布：main提交`4d7b1f28c6d9caa0473092e77ab27aa1e724b983`，`git ls-remote origin refs/heads/main`返回同一提交，工作区干净；B设计成果及正式共享规范均已包含。本次发布后勘误提交以Git历史定位，不改变上述发布回执。
+v1.02 has been released: main commit `4d7b1f28c6d9caa0473092e77ab27aa1e724b983`, `git ls-remote origin refs/heads/main` returns the same commit, and the working tree is clean; B's design results and the formal shared specification are both included. The post-release errata commits are located through Git history and do not change the release receipt above.
 
-## 课程资料引用档案（不分发原文）
+## Course Material Reference Archive (Source Text Not Distributed)
 
-| 资料 | 必要定位与要求摘要 | 分发状态 |
+| Material | Required locator and summary of requirements | Distribution status |
 |---|---|---|
-| COMP603/ENSE600 2026 CJLU项目要求，`Projects1and2.pdf` | 阅读器/印刷p3–6：P1需求/真实设计迭代、Java CUI、集合/File I/O、OOP/SOLID、标准构建、日志/≤5分钟视频；p7–10：P2 GUI/Derby/Git/JUnit；p12–13：报告/源码/视频单ZIP | 未纳入仓库；具体日期仍核Canvas |
-| Assignment 1报告模板，`Assignment1_Report_Template_CJLU2026.docx` | §1构建/凭证；§2.2需求ID/验收/E-D；§3.2–3.6范围、两版类图和真实评审/演化；§2.6/3.7本人反思及声明；附录A/B日志/贡献 | 未纳入仓库，不复制整份模板 |
-| U2/U3及后续U4/U5/U6会话决定 | 保留Spec的来源代号、已确认规则和原章节定位；不以未分发附件冒称协作者已阅读原文 | 未纳入仓库，不记录个人路径/附件UUID |
+| COMP603/ENSE600 2026 CJLU project requirements, `Projects1and2.pdf` | reader/print p3–6: P1 requirements/real design iteration, Java CUI, collections/File I/O, OOP/SOLID, standard build, log/≤5-minute video; p7–10: P2 GUI/Derby/Git/JUnit; p12–13: report/source/video in a single ZIP | Not included in the repository; specific dates still to be checked on Canvas |
+| Assignment 1 report template, `Assignment1_Report_Template_CJLU2026.docx` | §1 build/credentials; §2.2 requirement ID/acceptance/E-D; §3.2–3.6 scope, the two class diagrams and the real review/evolution; §2.6/3.7 own reflection and declaration; appendices A/B log/contribution | Not included in the repository; the whole template is not copied |
+| U2/U3 and the later U4/U5/U6 session decisions | Retain the Spec's source codes, confirmed rules and original section locators; do not claim, on the basis of an undistributed attachment, that collaborators have read the source text | Not included in the repository; personal paths/attachment UUIDs are not recorded |
 
-本轮完成路径/Git核对及文档同步，沿用已记录的课程定位，不把历史全文阅读记录冒称本轮重新核读。
+This round completed the path/Git checks and the document sync, reusing the course locators already recorded, and does not pass off earlier full-text reading notes as a fresh reading in this round.
 
-这些摘要只支持必要追踪，不代替课程原文或扩展业务需求；没有新增课程源文件/会话附件。
+These summaries only support the necessary traceability and do not replace the course source text or extend the business requirements; no course source files/session attachments were added.
 
-## 构建与运行
+## Build and Run
 
-使用 JDK 17 和仓库唯一 Maven 工程。2026-10-21 的 PowerShell 7.6.5 是历史验证环境记录；2026-10-22 发布收尾重新核验的环境及结果见统一实现日志。脚本目标兼容 Windows PowerShell 5.1 与 PowerShell 7。一条命令复现离线构建、全部测试、可执行包依赖隔离及真实 JAR/CUI 冒烟：
+Uses JDK 17 and the repository's single Maven project. The PowerShell 7.6.5 run on 2026-10-21 is a historical verification-environment record; the environment and results re-verified during the 2026-10-22 release wrap-up are in the unified implementation log. The scripts aim to be compatible with Windows PowerShell 5.1 and PowerShell 7. One command reproduces the offline build, all tests, executable-package dependency isolation and a real JAR/CUI smoke test:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-p1.ps1 -Offline
-# 已安装 PowerShell 7 时也可执行（不要求安装）：
+# Can also be run where PowerShell 7 is installed (installation not required):
 pwsh -NoProfile -File .\scripts\verify-p1.ps1 -Offline
 ```
 
-首次依赖尚未缓存时去掉 `-Offline`。脚本只在其新建的临时独立项目根使用随机虚构账号、合法期初及销售，验证后清理该次临时目录，不改真实业务 data/，不输出或提交密码/哈希。逐步命令如下：
+Drop `-Offline` when the dependencies are not cached yet for the first run. The script only uses random fictitious accounts, a legal opening balance and sales in a temporary standalone project root that it creates, cleans up that temporary directory after verification, does not touch the real business data/, and neither prints nor commits passwords/hashes. The step-by-step commands are as follows:
 
 ```powershell
-# JAVA_HOME 已是 JDK 17 时无需重设；以下仅探测可用的本机临时工具。
+# No need to reset JAVA_HOME when it is already JDK 17; the following only probes for an available local temporary tool.
 $taskJdk17 = @((Join-Path $env:LOCALAPPDATA 'pdc-build-tools/jdk-17.0.20.1+1'), (Join-Path $env:TEMP 'p1-jdk17/jdk')) |
   Where-Object { Test-Path (Join-Path $_ 'bin/java.exe') } | Select-Object -First 1
 if ($taskJdk17) { $env:JAVA_HOME = $taskJdk17 }
 & "$env:JAVA_HOME/bin/java.exe" -version
 ./mvnw.cmd -B --no-transfer-progress clean verify
 & "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --check
-# 首次在真实交互终端预置三角色账号；无默认密码、不回显密码，只存 B 哈希器的编码。
+# Pre-provision the three role accounts once in a real interactive terminal; no default password, passwords are not echoed, and only the encoding of B's hasher is stored.
 & "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --init-accounts
-# 以后正常启动：
+# Normal start-up thereafter:
 & "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-未找到上述临时 JDK 时选择已安装的 JDK 17；Enforcer 会拒绝 Java 8/其他主版本，不改为 Java 8 构建。首次工程依赖下载可能需要网络，业务运行离线；缓存齐全后加 `--offline`。本次实测平台为 Windows，其他平台命令未执行。
+If the temporary JDK above is not found, choose an installed JDK 17; Enforcer rejects Java 8/other major versions, and the build is not changed to Java 8. The first download of project dependencies may need the network, business runs are offline; add `--offline` once the cache is complete. The platform actually tested this time is Windows; the commands have not been executed on other platforms.
 
-可执行包是带依赖的 `*-jar-with-dependencies.jar`，包含 Jackson；普通 JAR 没有内嵌依赖，不能把它单独启动视为已验证。主类为 `nz.ac.aut.pdc.supermarket.app.Main`，从可执行文件位置向上找项目标记，不把 shell 当前目录当 DATA_ROOT；搬动可执行文件时用 `--project-root <项目根>`。`--help` 查看参数，`--check` 实际装配并执行完整快照校验，不提交业务操作。
+The executable package is the `*-jar-with-dependencies.jar` with dependencies, including Jackson; the plain JAR has no embedded dependencies, and starting it on its own must not be treated as verified. The main class is `nz.ac.aut.pdc.supermarket.app.Main`, which looks for the project marker upwards from the executable's location and does not treat the shell's current directory as DATA_ROOT; when moving the executable, use `--project-root <project-root>`. Use `--help` to view the options, and `--check` to actually wire up and run the full snapshot validation without committing business operations.
 
-非交互启动可用 `--accounts <本地凭证JSON>` 初始化空存储：数组元素字段为 `accountId/username/passwordHash/role`，角色 ADMIN/MANAGER/CLERK，哈希兼容现有 B Sha256PasswordHasher。只初始化空存储，不能借此覆盖已有账号；本地文件放 `.local/` 等忽略目录，不上传密码、哈希或运行数据。无账号时明确提示登录未配置。`--init-accounts` 在已有快照时拒绝；密码/用户名输入中止不安装半套账号。
+A non-interactive start can use `--accounts <local-credentials.json>` to initialise empty storage: the array element fields are `accountId/username/passwordHash/role`, the roles are ADMIN/MANAGER/CLERK, and the hashes are compatible with the existing B Sha256PasswordHasher. It only initialises empty storage and cannot be used to overwrite existing accounts; keep the local file in an ignored directory such as `.local/`, and do not upload passwords, hashes or runtime data. With no accounts, the system clearly reports that login is not configured. `--init-accounts` refuses when a snapshot already exists; aborting password/username input does not install a half set of accounts.
 
-CUI 包含商品新增/修改、期初、收货/补正/审核及可选附件、促销、销售报价后模拟付款、补货、报损/处置/修正、受限历史/额度查询、单行与混合售后、取消/删除及整单冲销。售后先保存 IF-11 追溯再显示必要原单字段和本次结算；尚未确认时可退出并按显示的目标草稿号取消。`CANCELLED` 保留追溯且无退款、库存、额度影响。销售报价变化或工作副本过期拒绝成交，需重新报价确认。
+The CUI covers product creation/editing, opening balances, receiving/correction/review with optional attachments, promotions, simulated payment after a sales quote, replenishment, loss registration/disposal/correction, restricted history/quota queries, single-line and mixed after-sales, cancellation/deletion and whole-order reversal. After-sales first saves the IF-11 trace and then shows the necessary original-order fields and the current settlement; while it is not yet confirmed you can exit and cancel by the displayed target draft number. `CANCELLED` keeps the trace and has no effect on refunds, stock or quota. A change in the sales quote or an expired working copy rejects the transaction and requires a new quote confirmation.
 
-请求结果未知先查原键。菜单15重试本次进程保存的原始请求；售后与冲销表单还允许输入原键及相同业务输入，支持重启后复用原结果。普通历史仍按店员本人、店长/管理员全部；售后凭证为精确原销售单号或打印的稳定销售行号，不提供跨人浏览。恢复异常会阻止启动，保留坏文件；管理员先备份完整 data/，使用 JsonStore 显式 PREVIOUS 恢复能力校验并恢复完整上一版及其附件，禁止手工拼接版本或静默清空。未在 CUI 中提供绕过损坏校验的写入口。
+When the outcome of a request is unknown, look up the original key first. Menu 15 retries the original request saved by the current process; the after-sales and reversal forms also allow entering the original key with identical business input, so the original result can be reused after a restart. Ordinary history remains scoped to the clerk themselves, or to everything for the manager/administrator; after-sales proof is an exact original sales order number or a printed stable sales line number, and no cross-person browsing is offered. A recovery anomaly blocks start-up and keeps the bad files; the administrator first backs up the complete data/, then uses JsonStore's explicit PREVIOUS recovery capability to validate and restore the complete previous version and its attachments; hand-splicing versions or silently clearing data is forbidden. No write entry point that bypasses the corruption checks is provided in the CUI.
 
-## 开发与发布边界
+## Development and Release Boundaries
 
-2026-10-21 v3 授权后由一个负责人维护完整单体，原 A/B 分工与设计保留为历史贡献和来源，不再以等待另一方接线作为实现状态。B 的 V1/V2 已获审计并包含于基线，不重做设计阶段。
+After the 2026-10-21 v3 authorization, a single owner maintains the complete monolith; the original A/B division of work and design are retained as historical contribution and provenance, and waiting for the other party to connect is no longer treated as an implementation status. B's V1/V2 have been audited and are included in the baseline; the design phase is not redone.
 
-本轮仅本地开发与验证。任何上传 GitHub、推送或合并 main，均须先展示具体差异供人工审核，再取得针对该次操作的明确批准；没有自动发布。使用独立工作树保护其他会话在途修改，实际分支和本地交付记录见统一实现日志。
+This round covers local development and verification only. Any upload to GitHub, push, or merge into main must first present the specific diff for human review, then obtain explicit approval for that specific operation; there is no automatic publishing. An independent worktree protects in-flight changes from other sessions; the actual branch and local delivery record are in the unified implementation log.
 
-文档历史由Git记录，本文档不定义仓库外备份位置；运行数据备份遵循`DATA_ROOT`（仓库根`data/`）内上述子布局，不能混用。课程交付仍以PDF、模板和Canvas要求为准。
+Document history is recorded by Git; this document does not define backup locations outside the repository. Runtime data backups follow the above sub-layout under `DATA_ROOT` (the `data/` directory at the repository root) and must not be mixed. Course delivery remains governed by the PDF, template, and Canvas requirements.
 
-## Maven框架与构建
+## Maven Framework and Build
 
-工程使用固定版本 Maven Wrapper、JDK 17 Enforcer、JUnit 与 Jackson，以及 assembly 可执行包。当前命令、依赖与历史底座记录见 [Maven 框架说明](./docs/Maven_Framework.md)；当前实现和实际结果见 [统一实现日志](./docs/P1_Implementation_Log.md)。历史“空工程／尚无 Main／等待 A”只代表相应记录的形成时点。
+The project uses a pinned Maven Wrapper, JDK 17 Enforcer, JUnit and Jackson, and an assembly executable package. For the current commands, dependencies and historical baseline record, see [Maven Framework Notes](./docs/Maven_Framework.md); for the current implementation and actual results, see [Unified Implementation Log](./docs/P1_Implementation_Log.md). The historical wording "empty project / no Main yet / waiting for A" only reflects the point in time when the respective record was written.
 
-IF-11 按已批准 [CR07-11](./docs/Project_Spec.md#175-cr07-11if-11-读取准入与局部取消留存) 实现；批准基线和课程 AC 不在本次改写。完整自动化测试证据、测试替身范围和真实链范围单独列明，不把课程人工材料算作已完成。
+IF-11 is implemented per the approved [CR07-11](./docs/Project_Spec.md#175-cr07-11-if-11-read-admission-and-local-cancellation-retention); the approved baseline and the course AC are not rewritten in this change. Complete automated test evidence, test-double scope and real-chain scope are listed separately; course manual materials are not counted as completed.
+
+## Approved language requirement (implementation pending)
+
+Approved requirement: English will be the default language, with public English and Chinese language switching. Implementation is pending. Planned `--lang en` and `--lang zh` options are **not currently implemented commands**; existing run instructions remain unchanged. The login screen and post-login menus will expose switching; selection lasts for the current run, survives logout, and resets on restart according to the startup option or English default. See Spec CR07-12, §10.3 and AC-91–100 (approved expectations; not executed).
+
+Language does not alter business records, permissions, money, inventory, eligibility, request fingerprints or idempotency. User-entered and historical data remain in their original form. Substantive source comments must be bilingual (English and Chinese); no source code is translated in this documentation-only change.
+
+For documents affected by this revision, repository copies are English and corresponding Chinese copies are held outside the repository in the owner's designated directory. README is primarily English. This is a user document-management decision, not a verified course requirement to exclude Chinese working papers. Existing submission checks still follow the original course checklist. No unrelated documents are moved or translated.
