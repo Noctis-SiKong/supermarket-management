@@ -54,7 +54,7 @@ public final class AftersaleIntegrityValidator implements JsonStore.IntegrityVal
             if (!documents.contains(money.documentId())) {
                 throw new IOException("MONEY_ENTRY has no document: " + record.id());
             }
-            if (money.amountSigned() == null || money.amountSigned().signum() == 0) {
+            if (money.amountSigned() == null) {
                 throw new IOException("Invalid MONEY_ENTRY amount: " + record.id());
             }
         }

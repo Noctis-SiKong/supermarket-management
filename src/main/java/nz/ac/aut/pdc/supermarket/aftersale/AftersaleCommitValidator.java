@@ -6,9 +6,11 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -114,11 +116,10 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         if (!command.requestKey().equals(op.requestKey())) {
             return Result.rejected("REQUEST_KEY_CONFLICT", "Original request key mismatch");
         }
-        Map<String, AftersaleCommandLine> requestedLines = new HashMap<>();
-        for (AftersaleCommandLine line : command.lines()) {
-            requestedLines.put(line.saleLineId(), line);
-        }
-
+        List<AftersaleCommandLine> unmatched = new ArrayList<>(command.lines());
+        List<AftersaleCommandLine> exchanges = command.lines().stream()
+                .filter(line -> line.kind() == RedemptionKind.EXCHANGE).toList();
+        Map<String, AftersaleCommandLine> lineByRedemption = new HashMap<>();
         List<Redemption> redemptions = new ArrayList<>();
         for (RecordData record : inserts(changes, "REDEMPTION")) {
             final Redemption redemption;
@@ -130,34 +131,47 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
             if (!header.documentId().equals(redemption.aftersaleId())) {
                 return Result.rejected("REFERENCE_INVALID", "Redemption aftersaleId mismatch");
             }
-            AftersaleCommandLine requestedLine = requestedLines.get(redemption.originalSaleLineId());
-            if (requestedLine == null || requestedLine.quantity() != redemption.quantity()) {
-                return Result.rejected("REFERENCE_INVALID", "Redemption does not implement original request");
+            AftersaleCommandLine requestedLine = takeMatching(unmatched, redemption);
+            if (requestedLine == null) {
+                return Result.rejected("REFERENCE_INVALID",
+                        "Redemption does not implement original request line");
             }
-            if (redemption.amount().signum() < 0 || redemption.quantity() < 0) {
+            lineByRedemption.put(redemption.redemptionId(), requestedLine);
+            if (!redemption.redemptionId().equals(redemption.sourceLineId())) {
+                return Result.rejected("REFERENCE_INVALID", "Redemption source line must be its business line");
+            }
+            if (redemption.amount().signum() < 0 || redemption.quantity() <= 0) {
                 return Result.rejected("INVALID_INPUT", "Redemption amount/quantity invalid");
-            }
-            if (!redemption.qualityProblem()
-                    && (redemption.reasonText() == null || redemption.reasonText().isBlank())) {
-                return Result.rejected("INVALID_INPUT", "OTHER reason requires reasonText");
             }
             redemptions.add(redemption);
         }
         if (redemptions.isEmpty()) {
             return Result.rejected("INVALID_INPUT", "AfterSale requires at least one redemption");
         }
-        Result<Void> windowCheck = validateAftersaleWindow(baseline, redemptions, acceptedAt);
-        if (!windowCheck.hasValue()) {
-            return windowCheck;
+        if (!unmatched.isEmpty()) {
+            return Result.rejected("REFERENCE_INVALID", "Some requested aftersale lines have no redemption");
         }
+        Set<String> replacedRedemptions = new HashSet<>();
         for (RecordData record : inserts(changes, "REPLACEMENT")) {
             Replacement replacement = record.as(Replacement.class);
             if (!header.documentId().equals(replacement.aftersaleId())) {
                 return Result.rejected("REFERENCE_INVALID", "Replacement aftersaleId mismatch");
             }
+            AftersaleCommandLine requestedLine = lineByRedemption.get(replacement.redemptionId());
+            if (requestedLine == null
+                    || !Objects.equals(replacement.barcode(), requestedLine.replacementBarcode())
+                    || replacement.quantity() != requestedLine.replacementQty()) {
+                return Result.rejected("REFERENCE_INVALID", "Replacement does not implement original request");
+            }
+            if (!replacedRedemptions.add(replacement.redemptionId())) {
+                return Result.rejected("INVALID_INPUT", "Duplicate replacement for redemption");
+            }
             if (replacement.replacementAmount().signum() < 0) {
                 return Result.rejected("INVALID_INPUT", "Replacement amount invalid");
             }
+        }
+        if (replacedRedemptions.size() != exchanges.size()) {
+            return Result.rejected("REFERENCE_INVALID", "Every exchange line requires one replacement");
         }
 
         Result<Void> stockCheck = stockAdapter.review(baseline, request, changes);
@@ -167,6 +181,27 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         return Result.value(null);
     }
 
+    private AftersaleCommandLine takeMatching(
+            List<AftersaleCommandLine> candidates, Redemption redemption) {
+        for (int i = 0; i < candidates.size(); i++) {
+            AftersaleCommandLine line = candidates.get(i);
+            if (!line.saleLineId().equals(redemption.originalSaleLineId())
+                    || line.kind() != redemption.kind()
+                    || line.quantity() != redemption.quantity()
+                    || line.opened() != redemption.opened()
+                    || line.qualityProblem() != redemption.qualityProblem()) {
+                continue;
+            }
+            if (line.reasonKind() == AftersaleReasonKind.OTHER
+                    && !Objects.equals(line.reasonText(), redemption.reasonText())) {
+                continue;
+            }
+            candidates.remove(i);
+            return line;
+        }
+        return null;
+    }
+
     private Result<Void> validateAftersaleWindow(
             WorkingCopy baseline, List<Redemption> redemptions, Instant acceptedAt) {
         ZoneId zone = ZoneId.of("Asia/Shanghai");
@@ -174,7 +209,7 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         for (Redemption redemption : redemptions) {
             var saleLine = baseline.find("DOC_LINE", redemption.originalSaleLineId()).orElse(null);
             if (saleLine == null) {
-                continue;
+                return Result.rejected("REFERENCE_INVALID", "Original sale line missing");
             }
             DocumentLine line = saleLine.as(DocumentLine.class);
             var document = baseline.find("DOCUMENT", line.documentId()).orElse(null);
@@ -182,8 +217,9 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
                 return Result.rejected("REFERENCE_INVALID", "Original sale document missing");
             }
             DocumentHeader saleHeader = document.as(DocumentHeader.class);
-            if (saleHeader.confirmedAt() == null) {
-                return Result.rejected("REFERENCE_INVALID", "Original sale has no confirmed time");
+            if (!"SALE".equals(saleHeader.kind()) || !"CONFIRMED".equals(saleHeader.status())
+                    || saleHeader.confirmedAt() == null) {
+                return Result.rejected("REFERENCE_INVALID", "Original line is not a confirmed sale");
             }
             LocalDate saleDate = Instant.parse(saleHeader.confirmedAt()).atZone(zone).toLocalDate();
             if (ChronoUnit.DAYS.between(saleDate, acceptedDate) > 30) {

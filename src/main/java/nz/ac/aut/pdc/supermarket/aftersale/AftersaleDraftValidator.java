@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.DocEvent;
 import nz.ac.aut.pdc.shared.DocumentHeader;
+import nz.ac.aut.pdc.shared.DocumentLine;
 import nz.ac.aut.pdc.shared.JsonCodec;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
@@ -72,7 +73,7 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
     private Result<Void> validateRead(
             OperationContext op, OperationContext.ActorContext actor,
             WorkingCopy baseline, ChangeSet changes) {
-        Result<Void> draft = requireDraft(op, baseline);
+        Result<Void> draft = requireOwnedDraft(op, actor, baseline);
         if (!draft.hasValue()) {
             return draft;
         }
@@ -84,13 +85,30 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
                 || !"READ_FOR_AFTERSALE".equals(events.get(0).as(DocEvent.class).action())) {
             return Result.rejected("INVALID_INPUT", "Exactly one READ_FOR_AFTERSALE event required");
         }
+        DocEvent event = events.get(0).as(DocEvent.class);
+        if (!actor.accountId().equals(event.actorId())) {
+            return Result.rejected("FORBIDDEN", "Read trace actor mismatch");
+        }
+        ObjectNode detail = (ObjectNode) JsonCodec.tree(event.detailSnapshot());
+        String originalLineId = detail.path("originalSaleLineId").asText("");
+        RecordData original = baseline.find("DOC_LINE", originalLineId).orElse(null);
+        if (original == null) {
+            return Result.rejected("REFERENCE_INVALID", "Read trace original sale line missing");
+        }
+        var saleDocument = baseline.find(
+                "DOCUMENT", original.as(DocumentLine.class).documentId()).orElse(null);
+        if (saleDocument == null
+                || !"SALE".equals(saleDocument.as(DocumentHeader.class).kind())
+                || !"CONFIRMED".equals(saleDocument.as(DocumentHeader.class).status())) {
+            return Result.rejected("REFERENCE_INVALID", "Read trace target is not a confirmed sale");
+        }
         return Result.value(null);
     }
 
     private Result<Void> validateCancel(
             OperationContext op, OperationContext.ActorContext actor,
             WorkingCopy baseline, ChangeSet changes) {
-        Result<Void> draft = requireDraft(op, baseline);
+        Result<Void> draft = requireOwnedDraft(op, actor, baseline);
         if (!draft.hasValue()) {
             return draft;
         }
@@ -116,10 +134,14 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
         return Result.value(null);
     }
 
-    private Result<Void> requireDraft(OperationContext op, WorkingCopy baseline) {
+    private Result<Void> requireOwnedDraft(
+            OperationContext op, OperationContext.ActorContext actor, WorkingCopy baseline) {
         RecordData document = baseline.find("DOCUMENT", op.targetId()).orElse(null);
         if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
             return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
+        }
+        if (!actor.accountId().equals(document.as(DocumentHeader.class).createdBy())) {
+            return Result.rejected("FORBIDDEN", "Only the draft creator may read or cancel it");
         }
         return Result.value(null);
     }
@@ -128,3 +150,5 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
         return changes.inserts().stream().filter(r -> r.table().equals(table)).toList();
     }
 }
+
+

@@ -30,6 +30,17 @@ public class AftersaleIntegrityValidatorTest {
                         "M-1", "AF-1", new BigDecimal("-3.33"), "REQ-1", null)))));
     }
 
+    @Test
+    public void zeroAmountMoneyIsAllowed() throws Exception {
+        validator.validate(new WorkingCopy("wc-1", 1, List.of(
+                RecordData.of("DOCUMENT", "AF-1", new DocumentHeader(
+                        "AF-1", "AFTERSALE", "CONFIRMED", "REQ-1", "FP", "acc-1",
+                        "2026-10-21T04:00:00Z", "acc-1", "2026-10-21T04:00:00Z", null)),
+                RecordData.of("AFTERSALE", "AF-1", java.util.Map.of()),
+                RecordData.of("MONEY_ENTRY", "M-1", new MoneyEntry(
+                        "M-1", "AF-1", BigDecimal.ZERO, "REQ-1", null)))));
+    }
+
     @Test(expected = IOException.class)
     public void redemptionWithoutDocumentFails() throws Exception {
         validator.validate(new WorkingCopy("wc-1", 1, List.of(

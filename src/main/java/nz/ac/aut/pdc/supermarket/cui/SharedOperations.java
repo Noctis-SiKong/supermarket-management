@@ -210,7 +210,7 @@ public final class SharedOperations implements Operations {
             return OperationFeedback.fail("售后草稿 ID 不能为空");
         }
         OperationContext operation = new OperationContext(
-                actor.session(), idClock.newRequestKey(),
+                actor.session(), derivedKey(draftId.trim(), "cancel"),
                 AftersaleDraftOperations.CANCEL, draftId.trim());
         Result<SubmissionPort.CommitReceipt> result = new AftersaleDraftService(store).cancel(
                 operation,

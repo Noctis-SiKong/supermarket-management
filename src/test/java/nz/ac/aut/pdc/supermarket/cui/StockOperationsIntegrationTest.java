@@ -69,8 +69,9 @@ public class StockOperationsIntegrationTest {
             SharedOperations operations = new SharedOperations(app.store(), ids);
             CuiActor actor = new CuiActor(clerk.accountId(), Role.CLERK, clerk.session());
             OperationFeedback replenished = operations.replenish(actor, "00123456", 3);
+            CuiActor managerActor = new CuiActor(manager.accountId(), Role.MANAGER, manager.session());
             OperationFeedback lost = operations.recordLoss(
-                    actor, "00123456", nz.ac.aut.pdc.supermarket.stock.Position.S, 2);
+                    managerActor, "00123456", nz.ac.aut.pdc.supermarket.stock.Position.S, 2);
 
             assertTrue(replenished.message(), replenished.success());
             assertTrue(lost.message(), lost.success());
@@ -93,3 +94,4 @@ public class StockOperationsIntegrationTest {
                 Result.Status.SUCCESS, submitted.status());
     }
 }
+

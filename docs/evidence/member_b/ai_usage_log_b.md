@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#34） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#35） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -110,3 +110,6 @@
 
 | 34 | 补货/报损真实 ChangeSet | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 将补货/报损从“未接线”接到 A submit | StockChangeSetAssembler/StockOperationValidator + SharedOperations 真实库存链；StockOperationsIntegrationTest；152 tests | 用户要求继续；IF-11 准入待 A；AC 未跑 |
 - #34 StockChangeSetAssembler/StockOperationValidator/SharedOperations 补货报损、`StockOperationsIntegrationTest`、`implementation_log.md` §28（2026-10-21，152 项测试）
+
+| 35 | 审计交接单 B-01～B-08 修复 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按审计单修请求/身份复核、零金额、同原行多明细、稳定顺序、原行缺失、取消幂等、草稿归属 | StockOperationValidator/AftersaleIntegrityValidator/AftersaleCommitValidator/AftersaleService/AftersaleDraftValidator/Service；156 tests | 用户要求按交接单修；B-06/B-09/B-10 未完成 |
+- #35 审计 B-01～B-08 修复、`implementation_log.md` §29（2026-10-21，156 项测试）

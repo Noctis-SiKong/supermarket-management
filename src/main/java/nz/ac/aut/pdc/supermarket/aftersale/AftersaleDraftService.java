@@ -87,12 +87,17 @@ public final class AftersaleDraftService {
 
     public Result<SubmissionPort.CommitReceipt> cancel(
             OperationContext operation, OperationContext.ActorContext actor) {
+        String draftId = operation.targetId();
+        BusinessRequest request = BusinessRequest.of(Map.of("draftId", draftId));
+        Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, request);
+        if (prior.status() != Result.Status.NOT_FOUND) {
+            return prior;
+        }
         Result<WorkingCopy> opened = store.open(operation);
         if (!opened.hasValue()) {
             return opened.failure();
         }
         WorkingCopy workingCopy = opened.value();
-        String draftId = operation.targetId();
         RecordData document = workingCopy.find("DOCUMENT", draftId).orElse(null);
         if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
             return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
@@ -110,10 +115,7 @@ public final class AftersaleDraftService {
         out.add(RecordData.of("DOC_EVENT", draftId + "-CANCEL", new DocEvent(
                 draftId + "-CANCEL", draftId, nextEventVersion(workingCopy, draftId),
                 "CANCEL_AFTERSALE", actor.accountId(), null, "{}")));
-        return store.submit(operation,
-                BusinessRequest.of(Map.of("draftId", draftId,
-                        "cancelledAt", Instant.now().toString())),
-                workingCopy, out.build());
+        return store.submit(operation, request, workingCopy, out.build());
     }
 
     private long nextEventVersion(WorkingCopy workingCopy, String draftId) {

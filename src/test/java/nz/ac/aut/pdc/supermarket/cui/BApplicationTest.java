@@ -85,10 +85,11 @@ public class BApplicationTest {
 
     private Redemption redemption() {
         return new Redemption(
-                "R-1", "SL-1", "SL-1", "6901234567890", "AF-1",
+                "R-1", "R-1", "SL-1", "6901234567890", "AF-1",
                 RedemptionKind.RETURN, Effect.CONSUME, 1, new BigDecimal("3.33"),
                 "11111111-1111-1111-1111-111111111111", null, false, false, "其他原因");
     }
 }
+
 
 

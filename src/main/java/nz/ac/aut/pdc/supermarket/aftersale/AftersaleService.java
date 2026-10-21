@@ -106,7 +106,7 @@ public final class AftersaleService {
             List<nz.ac.aut.pdc.supermarket.stock.StockEntry> stockOverlay = new ArrayList<>();
             Map<String, List<Redemption>> pendingByLine = new HashMap<>();
 
-            for (AftersaleCommandLine line : command.lines()) {
+            for (AftersaleCommandLine line : orderedLines(command.lines())) {
                 Optional<OriginalSaleLine> originalOptional = originalSaleReader.readLine(line.saleLineId());
                 if (originalOptional.isEmpty()) {
                     return new AftersaleResult.Rejected(
@@ -194,6 +194,19 @@ public final class AftersaleService {
         }
     }
 
+    private java.util.List<AftersaleCommandLine> orderedLines(
+            java.util.List<AftersaleCommandLine> lines) {
+        return lines.stream()
+                .sorted(java.util.Comparator
+                        .comparingInt((AftersaleCommandLine line) ->
+                                line.kind() == RedemptionKind.EXCHANGE ? 0 : 1)
+                        .thenComparing(line -> line.saleLineId() + "|" + line.kind() + "|"
+                                + line.quantity() + "|" + line.opened() + "|" + line.qualityProblem()
+                                + "|" + line.reasonKind() + "|" + line.reasonText() + "|"
+                                + line.replacementBarcode() + "|" + line.replacementQty()))
+                .toList();
+    }
+
     private Optional<AftersaleResult.Rejected> checkEligibility(
             OriginalSaleLine original, AftersaleCommandLine line, Instant now) {
         LocalDate saleDate = original.saleTime().atZone(ZONE).toLocalDate();
@@ -219,3 +232,4 @@ public final class AftersaleService {
         return Optional.empty();
     }
 }
+

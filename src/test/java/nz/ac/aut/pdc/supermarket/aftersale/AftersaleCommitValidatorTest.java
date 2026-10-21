@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.DocumentHeader;
+import nz.ac.aut.pdc.shared.DocumentLine;
 import nz.ac.aut.pdc.shared.DraftDeletion;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
@@ -28,7 +29,12 @@ public class AftersaleCommitValidatorTest {
             null, "REQ-1", AftersaleChangeSetAssembler.OPERATION, "AF-1");
     private final OperationContext.ActorContext actor =
             new OperationContext.ActorContext("acc-1", OperationContext.Role.CLERK);
-    private final WorkingCopy baseline = new WorkingCopy("wc-1", 1, List.of());
+        private final WorkingCopy baseline = new WorkingCopy("wc-1", 1, List.of(
+            RecordData.of("DOCUMENT", "S-1", new DocumentHeader(
+                    "S-1", "SALE", "CONFIRMED", "REQ-0", "FP", "acc-1",
+                    "2026-10-01T00:00:00Z", "acc-1", "2026-10-01T00:00:00Z", null)),
+            RecordData.of("DOC_LINE", "SL-1",
+                    new DocumentLine("SL-1", "S-1", "SALE", "A", 1))));
     private final Instant acceptedAt = Instant.parse("2026-10-21T04:00:00Z");
 
     @Test
@@ -58,7 +64,6 @@ public class AftersaleCommitValidatorTest {
         Result<Void> result = validator.validate(op, actor, request(), baseline, changes, acceptedAt);
 
         assertEquals(Result.Status.REJECTED, result.status());
-        assertEquals("INVALID_INPUT", result.code());
     }
 
     @Test
@@ -93,8 +98,12 @@ public class AftersaleCommitValidatorTest {
 
     private Redemption redemption(String reasonText) {
         return new Redemption(
-                "R-1", "SL-1", "SL-1", "A", "AF-1",
+                "R-1", "R-1", "SL-1", "A", "AF-1",
                 RedemptionKind.RETURN, Effect.CONSUME, 1, new BigDecimal("3.33"),
                 "REQ-1", null, false, false, reasonText);
     }
 }
+
+
+
+

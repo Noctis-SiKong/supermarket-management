@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.22，2026-10-21（含 §6–§28 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复、IF-11/CR07-11、CUI 取消与补货/报损）
+版本/日期：v0.23，2026-10-21（含 §6–§29 增补、合并 main、CR07-10、IF-07、售后完整链、review 修复、IF-11/CR07-11、补货/报损与审计交接单 B-01～B-08 修复）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -224,3 +224,15 @@
 - 新增 `StockOperationsIntegrationTest`：A 种子商品/期初 → B 补货 3 → B 报损 2 → 真实 JSON 状态（LOSS_RECORD=1、STOCK_ENTRY=5）。
 - 测试：合并树累计 **152 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：IF-11 读取准入仍待 A 对齐；AC 尚未执行。
+
+## 29. 2026-10-21 B 分支审计交接单 B-01～B-08
+
+- B-01：`StockOperationValidator` 使用原始 request 与 actor 复核条码/数量/位置/角色；拒绝补丁、删除和允许表外记录（补货仅 CLERK/MANAGER，报损仅 MANAGER）。
+- B-02：`AftersaleIntegrityValidator` 不再拒绝金额为 0 的 `MONEY_ENTRY`；零价销售/零金额核销测试通过。
+- B-03：`AftersaleCommitValidator` 用 List 保留同原行多明细，逐条比对类型/数量/开封/质量/原因/来源行/替换品，拒绝漏项、重复与夹带。
+- B-04：`AftersaleService` 提交内先按“换货优先 + 稳定内容键”排序，再生成/分配核销，降低输入顺序影响。
+- B-05：原销售行缺失、非 SALE、未确认、无 confirmedAt 一律拒绝，不再 `continue` 放行。
+- B-07：取消按钮派生稳定 requestKey；`AftersaleDraftService.cancel` 先 lookupResult，移除客户端 `cancelledAt`，同键重试返回既有结果。
+- B-08：草稿读取/取消校验创建者归属；读取事件 detail 的原销售行必须存在且属于已确认 SALE。
+- 测试：新增 `StockOperationValidatorTest` 3 项、零金额/取消重试断言；合并树 **156 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 未修：B-06 IF-11 正式受控读取端口待 A；B-09 草稿删除无生产/CUI 路径；B-10 冲销仍骨架；A-01/A/B-01 归 A。
