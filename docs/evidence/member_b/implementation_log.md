@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.5，2026-10-21（含 §6–§11 增补与独立审查修复记录）
+版本/日期：v0.6，2026-10-21（含 §6–§12 增补与独立审查修复记录）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -86,3 +86,11 @@
 - `02_stock.mmd` 已补 `LossOrigin`/`LossState` 的 `<<enumeration>>` 记号；四张图均只显示类/接口/依赖，不含字段/方法。
 - `v2_1/README.md` §5 登记图 A–D、PNG 命名（`A_overview.png` 等）、渲染后核对 `RedemptionKind` 裁切与 auth/cui 空白裁切。
 - 边界：PNG 仍由 B 渲染，未入库；未执行 AC；图注必须注明"结构快照"。
+
+## 12. 2026-10-21 增补：query / reversal 骨架
+
+- `query`：`QueryOperations`、`QueryService`、`QueryResult`、`SaleLineView`；只读原行视图、额度视图、核销历史；缺失返回 `NOT_FOUND`，读取异常返回 `QUERY_FAILED`。
+- `reversal`：`ReversalService`、`ReversalPlan`、`ReversalCommand`、`ReversalResult`，端口 `RedemptionReader`、`ReversalDependencyReader`、`StockEffectReader`；店长/管理员权限、D1 依赖阻断、重复冲销 `EVENT_CONFLICT`、生成 RELEASE 核销 + 反向库存候选；不提交。
+- 新增 B 业务码 `QUERY_FAILED`、`DEPENDENCY_BLOCKED`、`REVERSAL_FAILED`，待通知 A 登记；D1 只做阻断，不级联重建；款项/顾客交回未处理。
+- 测试：`QueryServiceTest`(5)、`ReversalServiceTest`(7)；累计 **68 项测试全部通过**（BUILD SUCCESS）。
+- 边界：权限范围/真实 A 数据未接入；V2.1 图尚未包含 `query`/`reversal` 新包；未执行 AC。

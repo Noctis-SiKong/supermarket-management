@@ -18,10 +18,12 @@
 | `QuotaViewBuilder` / `QuotaCalculator` / `QualityPairValidator` | 已实现（纯函数） | `aftersale/` |
 | `AftersaleService` / `AftersaleAssembler` / `AftersaleCommand` | 已实现（编排骨架） | 资格简化规则；不提交；见 §9 |
 | `BusinessTransaction` / `OperationResult` | **未实现** | 目标模板，后续跨模块复用；当前各服务用三态结果 |
-| `ReversalPlan` / `DependencyChecker` / D1 消费 | **未实现** | 归属 WP-06；依赖 A 的 IF-04/05 |
-| 查询模块（`query`） | **未实现** | 归属 WP-05；依赖 A IF-04 |
+| `ReversalPlan` / `ReversalService` / D1 消费 | **已实现骨架（不提交）** | `reversal/`；D1 只做阻断检查，不级联重建；依赖 A 的 IF-04/05 真实实现 |
+| 查询模块（`query`） | **已实现骨架（只读）** | `query/QueryService`：原行/额度/核销历史；权限范围待 A 的 IF-04 |
 | A 的 `shared/`、`infrastructure/` | **未交付** | 联调/真实提交前置 |
 | 款项/顾客交回损耗/权限校验细节 | **未实现** | 骨架边界，报告需如实说明 |
+
+> 注：当前 `class_v2_1.mmd` 与 `split/` 分图尚未包含 `query`/`reversal` 新包；下次渲染前补入，或在报告中单独出图。
 
 ## 3. 已知差异与报告口径
 
