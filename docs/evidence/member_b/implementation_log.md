@@ -268,3 +268,9 @@
 - 新增 `ReversalIntegrationTest`：A 种子商品/期初/销售 → B 整单冲销 → 目标 VOIDED、REVERSAL=1、MONEY_ENTRY 正反成对、库存反向。
 - 测试：合并树累计 **163 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：尚未覆盖整单冲销失败/重复授权/D1 阻断的独立测试；CUI 冲销尚无原键重试入口；B-06 仍待 A。
+
+## 34. 2026-10-21 B-10 冲销失败路径测试
+
+- 新增 `ReversalCommitValidatorTest`：后续有效库存变动命中 D1 时返回 `DEPENDENCY_BLOCKED`；目标已 VOIDED 时拒绝再次冲销。
+- 合并树累计 **165 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI 冲销原键重试仍未暴露；B-06 待 A。
