@@ -80,11 +80,16 @@ public class AftersaleDraftServiceTest {
                     clerk.session(), draftKey, AftersaleDraftOperations.CREATE, draftId), actor);
             assertEquals(created.code(), Result.Status.SUCCESS, created.status());
 
-            Result<?> traced = drafts.recordRead(new OperationContext(
-                    clerk.session(), ids.newRequestKey(), AftersaleDraftOperations.READ, draftId),
-                    actor, new OriginalSaleLine(saleLineId, "00123456", 1,
+            OperationContext readOp = new OperationContext(
+                    clerk.session(), ids.newRequestKey(), AftersaleDraftOperations.READ, draftId);
+            Result<?> traced = drafts.recordRead(readOp, actor,
+                    new OriginalSaleLine(saleLineId, "00123456", 1,
+                            new BigDecimal("3.33"), Instant.parse("2026-10-01T00:00:00Z")));
+            Result<?> tracedAgain = drafts.recordRead(readOp, actor,
+                    new OriginalSaleLine(saleLineId, "00123456", 1,
                             new BigDecimal("3.33"), Instant.parse("2026-10-01T00:00:00Z")));
             assertEquals(traced.code(), Result.Status.SUCCESS, traced.status());
+            assertEquals(tracedAgain.code(), Result.Status.SUCCESS, tracedAgain.status());
 
             OperationContext cancelOp = new OperationContext(
                     clerk.session(), ids.newRequestKey(), AftersaleDraftOperations.CANCEL, draftId);
@@ -98,8 +103,11 @@ public class AftersaleDraftServiceTest {
             DocumentHeader header = state.find("DOCUMENT", draftId).orElseThrow()
                     .as(DocumentHeader.class);
             assertEquals("CANCELLED", header.status());
-            assertTrue(state.records("DOC_EVENT").stream()
-                    .anyMatch(r -> r.id().equals(draftId + "-READ")));
+            assertEquals(1, state.records("DOC_EVENT").stream()
+                    .filter(r -> r.id().equals(draftId + "-READ")).count());
+            assertEquals(0, state.records("REDEMPTION").size());
+            assertEquals(2, state.records("STOCK_ENTRY").size());
+            assertEquals(1, state.records("MONEY_ENTRY").size());
 
             String deleteKey = ids.newRequestKey();
             String deleteId = ids.entityId(deleteKey, "draft");

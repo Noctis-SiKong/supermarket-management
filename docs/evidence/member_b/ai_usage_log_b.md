@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#46） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#47） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -146,3 +146,6 @@
 
 | 46 | AC-52/83/84 收货 D1 测试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补后续 W− 阻断与 W+ 不阻断 | ReversalReceiptDependencyTest；172 tests | 用户要求继续 AC；A 侧 IF-11/入口仍阻塞 |
 - #46 AC-52/83/84 收货 D1 测试、`implementation_log.md` §40（2026-10-21，172 项测试）
+
+| 47 | AC-89/90 草稿取消与追溯重试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 CANCELLED 无副作用与 read 同键重试 | AftersaleDraftServiceTest；172 tests | 用户要求继续 AC；AC-90 真实中断未做 |
+- #47 AC-89/90 草稿取消与追溯重试、`implementation_log.md` §41（2026-10-21，172 项测试）

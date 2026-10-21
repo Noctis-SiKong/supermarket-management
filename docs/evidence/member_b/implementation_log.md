@@ -314,3 +314,10 @@
 - 覆盖 AC-52、AC-83 的阻断方向与 AC-84 的允许方向。
 - 合并树累计 **172 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 16 项。
 - 剩余：AC-87/88 等 A 侧 IF-11 正式端口；AC-02/07/08/85 阻塞。
+
+## 41. 2026-10-21 AC-89 草稿取消与 AC-90 追溯重试
+
+- AC-89：追溯后取消草稿，断言 `CANCELLED`、READ 事件保留，且无新增退款/库存/核销。
+- AC-90：同一 read requestKey 重试两次，只保留一条 `READ_FOR_AFTERSALE`；售后最终提交同键重试已由现有集成测试覆盖。
+- 合并树累计 **172 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 17 项。
+- AC-90 仍缺真实进程中断注入，保持 PARTIAL。

@@ -59,8 +59,8 @@
 | AC-85 | 崩溃/恢复/单写者 | 无 | BLOCKED | A IF-04/05 |
 | AC-86 | 三角色期初权限 | `AOperationsTest` 部分 | PARTIAL | 真实 CUI/权限 |
 | AC-87/88 | IF-11 读取追溯 | `AftersaleDraftServiceTest` 真实 JSON 追溯 | PARTIAL | A 正式受控读取端口待对齐 |
-| AC-89 | 已追溯草稿 CANCELLED | `AftersaleDraftServiceTest` 取消 | PARTIAL | 与 A guard 联测已做；正式 AC 未签 |
-| AC-90 | 追溯提交后中断重试 | `SharedOperationsIntegrationTest` 同 requestKey 重试 | PARTIAL | 未做真实进程中断注入 |
+| AC-89 | 已追溯草稿 CANCELLED | `AftersaleDraftServiceTest`：追溯后取消，保留 READ 事件、状态 CANCELLED，无退款/库存/核销变化 | PASS（自动化） | 未接正式 CUI 演示 |
+| AC-90 | 追溯提交后中断重试 | `AftersaleDraftServiceTest` 同 read requestKey 重试只留一条 READ；`SharedOperationsIntegrationTest` 同 requestKey 重试 | PARTIAL | 未做真实进程中断注入 |
 | AC-25/38/39/49/50 | 撤销场景 | — | N/A | 非验收 |
 
 ## 3. 本轮实际执行的测试
@@ -80,9 +80,10 @@
 
 ## 4. 结论
 
-- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-47、AC-52、AC-79、AC-83/84。
+- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-47、AC-52、AC-79、AC-83/84、AC-89。
 - 其余 B 相关 AC 多数为 **PARTIAL**，原因是缺少正式 CUI 入口、真实权限/恢复/故障注入或 A 的 IF-11 正式端口；不能把模块测试当作全部 AC 已通过。
 - **BLOCKED 关键项**：AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 读取准入）。
+
 
 
 
