@@ -14,13 +14,12 @@ erDiagram
     }
     AFTERSALE {
         ID document_id PK,FK
-        ID exception_authorized_by FK
-        Text exception_reason
     }
     REDEMPTION {
         ID redemption_id PK
         Boolean opened
         Boolean quality_problem
+        Text reason_text
         ID source_line_id FK,UK
         ID aftersale_id FK
         ID original_sale_line_id FK
@@ -58,7 +57,6 @@ erDiagram
         Money remaining_amount
     }
     DOCUMENT ||--o| AFTERSALE : "document_id"
-    ACCOUNT o|--o{ AFTERSALE : "exception_authorized_by"
     DOC_LINE ||--o| REDEMPTION : "source_line_id"
     AFTERSALE ||--o{ REDEMPTION : "aftersale_id"
     SALE_LINE ||--o{ REDEMPTION : "original_sale_line_id"

@@ -9,7 +9,7 @@
 3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
 4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
 
-5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.02／v1.0.2正式版；公共契约与实现交付分开，IF-11局部事项见规范）。
+5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.03／v1.0.3正式版；CR07-11的IF-11准入与取消留存已批准，接口实现/审计/联调分别交付）。
 
 ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
 
@@ -103,3 +103,5 @@ v1.02已发布：main提交`4d7b1f28c6d9caa0473092e77ab27aa1e724b983`，`git ls-
 ## Maven框架与构建
 
 工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架及B的复现记录已进入main；历史实际命令和结果见`docs/evidence/member_b/framework_repro.md`，本轮未重新运行构建。后续实现/联调按正式共享规范和各模块前置推进，不把框架存在或历史冒烟测试等同业务实现完成。
+
+IF-11受控更新（2026-10-20）：用户已明确批准先可靠保存追溯后返回原销售最少字段；已成功保存读取追溯的未完成售后草稿取消为CANCELLED并保留三方关联，无退款/库存/额度影响；无追溯草稿仍按原规则删，已完成售后不适用。批准唯一来源见[Spec CR07-11](./docs/Project_Spec.md#175-cr07-11if-11-读取准入与局部取消留存)，验收AC-87–90均未执行。此次为本地文档同步，不改变既有发布回执，也不代表真实接口已实现。

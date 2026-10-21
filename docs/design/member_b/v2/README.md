@@ -1,5 +1,7 @@
 # B 范围类图 V2 · 报告图集
 
+> **CR07-10（2026-10-20）**：CR07-09店长资格例外已撤销。以下“含CR07-09同步”仅指历史图集；V2实现/图应删除AFTERSALE.exception_*，在REDEMPTION使用reason_text，不能继续按店长授权例外设计。
+
 版本/日期：v1，2026-10-20（Asia/Shanghai）
 权威源：`docs/design/member_b/class_v2.mmd`（约 50 个类/接口/枚举，含 CR07-09 同步）
 本目录：报告/演示用分图（PNG，由 B 在 mermaid.live 按 `theme: base, layout: elk, fontSize: 18` 渲染后导出）。
