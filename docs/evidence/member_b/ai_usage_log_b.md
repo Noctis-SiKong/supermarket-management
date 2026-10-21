@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#28） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#29） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -42,6 +42,7 @@
 | 26 | 集成-售后读取适配 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 B 售后读取端口接到 A WorkingCopy | SharedSaleReader/SharedQuotaLedgerReader/SharedProductSnapshotReader + SharedAftersaleReadTest；2 项测试；143 tests | 用户继续 Stage 3；CUI/Main 未做 |
 | 27 | 集成-BApplication 装配/真实 JSON 提交 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 装配 A JsonStore + B 认证/校验器并跑真实提交 | BApplication + BApplicationTest；1 项测试；144 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；CUI/Main 未做；A 的稳定性/规则仍由 A 组件执行 |
 | 28 | 集成-CUI 真实操作/售后链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 CUI 会话接到 A open/submit，售后走真实服务 | CuiActor+SessionRef、SharedOperations、SharedProductCatalog、SharedIdGenerator、BApplication.operations；2 项测试；146 tests | 用户继续 Stage 3；补货/报损未接线；Main/pom 未接 |
+| 29 | 集成-CUI 售后完整链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 用 A 种子数据跑通 CUI 售后到 A submit | SharedOperationsIntegrationTest + SharedStockAdapter.review 修正；1 项测试；147 tests | 用户继续；Main/pom 仍待 A；补货/报损未接 |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -72,11 +73,13 @@
 - #26 SharedSaleReader/SharedQuotaLedgerReader/SharedProductSnapshotReader、`SharedAftersaleReadTest`、`implementation_log.md` §20（2026-10-21，143 项测试）
 - #27 BApplication/BApplicationTest、`implementation_log.md` §21（2026-10-21，144 项测试）
 - #28 CuiActor+SessionRef/SharedOperations/SharedProductCatalog/SharedIdGenerator、`implementation_log.md` §22（2026-10-21，146 项测试）
+- #29 SharedOperationsIntegrationTest/SharedStockAdapter.review 修正、`implementation_log.md` §23（2026-10-21，147 项测试）
 
 ## 待补（按阶段追加，不预先填写）
 
 - A.2 后续条目：本人对评审的逐条决定、类图 V2 与差异、模块实现、调试、AC 执行、报告装配。
 - A.3 人机贡献划分：各阶段结束后按事实整理（主要由人工设计 / 主要由 AI 生成后经审核），在报告装配时提交给 A 汇总。
+
 
 
 

@@ -64,9 +64,12 @@ public final class SharedStockAdapter implements AOperations.StockDependency {
         Objects.requireNonNull(completeChanges, "completeChanges");
         try {
             List<StockEntry> changed = new ArrayList<>();
+            List<RecordData> nonStockInserts = new ArrayList<>();
             for (RecordData record : completeChanges.inserts()) {
                 if (record.table().equals("STOCK_ENTRY")) {
                     changed.add(record.as(StockEntry.class));
+                } else {
+                    nonStockInserts.add(record);
                 }
             }
             if (changed.isEmpty()) {
@@ -79,8 +82,10 @@ public final class SharedStockAdapter implements AOperations.StockDependency {
             if (stockPatchOrRemoval) {
                 return Result.rejected("INVALID_INPUT", "STOCK_ENTRY only supports inserts");
             }
+            WorkingCopy base = workingCopy.overlay(new ChangeSet(
+                    nonStockInserts, completeChanges.patches(), completeChanges.removals()));
             Optional<StockValidator.StockRejection> rejection = validator.validate(
-                    toLines(workingCopy, changed), SharedStockProjection.balanceMap(workingCopy));
+                    toLines(base, changed), SharedStockProjection.balanceMap(base));
             if (rejection.isPresent()) {
                 StockValidator.StockRejection violation = rejection.get();
                 return Result.rejected(violation.code(), violation.field() + ": " + violation.message());

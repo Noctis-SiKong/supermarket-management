@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.16，2026-10-21（含 §6–§22 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication 与 CUI 真实操作）
+版本/日期：v0.17，2026-10-21（含 §6–§23 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作与售后完整链）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -173,3 +173,10 @@
 - `AftersaleService` 增加带 `aftersaleId` 的重载；`AftersaleSubmissionService` 使用 `op.targetId()`，使 A 的 open/submit 目标一致。
 - 测试：`SharedIdGeneratorTest`(1)、`SharedProductCatalogTest`(1)；合并树累计 **146 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI 还没有 `Main`/pom 入口，尚未把 `BApplication.operations()` 接到实际菜单启动；补货/报损 ChangeSet 未接线；售后完整 CUI 路径缺少带种子数据的集成测试。
+
+## 23. 2026-10-21 步骤一：CUI 售后完整链
+
+- 新增 `SharedOperationsIntegrationTest`：A 侧真实种子（PRODUCT_PUT/OPENING/SALE）→ B `SharedOperations.aftersale` → A `submit` → 重开读取 `REDEMPTION`。
+- 修正 `SharedStockAdapter.review`：先把同一 ChangeSet 的非库存插入叠加到基线，再解析 `STOCK_ENTRY.sourceLineId`；解决“DOC_LINE expected”问题（A 的 OPENING/SALE 先插入 DOC_LINE）。
+- 测试：`SharedOperationsIntegrationTest`(1)；合并树累计 **147 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI `Main`/pom 启动入口仍由 A 的 Maven 框架决定；补货/报损真实 ChangeSet 未接；冲销/query 未接。
