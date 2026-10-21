@@ -301,3 +301,9 @@
 - AC-33：新增历史退 1 + 换 1 后再退 2 被拒测试；重复提交由同 requestKey 重试测试覆盖。
 - D1：冲销依赖检查改为检查目标单全部库存腿（含正库存收货），后续同商品/位置负向流水仍阻断；避免只检查负向原流水漏掉收货冲销。
 - 合并树累计 **170 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 12 项。
+
+## 39. 2026-10-21 AC-35 与冲销恢复断言
+
+- `ReversalIntegrationTest` 增加：冲销后 S 余额恢复 10、原单保留并 VOIDED、重复冲销失败、REVERSAL/款项/库存数量不增加。
+- 合并树累计 **170 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 13 项（含 AC-35）。
+- 剩余：AC-52/83/84 收货 D1 精确测试仍未补；AC-87/88 待 A。

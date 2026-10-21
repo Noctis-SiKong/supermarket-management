@@ -34,6 +34,7 @@ import nz.ac.aut.pdc.supermarket.catalog.Product;
 import nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ReversalIntegrationTest {
@@ -76,6 +77,11 @@ public class ReversalIntegrationTest {
                     saleDocumentId, "测试整单冲销");
 
             assertTrue(feedback.message(), feedback.success());
+            OperationFeedback repeat = operations.reverseDocument(
+                    new CuiActor(manager.accountId(), Role.MANAGER, manager.session()),
+                    saleDocumentId, "重复冲销");
+            assertFalse(repeat.message(), repeat.success());
+
             WorkingCopy state = app.store().open(new OperationContext(
                     manager.session(), UUID.randomUUID().toString(), "READ", null)).value();
             assertEquals("VOIDED", state.find("DOCUMENT", saleDocumentId).orElseThrow()
@@ -83,6 +89,14 @@ public class ReversalIntegrationTest {
             assertEquals(1, state.records("REVERSAL").size());
             assertEquals(2, state.records("MONEY_ENTRY").size());
             assertEquals(3, state.records("STOCK_ENTRY").size());
+            int shelf = 0;
+            for (var record : state.records("STOCK_ENTRY")) {
+                var entry = record.as(nz.ac.aut.pdc.shared.StockEntry.class);
+                if (entry.position() == nz.ac.aut.pdc.shared.StockEntry.Position.S) {
+                    shelf += entry.quantityDelta();
+                }
+            }
+            assertEquals(10, shelf);
         }
     }
 

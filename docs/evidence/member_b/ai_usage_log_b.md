@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#44） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#45） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -140,3 +140,6 @@
 
 | 44 | AC-33/D1 补强 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补历史退换后再退拒绝与收货 D1 检查 | AftersaleServiceTest、ReversalCommitValidator；170 tests | 用户要求继续 AC；AC-52/83/84 精确收货测试仍缺 |
 - #44 AC-33/D1 补强、`implementation_log.md` §38（2026-10-21，170 项测试）
+
+| 45 | AC-35 冲销恢复断言 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补冲销后余额恢复/重复冲销失败断言 | ReversalIntegrationTest；170 tests | 用户要求继续；AC-52/83/84 精确收货测试未补 |
+- #45 AC-35 冲销恢复断言、`implementation_log.md` §39（2026-10-21，170 项测试）
