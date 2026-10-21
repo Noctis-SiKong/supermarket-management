@@ -1,11 +1,20 @@
-param([switch]$Offline)
+﻿param([switch]$Offline)
 $ErrorActionPreference = 'Stop'
 $taskProject = Split-Path -Parent $PSScriptRoot
 $taskJdkCandidates = @($env:JAVA_HOME, (Join-Path $env:LOCALAPPDATA 'pdc-build-tools/jdk-17.0.20.1+1'), (Join-Path $env:TEMP 'p1-jdk17/jdk'))
 $taskJava = $null
 foreach ($taskJdk in $taskJdkCandidates) {
     if (-not $taskJdk -or -not (Test-Path -LiteralPath (Join-Path $taskJdk 'bin/java.exe'))) { continue }
-    $taskVersion = (& (Join-Path $taskJdk 'bin/java.exe') -version 2>&1 | Out-String)
+    # PS5.1 treats native stderr as an error under Stop; capture the version explicitly.
+    $taskProbe = New-Object Diagnostics.ProcessStartInfo
+    $taskProbe.FileName = Join-Path $taskJdk 'bin/java.exe'
+    $taskProbe.Arguments = '-version'
+    $taskProbe.UseShellExecute = $false
+    $taskProbe.RedirectStandardError = $true
+    $taskProbe.RedirectStandardOutput = $true
+    $taskProcess = [Diagnostics.Process]::Start($taskProbe)
+    try { $taskVersion = $taskProcess.StandardError.ReadToEnd() + $taskProcess.StandardOutput.ReadToEnd(); $taskProcess.WaitForExit() }
+    finally { $taskProcess.Dispose() }
     if ($taskVersion -match 'version "17\.') { $env:JAVA_HOME = $taskJdk; $taskJava = Join-Path $taskJdk 'bin/java.exe'; break }
 }
 if (-not $taskJava) { throw 'Set JAVA_HOME to an installed JDK 17.' }
@@ -47,14 +56,19 @@ try {
         @{accountId='fictional-admin';username='fictional-admin';passwordHash=$taskHash;role='ADMIN'}
     )
     $taskAccountFile = Join-Path $taskFixture 'initial-accounts.json'
-    ConvertTo-Json -InputObject $taskAccounts | Set-Content -LiteralPath $taskAccountFile -Encoding utf8
+    [IO.File]::WriteAllText($taskAccountFile, (ConvertTo-Json -InputObject $taskAccounts), [Text.UTF8Encoding]::new($false))
     $taskInput = @('fictional-manager',$taskPassword,'7','new','00123456','虚构 JAR 商品','件','3.33','8','00123456','5','S','虚构期初','13','00123456','1','','y','14','DOCUMENT','','0','exit') -join "`n"
     $taskOldEncoding = $OutputEncoding
+    $taskOldConsoleEncoding = [Console]::OutputEncoding
     try {
         $OutputEncoding = [Text.UTF8Encoding]::new($false)
+        [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
         $taskOutput = ($taskInput | & $taskJava '-Dfile.encoding=UTF-8' -jar $taskJar --project-root $taskFixture --accounts $taskAccountFile | Out-String)
         $taskExit = $LASTEXITCODE
-    } finally { $OutputEncoding = $taskOldEncoding }
+    } finally {
+        [Console]::OutputEncoding = $taskOldConsoleEncoding
+        $OutputEncoding = $taskOldEncoding
+    }
     $taskState = Get-Content -Raw -LiteralPath (Join-Path $taskFixture 'data/snapshot.json') -Encoding utf8 | ConvertFrom-Json
     if ($taskExit -ne 0 -or -not $taskOutput.Contains('登录成功') -or $taskOutput.Contains($taskPassword) -or
         $taskState.last_commit_ordinal -ne 3 -or @($taskState.records | Where-Object table -eq 'PRODUCT').Count -ne 1 -or
@@ -68,6 +82,18 @@ try {
         if (-not $taskResolved.StartsWith($taskTempPrefix,[StringComparison]::OrdinalIgnoreCase) -or
             (Split-Path -Leaf $taskResolved) -notlike 'p1-verify-*' -or
             ((Get-Item -LiteralPath $taskResolved).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Unsafe temporary cleanup target; retained.' }
+        if (-not [string]::Equals($taskResolved, [IO.Path]::GetFullPath($taskFixture), [StringComparison]::OrdinalIgnoreCase)) { throw 'Temporary directory identity changed; retained.' }
+        # Inspect children without following links before recursive cleanup.
+        $taskPending = New-Object 'Collections.Generic.Stack[string]'
+        $taskPending.Push($taskResolved)
+        while ($taskPending.Count -gt 0) {
+            $taskDirectory = $taskPending.Pop()
+            foreach ($taskChild in Get-ChildItem -LiteralPath $taskDirectory -Force) {
+                if ($taskChild.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Temporary directory contains a link; retained.' }
+                if ($taskChild.PSIsContainer) { $taskPending.Push($taskChild.FullName) }
+            }
+        }
+        if ((Get-Item -LiteralPath $taskResolved).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Temporary directory became a link; retained.' }
         Remove-Item -LiteralPath $taskResolved -Recurse -Force
     }
     Pop-Location

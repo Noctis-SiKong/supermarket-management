@@ -24,7 +24,7 @@ member-a/p1-delivery
 INTEGRATED
 ```
 
-该 HEAD 已含 B 的 `6408320`，跳过重复整合，没有 fetch/merge。此前原 Project1 被其他会话切换分支，为保护在途工作，已在并列的 `Project1-member-a` 独立工作树及 `member-a/p1-delivery` 分支继续开发；与用户历史记录的分支名不同，以以上实际结果为准。原 Project1 当前仍在 `member-a/p1-complete / 6408320`，已观察到原在途文件仍在；没有重置、覆盖或清理它们。最终实现请审阅独立工作树及本地提交，不把原目录的早期在途副本当作最终版本。
+该 HEAD 已含 B 的 `6408320`，跳过重复整合，没有 fetch/merge。此前原 Project1 被其他会话切换分支，为保护在途工作，已在并列的 `Project1-member-a` 独立工作树及 `member-a/p1-delivery` 分支继续开发；与用户历史记录的分支名不同，以以上实际结果为准。在 2026-10-21 该记录形成时，原 Project1 仍在 `member-a/p1-complete / 6408320`，已观察到原在途文件仍在；没有重置、覆盖或清理它们。当时最终实现位于独立工作树；2026-10-22 指定根交付位置更新见第6节。
 
 默认 shell 曾指向 Java 8；本次选择已存在的 Microsoft OpenJDK **17.0.20.1+1**，Wrapper Maven **3.9.11**，PowerShell **7.6.5**。未另建 Maven 骨架，未否定历史 JDK17 构建记录。README 用环境变量探测工具位置，不保存个人机器绝对路径。
 
@@ -82,3 +82,24 @@ PowerShell 首次未给 -Dfile.encoding=UTF-8 加引号导致 Java 参数解析�
 功能及关键 P0/P1 修复已实现，无因等待 B 而保留的必需功能占位；不再需要 B 提供接口。没有新的业务规则裁决问题。代码、运行命令与证据可供人工审阅，结论为“P1 全量开发完成，待用户验收”。
 
 未执行 Linux/macOS、课程正式验收签字、学生视频／报告／ZIP验收；没有代写个人反思或签署。200项自动化测试不代表所有课程 AC 或人工作业已完成。GitHub 上传／推送／合并 main 仍未授权，必须先展示本次具体差异、人工审核后另获本次明确批准。
+
+## 6. 2026-10-22 发布前工程收尾
+
+修改前实际状态：指定 Project1 为 `member-a/p1-complete / 6408320`，暂存区为空，3 个 tracked 修改及8个未跟踪文件；并列完成版为 `member-a/p1-delivery / 4328a11`，工作区干净。这两个分支分别被对应工作树检出。根据后者的 `4a67050` 真实装配、`08df45a` 验证工具、实际 Main/assembly/测试源码及本轮复跑选择完整交付来源，没有凭历史哈希直接选版，也没有重复合并 B。
+
+本轮只改验证脚本和必要文档，没有改业务源码、规则或共享接口。脚本以 UTF-8 BOM 保存；Java 账号 JSON 用 WriteAllText/UTF8Encoding(false)，与 PS5.1 的 UTF-8 BOM 默认行为隔离；中文 CUI 断言同时配置原生命令输入编码与 Console.OutputEncoding，并在 finally 还原。JDK 探测显式捕获 stderr，避免 PS5.1 在 Stop 下误报。保留原有绝对临时路径／前缀检查，并新增目标身份及子目录 reparse point 检查；不能确认安全就保留目录，不跟随链接删除。全部验证数据仅在本次生成的临时根；真实 data/ 未用于验证。
+
+本机重新发现 Windows PowerShell **5.1.26100.8521**，以及 Codex 随附可调用的 PowerShell **7.6.5**（并非新安装）。两版解析及执行均通过；JDK Microsoft **17.0.20.1+1**、Maven Wrapper **3.9.11**。2026-10-21 的 PS7.6.5 记录仍是其原时点证据。
+
+| 本轮实际命令（完整交付工作树） | 退出码及结果 |
+|---|---|
+| `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-p1.ps1 -Offline` | 0；200 tests，0失败／错误／跳过，打包依赖隔离和真实 CUI 退出0，合法业务提交3笔 |
+| `pwsh -NoProfile -File .\scripts\verify-p1.ps1 -Offline` | 0；同上，200 tests，真实 CUI 退出0，合法业务提交3笔 |
+
+汇总来自本轮生成的 Surefire XML 和脚本回执；测试内预期的拒绝启动信息不等于脚本失败。旧口径独立保留：A 单分支36项见 `evidence/member_a/implementation_validation.md`；B 时点176项、1跳过见 `evidence/member_b/ac_execution_b_2026-10-21.md`；v3开工在途184项及最终200项见第4节。不能以184代替最终200，也不能把各分支数字相加作为当前总数。
+
+旧 WIP 逐文件比对结果：5个字节一致（pom.xml、SaleLineSnapshot、AftersaleReadAccess、BIntegration、OriginalSaleAccessTest）；其余6个不同（JsonStore、AftersaleReadRequest、Application、Main、OriginalSaleAccess、ApplicationTest），按可能独有内容保留，不混入交付。仓库外新建时间戳备份的 manifest 包含源分支／HEAD、暂存及未暂存补丁、11个 WIP 文件、376个 ignored 构建文件及 SHA-256，已逐项重读核验；没有删除 ignored 内容或使用 git clean。完整清单及逐文件比较在该外部备份，不在仓库记录其绝对路径。
+
+原 WIP 保存于 stash `f33c6b7c3e4e1d302323988682d135d1ae255bd4`，已核验11个文件集合、原6408320基线和空 index，Git 换行正规化以外内容一致；原始字节另由备份保留。另有误在完成版创建、随后已 apply 恢复的本轮工程改动 stash `87fbbd99ebe36ea82cb9e7e8479811f12268cffd`，同样保留，不代表原 WIP。未删除分支、工作树、stash 或备份。
+
+指定根使用新本地 `member-a/p1-release` 分支承接本轮完成版实际 HEAD；具体提交以 Git 回执为准，不抢占完成版工作树的分支。仅本地交付，无推送、main合并或远端配置修改。课程正式验收、报告、视频、ZIP及本人签署仍需人工完成；测试替身／真实链范围沿用第4节，没有增加业务能力或扩大验收结论。
