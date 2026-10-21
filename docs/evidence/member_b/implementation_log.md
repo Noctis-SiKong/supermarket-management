@@ -51,3 +51,10 @@
 - 测试：`ReplenishmentServiceTest`（4）、`LossServiceTest`（4）；累计 `clean verify` **29 项测试全部通过**（BUILD SUCCESS）。
 - 边界：仍只返回候选，不提交（真实 ChangeSet 还需 A 的文档/行类型）；补货 transferKey 由 IF-03 替身生成；报损仅 STORE，顾客交回不在此处理；未执行 AC。
 - 下一步：`aftersale` 纯计算（QuotaViewBuilder/QuotaCalculator/QualityPairValidator）+ CUI 菜单接入；A 交付 shared 后做真实联调。
+
+## 7. 2026-10-21 增补：aftersale 纯计算
+
+- 新增模型：`OriginalSaleLine`、`Redemption`、`RedemptionKind`、`Effect`、`Replacement`、`QuotaView`、`SettlementContext`。
+- 新增纯计算：`QuotaViewBuilder`（CONSUME 汇总、RELEASE 扣减、非法历史拒绝）、`QuotaCalculator`（P×q/Q HALF_UP、剩余金额封顶、结清用全部剩余）、`QualityPairValidator`（质量零差配对的条码/数量/差额/quality 校验）。
+- 测试：`QuotaCalculatorTest`(5)、`QuotaViewBuilderTest`(3)、`QualityPairValidatorTest`(5)；累计 **42 项测试全部通过**（BUILD SUCCESS）。
+- 边界：纯函数/模型，不读 A 代码、不提交、不执行 AC；`QuotaView` 一致性约束仍待后续与真实历史数据联调验证。

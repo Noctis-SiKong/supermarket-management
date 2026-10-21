@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8）/ max（#5–#6、#9–#10） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8）/ max（#5–#6、#9–#11） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -24,6 +24,7 @@
 | 8 | 设计-R-04 执行口径与 IF-07 v0.3 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 以 A 的共享规范思路执行 R-04，并修订 IF-07 契约 v0.3 | R-04 按 A 规范 §8 确认：系统默认资格校验 + CR07-09 例外留痕、不抽策略类；IF-07 v0.3 对齐 §5.3（取消 source_locations、balances/check、overlay 只合并一次、三态）；同步更新 design_review/design_evolution/design_notes | 以 A 的想法执行（R-04 维持不抽策略类；系统简单校验+例外留痕；IF-07 按 §5.3 对齐） |
 | 9 | 实现-B 骨架（auth/cui/stock） | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 用只读快照/捕获式提交/固定 ID 时钟替身开发骨架，注意接口规范、可读性与高内聚低耦合 | auth：Role/SessionRef/AuthResult/AuthService/CredentialStore/PasswordHasher/Sha256PasswordHasher/LocalAuthService；cui：InputValidator/CuiApp；stock：Position/StockBalance/StockChangeLine/StockEntry/StockCheckResult/StockPorts/SubmissionGateway/StockOperations/StockValidator/StockService；测试替身 5 个与 4 个测试类；`clean verify` BUILD SUCCESS、21 项测试通过 | 要求按 A 共享规范思路、用替身开发骨架；注重接口规范和可读性、高内聚低耦合；本步仅骨架，未证明真实持久化/AC |
 | 10 | 实现-stock 用例服务（补货/报损） | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 保持节奏进行下一步开发；同时安排 thinking=high 的独立子智能体客观审查既有内容 | `ReplenishmentService`、`LossService`、`LossRecord`、`LossOrigin`、`LossState`、`ReplenishmentResult`、`LossResult` 及 8 项测试；`clean verify` BUILD SUCCESS、29 项测试通过 | 要求保持节奏、下一步开发，并启动客观审查；本步仍用替身、不提交、不冒充真实 AC |
+| 11 | 实现-aftersale 纯计算（额度/质量配对） | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 继续进行下一步开发：售后额度视图、退款金额计算、质量零差配对校验 | `OriginalSaleLine/RedemptionKind/Effect/Redemption/Replacement/QuotaView/SettlementContext/QuotaViewBuilder/QuotaCalculator/QualityPairValidator` + 3 个测试类；`clean verify` BUILD SUCCESS、42 项测试通过 | 按要求继续开发；本步纯函数/模型，不读 A 代码、不提交、未执行 AC |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -36,6 +37,7 @@
 - #8 `docs/design/member_b/if07_contract.md`（v0.3）、`docs/evidence/member_b/design_evolution.md`（v1.2）、`docs/design/member_b/design_notes.md` §8（2026-10-21）
 - #9 `src/main/java/nz/ac/aut/pdc/supermarket/{auth,cui,stock}/`、`src/test/java/nz/ac/aut/pdc/supermarket/{auth,cui,stock,fixture}/`、`docs/evidence/member_b/implementation_log.md`（2026-10-21）
 - #10 `src/main/java/nz/ac/aut/pdc/supermarket/stock/{ReplenishmentService,LossService,LossRecord,LossOrigin,LossState,ReplenishmentResult,LossResult}.java`、对应测试类、`docs/evidence/member_b/implementation_log.md`（2026-10-21，29 项测试）
+- #11 `src/main/java/nz/ac/aut/pdc/supermarket/aftersale/`、对应测试类、`docs/evidence/member_b/implementation_log.md`（2026-10-21，42 项测试）
 
 ## 待补（按阶段追加，不预先填写）
 
