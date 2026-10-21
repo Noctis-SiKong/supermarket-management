@@ -1,6 +1,6 @@
-# P1最小Maven框架
+# P1 Maven 框架与运行
 
-日期：2026-10-20。由成员A负责、开发agent执行。仅工程底座；Spec/PRD/ERD v0.7及六工作包不变。
+当前更新：2026-10-21。单一 Maven 工程已有真实业务及 Main/assembly；运行命令见 README，验证见 P1_Implementation_Log.md。下文 2026-10-20 的空工程/冒烟数字保留为历史记录，不代表当前实现状态；Spec/PRD/ERD 未修改。
 
 ## 范围与文件
 
@@ -42,3 +42,7 @@ Linux/macOS计划用法为`sh ./mvnw --batch-mode --no-transfer-progress clean v
 ## 来源
 
 选型依据：Spec §10 TC-07、BR-24，PRD-10；本次用户明确授权开发agent实现A侧Maven框架。技术来源：[Apache Maven Wrapper](https://maven.apache.org/tools/wrapper/index.html)、[Maven 3.9.11发布说明](https://maven.apache.org/docs/3.9.11/release-notes.html)、[Jackson 2.21.2发布说明](https://github.com/FasterXML/jackson/wiki/Jackson-Release-2.21.2)，核查日期2026-10-20。课程材料未复制入仓库。
+
+## 2026-10-21 单体装配补记
+
+`Main` → `Application` → 真实 B 认证/库存/额度/冲销与 A 业务/JsonStore；原 BApplication 仅委托同一装配。assembly-plugin 3.7.1 打包 Jackson，Main-Class 指向真实 Main；以 README 的带依赖 JAR 运行。JDK 17.0.20.1、Maven 3.9.11 的本次命令及结果统一见 P1_Implementation_Log.md，不覆盖上方历史复现证据。

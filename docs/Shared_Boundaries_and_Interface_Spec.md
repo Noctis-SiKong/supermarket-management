@@ -59,7 +59,7 @@ A提供不可变`WorkingCopy`句柄：`workingCopyId:String`、`baseLast:long`�
 
 ### 3.3 增量ChangeSet
 
-`ChangeSet`只带本次新增记录、被允许修改记录的补丁/新版本以及引用/预期版本/事件键；按业务需要包含库存、销售/售后行、核销/释放、替换品、损耗/修正、款项、已批准例外授权及关联单据记录。已确认的成交/核销等业务事实不得覆盖；库存/款项/核销冲销新增关联反向记录。基线允许的待审补正、状态流转、版本更新和损耗修正按对应规则办理，不把所有已提交记录一概限制为只能新增反向流水。
+`ChangeSet`只带本次新增记录、被允许修改记录的补丁/新版本以及引用/预期版本/事件键；按业务需要包含库存、销售/售后行、核销/释放、替换品、损耗/修正、款项及关联单据记录（CR07-10不保留资格例外授权）。已确认的成交/核销等业务事实不得覆盖；库存/款项/核销冲销新增关联反向记录。基线允许的待审补正、状态流转、版本更新和损耗修正按对应规则办理，不把所有已提交记录一概限制为只能新增反向流水。
 
 **禁止携带整个快照，禁止复制未变化基线记录。** 原销售行、已提交核销历史、商品/库存基线只读引用WorkingCopy，不为方便把它们塞入提交对象；若需新单据成交快照，只保存该新记录所需字段。更新提供`recordId + expectedVersion + changedFields`，不信任调用方声明的余额。A从最新已提交状态校验后应用增量并组装完整持久快照，只有A内部生成该完整快照。
 
@@ -75,7 +75,7 @@ A提供不可变`WorkingCopy`句柄：`workingCopyId:String`、`baseLast:long`�
 | 实收到货/审核（A，FR-03/15） | 到货单/行或补正版本、审核时审核事件及对应状态变更；首次审核通过必须在同一次提交中生成W+流水 | 待审和补正不生成库存流水；附件0–3张非必需 |
 | 补货（B，FR-12） | 业务单/行、同商品transferKey关联的W−/S+流水 | 不产生销售收款/核销；两腿同次保存 |
 | 销售（A，FR-05/06） | 销售单/行实付快照、已收款记录、在售出库流水 | 促销适用/分摊快照按实际活动；没有活动不强造促销记录 |
-| 退货/换货/混合（B，FR-07/08） | 售后单/行、原行关联和对应核销、交回品损耗/去向；AC-87关联按IF-11方案接入 | 退货有相应退款；换货才有替换品/在售出库及实际补退差记录；普通合规售后无强制例外授权；资格例外才存既有授权字段/原因/放宽规则；特殊质量配对才必需quality_redemption_id |
+| 退货/换货/混合（B，FR-07/08） | 售后单/行、原行关联和对应核销、交回品损耗/去向；AC-87关联按IF-11方案接入 | 退货有相应退款；换货才有替换品/在售出库及实际补退差记录；普通合规售后无强制例外授权；CR07-10已撤销资格例外及授权字段；特殊质量配对才必需quality_redemption_id |
 | 店内报损/处置/修正（B，FR-13） | 报损时来源单/行、损耗及扣减；修正保留原记录并新增修正版本/差额/经办原因 | 后续处置无重复扣存；顾客交回品无新增库存扣减；有合法数量修正时才有对应差额流水 |
 | 授权整单冲销（B，FR-09） | 原单引用、授权/原因、REVERSAL及受影响库存/款项/核销的成组反向记录、允许的状态更新 | 只逆转原单实际存在影响，不强造不存在的款项或核销；任一行失败整单不生效（D1/D2） |
 
@@ -246,3 +246,45 @@ A首批交付最小可编译的WorkingCopy/增量ChangeSet/结果载体、IF-04�
 修订记录v1.0.3（2026-10-20）：按用户明确答复同步Spec CR07-11：追溯成功后才返回最少数据；已保存读取追溯的未完成售后草稿取消为CANCELLED并保留三方关联，无退款/库存/额度影响；无追溯草稿仍按原规则删，已完成售后不适用。补AC-88–90，保留未实现/未审计/未联调状态。未推送、未修改Java签名。
 
 修订记录v1.0.4（2026-10-21）：新增§5.2.1，落实草稿整组删除与统一赋时两项技术方向。IF-05在锁内只取一次`acceptedAt`，按字段矩阵赋予新DOCUMENT.createdAt、新确认/审核通过的confirmedAt、新DOC_EVENT.occurredAt及RECEIPT_REVIEW.reviewedAt；提交复核器改为六参并接收该时刻；草稿删除改用`AFTERSALE_DRAFT_DELETE`（B提供主责校验，A检查DRAFT状态、版本、闭合组及引用红线），RECEIPT_CORRECT未入账行删除沿用；JsonStore新增可注入`Supplier<Instant>`构造器；新增拒绝码INVALID_DELETION_GROUP、DRAFT_HAS_READ_TRACE、DRAFT_HAS_EFFECTS；恢复不再使用活动起始日兜底，不自动修补旧数据。不改Spec/PRD/ERD业务规则，不新增IF编号，不声明B已适配、真实联调或AC通过。
+
+## 11. v1.0.4 实现交付附录（2026-10-21，v3 单体任务）
+
+用户 v3 已将本次实现改为单一负责人；上文 A/B 指历史维护归属。Spec/PRD/ERD、CR07-10/11 均未改写。当前状态和实际测试见 [统一实现日志](./P1_Implementation_Log.md)，不以前文“待交付”覆盖已交付代码，也不以自动化结果代替课程验收。
+
+- 唯一持久化为 `JsonStore`；`Application` 是唯一真实装配，`BApplication` 为兼容委托。旧 `SubmissionGateway` 仅保留在测试源码作历史夹具，不是生产入口。StockPorts.WorkingCopyView 与 SharedWorkingCopyView 继续作薄适配，无第二套库存计算。
+- IF-05 六参校验器仍使用 §5.2.1 的 `acceptedAt`。统一赋时矩阵未扩成“忽略所有时间”；新记录及确认/审核的服务端时间正规化后精确比较完整增量。幂等先于 stale/取时；嵌套 submit 被拒绝。收货的 APPROVED 是已入账状态，授权整单冲销覆盖其 W+，同时保留审核历史并将收货扩展置 VOIDED。
+- 删除仍用 `AFTERSALE_DRAFT_DELETE`。新协调者原始请求使用 `DraftDeletion(documentId)`，序列化 expectedVersion=0 表示期望版本由每个 Removal.expectedVersion 携带；兼容原双参载体，非0时另核对目标版本。先 lookupResult 再查目标存在性，删除成功后同键可重放。B 业务校验现由统一负责人维护；A 结构红线、完整集合/版本/引用闭合及单次原子保存均保持，不能删除已生效事实或有读取追溯草稿。
+- IF-11 精确 Java 入口：`OriginalSaleAccess.readForAftersale(SubmissionPort, OperationContext, AftersaleReadRequest)` → `Result<AftersaleReadAccess>`。请求字段 `voucher/aftersaleId/saleLineIds`；voucher 为精确原销售单 ID 或打印的稳定销售行 ID，选定行必须属于同一原销售。空行选择表示该精确凭证所属销售行；CUI 以精确销售行 ID 调用，不提供列表/模糊搜索。三角色均可走受控读取；真实身份、草稿归属与目的复核不使用裸 accountId 授权，日常售后确认仍按 Spec 的店员权限。
+- `AftersaleReadAccess(trace,eventId,workingCopy,lines)` 仅给内部协调者，CUI 只收最少投影。trace 是追溯提交回执，不是售后完成；先查原键、先可靠保存再释放数据，成功后 fresh open。句柄绑定操作与身份，最终售后以其最终操作重新 open，同一次后续业务只用该新基线。
+- 每次 IF-11 请求写一条 `READ_FOR_AFTERSALE`，事件 ID=`IdClock.entityId(requestKey,"aftersale-read")`；target documentId、实际 actorId、occurredAt 保留三方关联。detailSnapshot 为 JSON 对象文本，含 `originalSaleId/saleLineIds/originalSaleLineId/voucherType/requestKey`，saleLineIds 保存实际返回稳定行 ID，绝非空选择条件。多行售后对不同原行的读取使用由最终键及行 ID 派生的各自稳定读取键；技术重试不重复留痕。新草稿及其扩展可与首次读取原子创建。
+- 历史 B `target-READ` 事件及 `originalSaleLineId/returnedLineId` detail 兼容解析，不改写旧事件、时间或 ID；新写入只用上述唯一准入。SharedSaleReader 仅委托 OriginalSaleAccess 的内部事实投影，旧 recordRead 方法也委托唯一入口，生产不再注册旧 AFTERSALE_READ 准入。
+- 原始请求重建复用 AftersaleEngine，先预分配稳定 redemption_id，同类按实际 ID 升序、换货先于退款；完整比较核销、明细、替换、款项、库存和损耗，不接受夹带、漏项或篡改。一次售后汇总一条净款项，净差0无需强造款项；质量同款同量换货保留当前替换价格快照、结算零差，不能拿当前价格改原销售实付。
+- CUI 报价只生成候选，售后报价先完成可靠追溯再显示原单最少字段，用户确认后才提交退款/扣存/核销；放弃可将已读取草稿取消为 CANCELLED。报价后的版本/促销变动不静默重计价成交。原键重试先查原结果；普通历史范围不借售后准入扩大。
+- D1 只计算未被完整授权反向配对的后提交同商品/位置负向流水；已完整撤销的库存、款项、核销原记录与反向记录成组排除。全单反向增量从同一基线重建并严格比较，不允许缺腿、夹带或指向其他单据。
+
+### 11.1 实际错误码补充登记
+
+§4 已列通用码继续有效；以下列出现有实现使用的业务/依赖细分码（不改变拒绝条件）。NOT_FOUND 在普通读取可为 REJECTED，lookupResult 的 NOT_FOUND 状态专指没有已提交结果；不可混同查询失败。
+
+| code | 分类 | 含义／处理 |
+|---|---|---|
+| ALREADY_COMMITTED | REJECTED（prepare） | 使用原键 lookupResult 的成功回执，不重做业务 |
+| PAYMENT_INCOMPLETE | REJECTED | 模拟付款尚未确认，不成交 |
+| INVALID_RECEIPT_STATE | REJECTED | 非允许的收货状态／重复审核入账 |
+| STALE_PRICE | REJECTED | 接受时点报价与候选不符，重新报价确认 |
+| INVALID_DRAFT | REJECTED | 目标不是可办理的售后草稿 |
+| AFTERSALE_CLOSED | REJECTED | 目标已取消或完成，不释放本次原销售数据 |
+| DRAFT_HAS_NO_READ_TRACE | REJECTED | 缺少所需可靠读取追溯；无追溯草稿不能走取消留存 |
+| DRAFT_HAS_READ_TRACE | REJECTED | 禁止物删，按 CR07-11 取消留存 |
+| DRAFT_HAS_EFFECTS | REJECTED | 存在已生效业务事实，禁止物删 |
+| INVALID_DELETION_GROUP | REJECTED | 非完整或不允许的删除集合 |
+| DEPENDENCY_BLOCKED | REJECTED | 有效售后或 D1 后续依赖尚未解除 |
+| VALIDATOR_UNAVAILABLE | FAILED | 缺该操作真实主责复核器，禁止写入 |
+| DEPENDENCY_FAILED | FAILED | 业务协作不可用；保留原请求与键先查询 |
+| STOCK_CHECK_FAILED | FAILED | 库存内部/依赖读取故障 |
+| AFTERSALE_FAILED | FAILED | 售后计算或依赖技术故障 |
+| QUERY_FAILED | FAILED | 只读查询技术故障 |
+| REVERSAL_FAILED | FAILED | 冲销计划/依赖技术故障 |
+| ATTACHMENT_FAILED | FAILED | 本地附件导入或技术校验故障 |
+
+`STARTUP_BLOCKED` 是 CLI 启动诊断前缀，不是业务提交成功/拒绝状态；恢复异常沿用 RECOVERY_WRITE_BLOCKED。UNKNOWN 仅用于测试响应丢失包装器，不新增生产状态。角色/业务决策仍以 Spec §17 为准，本附录没有增加角色授权或留存范围。

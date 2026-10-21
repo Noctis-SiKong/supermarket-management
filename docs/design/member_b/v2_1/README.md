@@ -20,7 +20,7 @@
 | `BusinessTransaction` / `OperationResult` | **未实现** | 目标模板，后续跨模块复用；当前各服务用三态结果 |
 | `ReversalPlan` / `ReversalService` / `DependencyChecker` / D1 消费 | **已实现骨架（不提交）** | `reversal/`；D1 只做阻断/环检测，不级联重建；依赖 A 的 IF-04/05 |
 | 查询模块（`query`） | **已实现骨架（只读）** | `query/QueryService`：原行/额度/核销历史/损耗记录；权限范围待 A 的 IF-04 |
-| A 的 `shared/`、`infrastructure/` | **已合入 main（a109135）** | B 仍需按 G3 适配真实端口 |
+| A 的 `shared/`、`infrastructure/` | **已合入 main（a109135）** | 当前 Application 已统一接真实端口；此图为历史快照，现状见 docs/P1_Implementation_Log.md |
 | 款项/顾客交回损耗/权限校验细节 | **未实现** | 骨架边界，报告需如实说明 |
 
 > 注：当前 `class_v2_1.mmd` 与 `split/` 分图尚未包含 `query`/`reversal` 新包；下次渲染前补入，或在报告中单独出图。
@@ -53,3 +53,5 @@
 - 图注必须保留“仅类与依赖、不含字段/方法”，不得把结构快照表述为完整详细类图。
 
 
+
+2026-10-21 v3 补记：当前款项、顾客交回损耗、权限、IF-11、CUI 与整单冲销已有统一实现和真实链验证；上表是 V2.1 形成时点快照，不重绘 V1/V2，不以旧“未交付”判断当前状态。纯单核销计划原型及旧提交载荷移到测试源码保留，生产整单冲销只走正式统一入口。

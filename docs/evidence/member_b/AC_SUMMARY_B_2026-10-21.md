@@ -1,5 +1,6 @@
 # B 侧 AC 验收汇总（2026-10-21）
 
+> 2026-10-21 v3 当前状态：完整单体与正式 CUI 已统一接入，详见仓库 docs/P1_Implementation_Log.md。下文保留形成时点的历史结论、数字及发布回执，不表示本轮仍“等待 A/B”，也不授予本轮推送权限。
 > 范围：`CGwal` 负责的 B 侧（auth/cui/stock/aftersale/query/reversal）。
 >
 > 口径：本汇总的 PASS 均为**自动化测试证据**，不是课程正式验收签字；依赖 A 的接口、Main/pom、恢复注入、人工视频/报告的项目仍按 PARTIAL/BLOCKED 记录。
@@ -95,3 +96,7 @@
 - `StockOperationsIntegrationTest`
 - `SharedOperationsIntegrationTest`
 - `CuiAppTest` / `InputValidatorTest`
+
+## v3 统一实现补记（2026-10-21）
+
+当前代码交付 `4a67050`；真实 CUI 的退款、整单冲销及原键跨重启重放已由 FullRuntimeTest 验证，AC-35/87/88/90 不再因“未接正式 CUI／等待 A”而阻塞编码。完整命令、真实链/替身范围及尚未执行的人工材料统一见 docs/P1_Implementation_Log.md。本补记不改写上方历史 PASS/PARTIAL/BLOCKED 形成时点的证据，不代替用户或课程验收。仅本地提交，未上传 GitHub。

@@ -1,5 +1,6 @@
 # A 首批代码交接（已推送 member-a/p1-implementation，待 B 集中审计）
 
+> 2026-10-21 v3 当前状态：完整单体与正式 CUI 已统一接入，详见仓库 docs/P1_Implementation_Log.md。下文保留形成时点的历史结论、数字及发布回执，不表示本轮仍“等待 A/B”，也不授予本轮推送权限。
 日期：2026-10-20，Asia/Shanghai。起点 `main / 04abd6a17f8a1ccfe1bc2a6593922bf3dc017c3a`，起点工作区干净；本地分支 `member-a/p1-implementation`。本次提交并推送至 `origin/member-a/p1-implementation`，不合并 main，不修改冻结 Spec/PRD/ERD 或 B 的设计/实现。
 
 收尾观察到其他会话对6份基线/共享文档的未提交修订（含 CR07-10）；已保留且不归入本次开发改动。A 代码不实现售后资格/授权例外，IF-11 提案不依赖被撤销字段。代码/交接文件本次保留本地未提交，避免把并发文档变更混入提交。
@@ -65,3 +66,7 @@ IF-11批准更新（2026-10-20）：两项业务裁决已关闭，现行规则�
 用户随后明确允许推送代码。A 源码、测试、本交接及证据已提交到 `member-a/p1-implementation` 并推送 `origin`；合并 `main` 仍需单独决定。此前“未推送/未提交”的记录保留为交接形成时点的历史；CR07-11 文档使用单独提交，未混入 A 代码提交。
 
 2026-10-21修复交接（共享契约v1.0.4）：B的CommitValidator增加末尾Instant acceptedAt，必须使用锁内唯一业务时刻；JsonStore可注入IdClock::now。已移除AOperations的生成时间缓存和恢复活动日期兜底。新AFTERSALE_DRAFT_DELETE使用DraftDeletion(documentId,expectedVersion)及完整removals，由B校验售后可删性、A检查版本/闭合组/引用红线并原子保存；不支持任意表删除。详细兼容影响以正式共享规范§5.2.1为准。本次不改Spec/PRD/ERD，不实现B售后/认证/库存，也不启用真实IF-11专用读取。B须以本次最新本地修复提交审计/适配，不只采用293d3b6；真实联调待其实现交付。
+
+## v3 统一实现补记（2026-10-21）
+
+当前代码交付 `4a67050`；真实 CUI 的退款、整单冲销及原键跨重启重放已由 FullRuntimeTest 验证，AC-35/87/88/90 不再因“未接正式 CUI／等待 A”而阻塞编码。完整命令、真实链/替身范围及尚未执行的人工材料统一见 docs/P1_Implementation_Log.md。本补记不改写上方历史 PASS/PARTIAL/BLOCKED 形成时点的证据，不代替用户或课程验收。仅本地提交，未上传 GitHub。

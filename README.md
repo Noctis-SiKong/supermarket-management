@@ -1,6 +1,6 @@
 # 超市管理系统 · Supermarket Management
 
-单店实体超市的课程项目。当前仓库包含需求、B的V1/V2设计与评审材料、分工及最小Maven框架，当前按正式共享边界与接口规范推进开发；经本轮核对，尚无业务代码、数据库实现或可运行的业务程序。
+单店离线 Java CUI 课程项目。现有单体已装配真实 JSON 存储、认证、商品、收货、促销、销售、库存、售后与整单冲销；运行与本次验证状态见 [统一实现日志](./docs/P1_Implementation_Log.md)。自动化验证不代替用户验收、课程报告、视频或本人签署。
 
 ## 阅读顺序
 
@@ -9,7 +9,7 @@
 3. [ERD：逻辑实体、关系和数据字典](./docs/Project_ERD.md)（v0.7，与需求基线同步；设计审阅项见第8节）。
 4. [P1 预备分工与接口清单](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md)（v0.3，工作包与共享资产分工；当前跨模块约定和局部编码门见正式接口规范）。
 
-5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.03／v1.0.3正式版；CR07-11的IF-11准入与取消留存已批准，接口实现/审计/联调分别交付）。
+5. [共享边界与接口规范](./docs/Shared_Boundaries_and_Interface_Spec.md)（v1.0.4正式版及代码交付附录；CR07-11的IF-11准入与取消留存已批准，接口实现/审计/联调分别交付）。
 
 ERD核心审阅事项见其第8节；工作包见第4项，正式跨模块调用约定唯一维护于第5项。
 
@@ -40,7 +40,7 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 | 仓库根目录 | 仓库顶层；本机checkout名为`Project1`，README、.gitignore、docs直接位于此处 |
 | 仓库文档目录 | **仓库相对路径**`docs/`；共同维护的Spec/PRD/ERD主副本，可含中文，不是仅英文文件目录 |
 | Markdown相对链接 | 只相对于该Markdown文件所在目录解析；代码样式的仓库相对路径不是同一种链接 |
-| 运行数据根目录 | `DATA_ROOT`=仓库根目录下`data/`；根解析/可写性/子布局待设计，不等于Markdown目录 |
+| 运行数据根目录 | `DATA_ROOT`=仓库根目录下`data/`；由 DataRoot 校验项目标记、真实路径与可写性，不等于Markdown目录 |
 
 ### 文档主副本
 
@@ -56,19 +56,19 @@ ERD正文包含四个 `mermaid` 代码块。请优先打开 [ERD Markdown正文]
 
 ### 运行数据与附件：已知契约和未决设计
 
-已确认的是UTF-8 JSON单快照/schemaVersion、原子替换/上版恢复和附件相对路径＋哈希；`DATA_ROOT`已定为仓库根目录下`data/`，根解析/可写性/子布局及启动失败体验仍待设计。详见[Spec运行路径设计待确认项](./docs/Project_Spec.md#101-运行路径契约与待确认设计)；不把剩余技术方案当作已批准部署规则，也不增加课程手工配置门槛。
+已确认的是UTF-8 JSON单快照/schemaVersion、原子替换/上版恢复和附件相对路径＋哈希；`DATA_ROOT`已定为仓库根目录下`data/`，根解析与安全检查由 DataRoot 实现，损坏或不可写时明确阻断启动。详见[Spec运行路径设计待确认项](./docs/Project_Spec.md#101-运行路径契约与待确认设计)；不把剩余技术方案当作已批准部署规则，也不增加课程手工配置门槛。
 
-旧文中的`data/`仅指运行数据逻辑根`DATA_ROOT`，旧`data/attachments/`统一表达为`DATA_ROOT/attachments/`；附件记录内只保存`attachments/<文件名>`，**相对于DATA_ROOT而非工作目录、JAR、仓库或Markdown目录**。根位置已定为仓库根`data/`；本轮澄清相对基准，不创建数据目录/运行文件，子布局仍待设计。
+旧文中的`data/`仅指运行数据逻辑根`DATA_ROOT`，旧`data/attachments/`统一表达为`DATA_ROOT/attachments/`；附件记录内只保存`attachments/<文件名>`，**相对于DATA_ROOT而非工作目录、JAR、仓库或Markdown目录**。根位置已定为仓库根`data/`；运行子布局为 snapshot.json、previous.json、writer.lock、*.next.json 和 attachments/；不自动创建业务货物。
 
 路径安全契约：落盘的附件`relative_path`统一用`/`；拒绝盘符/UNC/根路径等绝对引用、URI、空路径、反斜杠、`.`/`..`段及解析后越出DATA_ROOT的引用。将根与目标规范化并校验最终真实位置（包括符号链接/联接点），以路径组成部分判断包含关系，不能用字符串前缀冒充。写入前及实际打开时均核查，避免链接把目标引到根外。CUI选择待导入源图片可使用用户本机路径，但**源绝对路径不得序列化成附件引用或写入Git材料**。
 
-中文和空格是合法文件名字符，不用按空格分词或拼接Shell命令操作文件；目标生成名/重名策略尚待确认，不能默默覆盖现有文件或把源目录/用户名编码进目标名。复制/读取/校验失败不得保存“附件成功”引用，不覆盖已验证副本；没有附件时仍按既有规则允许审核，不因路径治理新增强制上传。对既有引用缺文件或哈希不符，不把它当作正常附件、不偷偷移除历史关联；是否阻断相关操作、如何提示/修复与附件孤立副本清理属于待审设计，不能擅改收货审核或业务恢复规则。附件单张上限已按`5,000,000`字节同步；一般失败/重名/碰撞策略仍待设计。
+中文和空格是合法文件名字符，不用按空格分词或拼接Shell命令操作文件；目标使用独立 UUID 与 CREATE_NEW，碰撞或导入失败拒绝保存引用，不能默默覆盖现有文件或把源目录/用户名编码进目标名。复制/读取/校验失败不得保存“附件成功”引用，不覆盖已验证副本；没有附件时仍按既有规则允许审核，不因路径治理新增强制上传。对既有引用缺文件或哈希不符，不把它当作正常附件、不偷偷移除历史关联；完整恢复遇附件缺失、引用异常或哈希不符时阻写；未引用的导入副本不自动清理，不能擅改收货审核或业务恢复规则。附件单张上限已按`5,000,000`字节同步；失败不覆盖已验证副本，不发布无效引用。
 
 ### 忽略规则与提交前检查
 
 当前未发现被跟踪的业务JSON、图片附件、课程PDF/DOCX或本地备份。`.gitignore`只对未跟踪文件生效，不会清除已经提交的路径/个人引用；本轮不重写历史或取消跟踪文件。旧提交仍可能保留原文引用，历史处理需要另行明确授权。
 
-运行数据根已定为仓库根`data/`；忽略规则只覆盖仓库内路径，根解析/子布局定稿后仍须复查。当前针对仓库内误生成数据保留窄范围防线：根目录`data/`、`runtime/`、`attachments/`、`logs/`、`tmp/`、`backups/`、`.local/`，以及构建产物和明确的本机设置。课程源文件只按已知文件名防误拷贝，不全局忽略PDF/DOCX。样例请放明确跟踪的`docs/examples/`或后续测试样例位置，使用虚构/脱敏数据；目前没有这些样例文件。不要在真实运行数据目录中保存需要跟踪的唯一证据。
+运行数据根已定为仓库根`data/`；忽略规则只覆盖仓库内路径，提交前仍须复查。当前针对仓库内误生成数据保留窄范围防线：根目录`data/`、`runtime/`、`attachments/`、`logs/`、`tmp/`、`backups/`、`.local/`，以及构建产物和明确的本机设置。课程源文件只按已知文件名防误拷贝，不全局忽略PDF/DOCX。样例请放明确跟踪的`docs/examples/`或后续测试样例位置，使用虚构/脱敏数据；目前没有这些样例文件。不要在真实运行数据目录中保存需要跟踪的唯一证据。
 
 发布前检查Git diff、待提交清单、相对链接、路径/个人信息和数据文件；`.gitignore`不是敏感信息扫描器，改动不会自动上传GitHub。本轮v1.02发布后勘误提交的最终状态，以`git status`、`git log`和`git ls-remote`核验为准。
 
@@ -90,18 +90,48 @@ v1.02已发布：main提交`4d7b1f28c6d9caa0473092e77ab27aa1e724b983`，`git ls-
 
 ## 构建与运行
 
-已有最小Maven工程底座（`pom.xml`、Wrapper、JUnit/Jackson冒烟测试），但没有业务主类或业务实现，不能`java -jar`启动超市系统；构建与测试说明见下文“Maven框架与构建”。
+使用 JDK 17 和仓库唯一 Maven 工程。本机已实测 PowerShell 7.6.5。一条命令复现离线构建、全部测试、可执行包依赖隔离及真实 JAR/CUI 冒烟：
 
-## 两人协作建议
+```powershell
+./scripts/verify-p1.ps1 -Offline
+```
 
-参与者：A1moss、CGwal。既定分工见第4项清单，当前跨模块协作按第5项正式共享规范推进。B的V1/V2、真实AI评审、设计演进和框架复现记录已合入main；不重新安排B从V1开始。双方按明确接口和各自职责实现、自测，未交付接口使用约定替身；IF-11仅局部阻塞真实跨人读取接入。不在本README重复分配工作或贡献比例。
+首次依赖尚未缓存时去掉 `-Offline`。脚本只在其新建的临时独立项目根使用随机虚构账号、合法期初及销售，验证后清理该次临时目录，不改真实业务 data/，不输出或提交密码/哈希。逐步命令如下：
 
-建议使用短期分支和Pull Request，交叉检查业务规则、数据约束、链接及真实证据后合并`main`。这是协作建议，不表示已配置分支保护或协作者权限。避免未检查就执行`git add .`；优先暂存本次实际修改的明确文件，并在提交前检查差异。
+```powershell
+# JAVA_HOME 已是 JDK 17 时无需重设；以下仅探测可用的本机临时工具。
+$taskJdk17 = @((Join-Path $env:LOCALAPPDATA 'pdc-build-tools/jdk-17.0.20.1+1'), (Join-Path $env:TEMP 'p1-jdk17/jdk')) |
+  Where-Object { Test-Path (Join-Path $_ 'bin/java.exe') } | Select-Object -First 1
+if ($taskJdk17) { $env:JAVA_HOME = $taskJdk17 }
+& "$env:JAVA_HOME/bin/java.exe" -version
+./mvnw.cmd -B --no-transfer-progress clean verify
+& "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --check
+# 首次在真实交互终端预置三角色账号；无默认密码、不回显密码，只存 B 哈希器的编码。
+& "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --init-accounts
+# 以后正常启动：
+& "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+```
 
-文档历史由Git记录，本文档不定义仓库外备份位置；运行数据备份遵循`DATA_ROOT`（仓库根`data/`）内待定的子布局，不能混用。课程交付仍以PDF、模板和Canvas要求为准。
+未找到上述临时 JDK 时选择已安装的 JDK 17；Enforcer 会拒绝 Java 8/其他主版本，不改为 Java 8 构建。首次工程依赖下载可能需要网络，业务运行离线；缓存齐全后加 `--offline`。本次实测平台为 Windows，其他平台命令未执行。
+
+可执行包是带依赖的 `*-jar-with-dependencies.jar`，包含 Jackson；普通 JAR 没有内嵌依赖，不能把它单独启动视为已验证。主类为 `nz.ac.aut.pdc.supermarket.app.Main`，从可执行文件位置向上找项目标记，不把 shell 当前目录当 DATA_ROOT；搬动可执行文件时用 `--project-root <项目根>`。`--help` 查看参数，`--check` 实际装配并执行完整快照校验，不提交业务操作。
+
+非交互启动可用 `--accounts <本地凭证JSON>` 初始化空存储：数组元素字段为 `accountId/username/passwordHash/role`，角色 ADMIN/MANAGER/CLERK，哈希兼容现有 B Sha256PasswordHasher。只初始化空存储，不能借此覆盖已有账号；本地文件放 `.local/` 等忽略目录，不上传密码、哈希或运行数据。无账号时明确提示登录未配置。`--init-accounts` 在已有快照时拒绝；密码/用户名输入中止不安装半套账号。
+
+CUI 包含商品新增/修改、期初、收货/补正/审核及可选附件、促销、销售报价后模拟付款、补货、报损/处置/修正、受限历史/额度查询、单行与混合售后、取消/删除及整单冲销。售后先保存 IF-11 追溯再显示必要原单字段和本次结算；尚未确认时可退出并按显示的目标草稿号取消。`CANCELLED` 保留追溯且无退款、库存、额度影响。销售报价变化或工作副本过期拒绝成交，需重新报价确认。
+
+请求结果未知先查原键。菜单15重试本次进程保存的原始请求；售后与冲销表单还允许输入原键及相同业务输入，支持重启后复用原结果。普通历史仍按店员本人、店长/管理员全部；售后凭证为精确原销售单号或打印的稳定销售行号，不提供跨人浏览。恢复异常会阻止启动，保留坏文件；管理员先备份完整 data/，使用 JsonStore 显式 PREVIOUS 恢复能力校验并恢复完整上一版及其附件，禁止手工拼接版本或静默清空。未在 CUI 中提供绕过损坏校验的写入口。
+
+## 开发与发布边界
+
+2026-10-21 v3 授权后由一个负责人维护完整单体，原 A/B 分工与设计保留为历史贡献和来源，不再以等待另一方接线作为实现状态。B 的 V1/V2 已获审计并包含于基线，不重做设计阶段。
+
+本轮仅本地开发与验证。任何上传 GitHub、推送或合并 main，均须先展示具体差异供人工审核，再取得针对该次操作的明确批准；没有自动发布。使用独立工作树保护其他会话在途修改，实际分支和本地交付记录见统一实现日志。
+
+文档历史由Git记录，本文档不定义仓库外备份位置；运行数据备份遵循`DATA_ROOT`（仓库根`data/`）内上述子布局，不能混用。课程交付仍以PDF、模板和Canvas要求为准。
 
 ## Maven框架与构建
 
-工程底座由成员A负责，通过开发agent实现；构建说明及实际验证记录见[框架说明](./docs/Maven_Framework.md)。使用JDK 17，Windows运行`./mvnw.cmd --batch-mode --no-transfer-progress clean verify`；Linux/macOS使用`sh ./mvnw --batch-mode --no-transfer-progress clean verify`。后者尚未在本机平台验证。首次构建需要下载Maven及依赖；依赖缓存后可离线验证。标准目录为`src/main/java`和`src/test/java`，没有业务主类，不支持`java -jar`启动超市系统。框架及B的复现记录已进入main；历史实际命令和结果见`docs/evidence/member_b/framework_repro.md`，本轮未重新运行构建。后续实现/联调按正式共享规范和各模块前置推进，不把框架存在或历史冒烟测试等同业务实现完成。
+工程使用固定版本 Maven Wrapper、JDK 17 Enforcer、JUnit 与 Jackson，以及 assembly 可执行包。当前命令、依赖与历史底座记录见 [Maven 框架说明](./docs/Maven_Framework.md)；当前实现和实际结果见 [统一实现日志](./docs/P1_Implementation_Log.md)。历史“空工程／尚无 Main／等待 A”只代表相应记录的形成时点。
 
-IF-11受控更新（2026-10-20）：用户已明确批准先可靠保存追溯后返回原销售最少字段；已成功保存读取追溯的未完成售后草稿取消为CANCELLED并保留三方关联，无退款/库存/额度影响；无追溯草稿仍按原规则删，已完成售后不适用。批准唯一来源见[Spec CR07-11](./docs/Project_Spec.md#175-cr07-11if-11-读取准入与局部取消留存)，验收AC-87–90均未执行。此次为本地文档同步，不改变既有发布回执，也不代表真实接口已实现。
+IF-11 按已批准 [CR07-11](./docs/Project_Spec.md#175-cr07-11if-11-读取准入与局部取消留存) 实现；批准基线和课程 AC 不在本次改写。完整自动化测试证据、测试替身范围和真实链范围单独列明，不把课程人工材料算作已完成。
