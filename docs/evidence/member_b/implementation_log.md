@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.13，2026-10-21（含 §6–§19 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验与认证适配）
+版本/日期：v0.14，2026-10-21（含 §6–§20 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证与售后读取适配）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -148,3 +148,12 @@
 - 新增 `SharedAuthJsonStoreTest`：临时项目根 + A `DataRoot`/`JsonStore` + B `LocalAuthService`，验证 B 会话可被 A `open` 接受（baseLast=0）。
 - 测试：`SharedIdentityResolverTest`(2)、`SharedCredentialStoreTest`(2)、`SharedAuthJsonStoreTest`(1)；合并树累计 **141 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：尚未做统一 `Main`/pom 入口与 CUI 真实 `Operations`；B 服务装配仍用内存/替身端口。
+
+## 20. 2026-10-21 Stage 3f：售后读取适配
+
+- 新增 `SharedSaleReader`：从 A `WorkingCopy` 的 `DOCUMENT/DOC_LINE/SALE_LINE` 读取 `OriginalSaleLine`。
+- 新增 `SharedQuotaLedgerReader`：从 A `REDEMPTION` 读取核销历史。
+- 新增 `SharedProductSnapshotReader`：从 A `PRODUCT` 读取商品名称/售价快照。
+- 新增 `SharedAftersaleReadTest`：真实 A `WorkingCopy` 数据驱动 B 售后读取与 `AftersaleService` 候选（2 项）。
+- 测试：合并树累计 **143 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI `Operations`/`Main` 装配仍未做；B 售后真实提交路径仍使用 capturing `SubmissionPort` 测试。
