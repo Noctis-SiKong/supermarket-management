@@ -67,6 +67,38 @@ public class AftersaleCommitValidatorTest {
     }
 
     @Test
+    public void missingOriginalSaleLineIsRejected() {
+        Result<Void> result = validator.validate(
+                op, actor, request(), new WorkingCopy("wc-empty", 1, List.of()),
+                changes(true), acceptedAt);
+
+        assertEquals(Result.Status.REJECTED, result.status());
+        assertEquals("REFERENCE_INVALID", result.code());
+    }
+
+    @Test
+    public void sameOriginalLineMultipleRedemptionsAreKept() {
+        BusinessRequest twoLines = BusinessRequest.of(new AftersaleCommand(
+                "REQ-1", null, List.of(
+                        new AftersaleCommandLine(
+                                "SL-1", RedemptionKind.RETURN, 1, false, false,
+                                AftersaleReasonKind.OTHER, "其他原因", null, 0, false),
+                        new AftersaleCommandLine(
+                                "SL-1", RedemptionKind.RETURN, 1, false, false,
+                                AftersaleReasonKind.OTHER, "其他原因", null, 0, false))));
+        ChangeSet changes = new ChangeSet.Builder()
+                .add(RecordData.of("DOCUMENT", "AF-1", header()))
+                .add(RecordData.of("REDEMPTION", "R-1", redemption("R-1", "其他原因")))
+                .add(RecordData.of("REDEMPTION", "R-2", redemption("R-2", "其他原因")))
+                .build();
+
+        Result<Void> result = validator.validate(
+                op, actor, twoLines, baseline, changes, acceptedAt);
+
+        assertEquals(Result.Status.VALUE, result.status());
+    }
+
+    @Test
     public void registryContainsAftersaleAndDraftDeletion() {
         Map<String, ?> validators = BCommitValidators.create(new SharedStockAdapter());
 
@@ -97,8 +129,12 @@ public class AftersaleCommitValidatorTest {
     }
 
     private Redemption redemption(String reasonText) {
+        return redemption("R-1", reasonText);
+    }
+
+    private Redemption redemption(String redemptionId, String reasonText) {
         return new Redemption(
-                "R-1", "R-1", "SL-1", "A", "AF-1",
+                redemptionId, redemptionId, "SL-1", "A", "AF-1",
                 RedemptionKind.RETURN, Effect.CONSUME, 1, new BigDecimal("3.33"),
                 "REQ-1", null, false, false, reasonText);
     }

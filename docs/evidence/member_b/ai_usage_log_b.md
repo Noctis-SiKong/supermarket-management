@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#35） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#36） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -113,3 +113,6 @@
 
 | 35 | 审计交接单 B-01～B-08 修复 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按审计单修请求/身份复核、零金额、同原行多明细、稳定顺序、原行缺失、取消幂等、草稿归属 | StockOperationValidator/AftersaleIntegrityValidator/AftersaleCommitValidator/AftersaleService/AftersaleDraftValidator/Service；156 tests | 用户要求按交接单修；B-06/B-09/B-10 未完成 |
 - #35 审计 B-01～B-08 修复、`implementation_log.md` §29（2026-10-21，156 项测试）
+
+| 36 | 审计回归测试补充 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 B-01/B-03/B-04/B-05/B-07 针对性测试 | StockOperationValidatorTest、AftersaleCommitValidatorTest、AftersaleServiceTest、零金额/取消重试断言；159 tests | 用户要求补测试再 push；AC-79 尾差未逐项复现 |
+- #36 审计回归测试补充、`implementation_log.md` §30（2026-10-21，159 项测试）

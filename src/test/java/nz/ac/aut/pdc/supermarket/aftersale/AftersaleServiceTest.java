@@ -68,6 +68,28 @@ public class AftersaleServiceTest {
     }
 
     @Test
+    public void sameLinesProduceSameResultRegardlessOfInputOrder() {
+        AftersaleCommand first = command(
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
+                line(RedemptionKind.RETURN, 2, false, false, null, 0, false));
+        AftersaleCommand second = command(
+                line(RedemptionKind.RETURN, 2, false, false, null, 0, false),
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult.Prepared one = (AftersaleResult.Prepared) service.apply(
+                workingCopy, first, Role.CLERK);
+        AftersaleResult.Prepared two = (AftersaleResult.Prepared) service.apply(
+                workingCopy, second, Role.CLERK);
+
+        assertEquals(
+                one.redemptions().stream().map(Redemption::amount).toList(),
+                two.redemptions().stream().map(Redemption::amount).toList());
+        assertEquals(
+                one.settlements().stream().map(Settlement::amount).toList(),
+                two.settlements().stream().map(Settlement::amount).toList());
+    }
+
+    @Test
     public void partialReturnCalculatesQuotaAmountAndRefund() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 

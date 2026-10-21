@@ -236,3 +236,12 @@
 - B-08：草稿读取/取消校验创建者归属；读取事件 detail 的原销售行必须存在且属于已确认 SALE。
 - 测试：新增 `StockOperationValidatorTest` 3 项、零金额/取消重试断言；合并树 **156 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 未修：B-06 IF-11 正式受控读取端口待 A；B-09 草稿删除无生产/CUI 路径；B-10 冲销仍骨架；A-01/A/B-01 归 A。
+
+## 30. 2026-10-21 审计回归测试补充
+
+- 新增 `StockOperationValidatorTest`：合法补货、篡改数量、夹带 PRODUCT 三项。
+- 新增 `AftersaleCommitValidatorTest`：同原行多核销保留、原销售行缺失拒绝。
+- 新增 `AftersaleServiceTest`：同一业务输入打乱顺序后金额/结算结果一致。
+- 新增零金额 `MONEY_ENTRY`、取消同键重试、草稿读取需真实已确认 SALE 等断言。
+- 合并树累计 **159 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：B-04 的 AC-79 尾差 3.33/3.33/3.34 尚未逐项复现；B-06/B-09/B-10 仍未完成。

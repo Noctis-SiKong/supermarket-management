@@ -173,6 +173,10 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         if (replacedRedemptions.size() != exchanges.size()) {
             return Result.rejected("REFERENCE_INVALID", "Every exchange line requires one replacement");
         }
+        Result<Void> windowCheck = validateAftersaleWindow(baseline, redemptions, acceptedAt);
+        if (!windowCheck.hasValue()) {
+            return windowCheck;
+        }
 
         Result<Void> stockCheck = stockAdapter.review(baseline, request, changes);
         if (!stockCheck.hasValue()) {
