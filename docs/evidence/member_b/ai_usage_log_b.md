@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16）/ max（#5–#6、#9–#11、#13–#15、#17–#18） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -32,6 +32,7 @@
 | 16 | 文档-V2.1 分图源文件落库 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 将总览/auth-cui/stock/aftersale 四张分图源文件落库并补 README/图注/渲染核对 | `split/00_overview.mmd`、`01_auth_cui.mmd`、`02_stock.mmd`（补 LossOrigin/LossState 枚举记号）、`03_aftersale.mmd`；README §5 图 A–D/命名/裁切核对；未生成 PNG | 按"可以"落库；要求 thinking=high；PNG 仍由 B 渲染，未执行 AC |
 | 17 | 实现-query / reversal 骨架 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按用户要求开始 query / reversal 骨架 | `QueryOperations/QueryService/QueryResult/SaleLineView`；`ReversalService/ReversalPlan/ReversalCommand/ReversalResult` + 端口 `RedemptionReader/ReversalDependencyReader/StockEffectReader`；5+7 项测试；累计 68 项通过 | 要求 thinking=max；只读/不提交；D1 仅阻断不级联；新增 B 业务码待通知 A；未执行 AC |
 | 18 | 实现-独立可完成规则收口 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按用户要求把 B 独立可完成规则补齐并保证质量 | Redemption 例外字段；同原行多明细顺序额度；SettlementCalculator；LossRecord.dispose；LossRecordView/Reader；DependencyChecker；CUI 测试；AC 索引；84 项通过 | 仍用替身；D1 不级联；顾客交回/真实 A 未接；未执行 AC |
+| 19 | 协调-B→A Git 对齐消息 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 在 Git 留正式 B→A 对齐消息，列清 B 状态、A 需交付/裁决项与回复方式 | `docs/coordination/B_TO_A_ALIGNMENT_2026-10-21.md`：R1 shared/IF-04/05、R2 包路径、R3 IF-07 balances 签名、R4 业务码、R5 IF-11、R6 CUI 入口/pom、R7 分支合并、R8 结果类型映射；HEAD 68f7c51、84 项测试 | 用户要求在 git 里留消息和 A 对齐；未改代码；等待 A 逐条回复 |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -52,11 +53,14 @@
 - #16 `docs/design/member_b/v2_1/split/`、`docs/design/member_b/v2_1/README.md` §5、`implementation_log.md` §11（2026-10-21，thinking=high）
 - #17 `src/main/java/nz/ac/aut/pdc/supermarket/{query,reversal}/`、对应测试类、`implementation_log.md` §12（2026-10-21，68 项测试）
 - #18 `src/main/java/nz/ac/aut/pdc/supermarket/{aftersale,stock,query,reversal}/` 规则补全、对应测试、`docs/evidence/member_b/ac_coverage_b.md`、`implementation_log.md` §13（2026-10-21，84 项测试）
+- #19 `docs/coordination/B_TO_A_ALIGNMENT_2026-10-21.md`（2026-10-21，B→A 对齐消息）
 
 ## 待补（按阶段追加，不预先填写）
 
 - A.2 后续条目：本人对评审的逐条决定、类图 V2 与差异、模块实现、调试、AC 执行、报告装配。
 - A.3 人机贡献划分：各阶段结束后按事实整理（主要由人工设计 / 主要由 AI 生成后经审核），在报告装配时提交给 A 汇总。
+
+
 
 
 
