@@ -663,8 +663,6 @@ Subsequent ERDs need only comply with the §9.1 checklist; in this round no ERD 
 
 Report material supplement for this round: at the requirements stage, save the original U5/U6 decisions, the user's reasons for the scope reduction, and the version differences; at the design stage, record the sales-line allocation snapshot and the dual-quota ledger/idempotency/reversal constraints (Spec §9.1); only after subsequent authorized development and testing are the real inputs and outputs, balances, defects, and retests of AC-54–59 collected. Map to T §2.1/2.2, §3.2/3.4–3.6, and Appendix A; no implementation or test evidence collection is scheduled for product date/batch/expiry capability. The reflection and signature are still completed by the student themselves, and this stage does not produce a final report or project conclusion.
 
-<a id="17-v07-变更控制与唯一待决登记"></a>
-<a id="17-v07-变更控制与唯一批准登记"></a>
 ## 17 v0.7 Change Control and Single Pending-Decision Register
 
 ### 17.1 Versions and Authorization
@@ -726,7 +724,6 @@ Read-only material check: C reader/print same page p3 §1.2 and p5 design rubric
 The current stage records the real ruling, the before/after differences, and the model modifications; only after implementation is authorized are the AC-35/52/59/83–85 preconditions/snapshots/sequence numbers, write-failure/restart/two-process actual outputs, and results recorded. A new rule being Ready is not the same as passed; test and design iteration experiences are not fabricated.
 
 
-<a id="174-已明确授权的定点同步v07状态不变"></a>
 ### 17.4 Explicitly Authorized Targeted Synchronization (v0.7 Unchanged)
 
 This round only registers existing explicit user decisions under change control and synchronizes Spec/PRD/ERD and the acceptance tracking; it does not change the v0.7 version number or the state of being frozen as the requirements baseline, nor does it mean that design is complete or framework work has started. SYNC is a change request index along the existing division-of-work draft and creates no new business requirement numbering or approval voucher files. D1/D2, originally CR07-06/07, remain approved and closed.

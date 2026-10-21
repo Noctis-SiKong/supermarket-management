@@ -4,7 +4,7 @@
 
 ## 1. 目的、依据与仓库版本
 
-供成员B及其AI先完成设计，再在条件满足后开发自己负责、规则明确的部分。需求基线为Spec/PRD/ERD **v0.7**；分工清单为 **v0.3**，两者不是同一版本体系。批准/待决状态以[Spec §17](./Project_Spec.md#17-v07-变更控制与唯一批准登记)为来源，SYNC详情见[§17.4](./Project_Spec.md#174-已明确授权的定点同步v07状态不变)，D1/D2保持批准关闭。不得以本交接包修改冻结需求。
+供成员B及其AI先完成设计，再在条件满足后开发自己负责、规则明确的部分。需求基线为Spec/PRD/ERD **v0.7**；分工清单为 **v0.3**，两者不是同一版本体系。批准/待决状态以[Spec §17](./Project_Spec.md#17-v07-change-control-and-single-pending-decision-register)为来源，SYNC详情见[§17.4](./Project_Spec.md#174-explicitly-authorized-targeted-synchronization-v07-unchanged)，D1/D2保持批准关闭。不得以本交接包修改冻结需求。
 
 开始前完整读取[README](../README.md)、[Spec](./Project_Spec.md)、[PRD](./Project_PRD.md)、[ERD](./Project_ERD.md)、[分工与接口清单](./P1_Preliminary_Work_Distribution_and_Interface_List.md)，再按实际文件处理，不以本包摘要替代规则。
 
