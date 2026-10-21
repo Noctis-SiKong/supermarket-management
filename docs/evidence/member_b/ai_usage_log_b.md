@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#32） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#33） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -46,6 +46,7 @@
 | 30 | 代码审查修复-售后链 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 修复 review 的换货、款项符号、校验器意图/30天、核销行与角色/时钟装配 | AftersaleRequest + CUI 换货输入；MoneyEntry 符号；validator request/acceptedAt；SharedRoles/IdClock；147 tests | 用户要求修；IF-11/CR07-11、幂等、恢复校验未修 |
 | 31 | 代码审查修复-幂等/恢复/数据形状 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 requestKey 重试、AftersaleIntegrityValidator、ERD 数据形状 | AftersaleRequest requestKey、SharedOperations 重试、BApplication 完整性、AFTERSALE/DOC_EVENT；149 tests | 用户要求继续修；IF-11/CR07-11 仍未修 |
 | 32 | IF-11/CR07-11-草稿/追溯/取消 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 实现售后草稿创建、READ_FOR_AFTERSALE 追溯、取消与 DRAFT 最终提交 | AftersaleDraftService/Validator、SharedOperations 三段式、AftersaleCommitValidator 支持 DRAFT；150 tests | 用户要求 B 责任全改；CUI 取消菜单未暴露 |
+| 33 | IF-11/CR07-11-CUI 取消与 A 对齐 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 CUI 取消入口并写 A 对齐请求 | Operations.cancelAftersaleDraft + CuiApp 菜单 + B_TO_A_IF11_ALIGNMENT；151 tests | 用户要求都做；A 侧读取准入待 A 确认 |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -80,11 +81,13 @@
 - #30 review 修复：AftersaleRequest/CuiApp 换货、款项符号、validator request/30天、SharedRoles/IdClock、`implementation_log.md` §24（2026-10-21，147 项测试）
 - #31 review 修复第二轮：requestKey 重试、AftersaleIntegrityValidator、ERD 形状、`implementation_log.md` §25（2026-10-21，149 项测试）
 - #32 IF-11/CR07-11：AftersaleDraftService/Validator、SharedOperations 草稿→追溯→最终、DRAFT 完成校验、`implementation_log.md` §26（2026-10-21，150 项测试）
+- #33 CUI 取消入口/`B_TO_A_IF11_ALIGNMENT_2026-10-21.md`、`implementation_log.md` §27（2026-10-21，151 项测试）
 
 ## 待补（按阶段追加，不预先填写）
 
 - A.2 后续条目：本人对评审的逐条决定、类图 V2 与差异、模块实现、调试、AC 执行、报告装配。
 - A.3 人机贡献划分：各阶段结束后按事实整理（主要由人工设计 / 主要由 AI 生成后经审核），在报告装配时提交给 A 汇总。
+
 
 
 

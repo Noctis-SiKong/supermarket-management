@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.20，2026-10-21（含 §6–§26 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复与 IF-11/CR07-11 草稿链）
+版本/日期：v0.21，2026-10-21（含 §6–§27 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复、IF-11/CR07-11 草稿链与 CUI 取消）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -208,3 +208,10 @@
 - 同一 requestKey 重试先查最终结果，避免重复建草稿/售后。
 - 测试：新增 `AftersaleDraftServiceTest`(1)；合并树累计 **150 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI 尚未暴露取消菜单；A 侧对 IF-11 跨人读取的授权/返回准入仍需 A 接口最终对齐。
+
+## 27. 2026-10-21 CUI 取消入口与 A 对齐
+
+- CUI 主菜单新增“取消售后草稿”；`Operations.cancelAftersaleDraft` 经 `AftersaleDraftService.cancel` 提交 CANCELLED + CANCEL_AFTERSALE，CUI 测试覆盖草稿 ID 分派。
+- 新增 `docs/coordination/B_TO_A_IF11_ALIGNMENT_2026-10-21.md`，就 IF-11 读取准入、事件形状、DRAFT 最终提交、取消/删除边界向 A 提明确确认请求，不把推断当 A 接口。
+- 测试：`CuiAppTest` 新增取消分派 1 项；合并树累计 **151 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 未声称：A 侧 IF-11 接口已交付、真实跨人授权联调、AC 验收。

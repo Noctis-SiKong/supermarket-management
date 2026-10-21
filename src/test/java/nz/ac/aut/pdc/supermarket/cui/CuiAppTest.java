@@ -100,6 +100,16 @@ public class CuiAppTest {
         assertEquals(2, operations.replacementQuantity);
     }
 
+    @Test
+    public void cancelDraftMenuDispatchesDraftId() {
+        RecordingOperations operations = new RecordingOperations();
+
+        String output = run("alice\nsecret\n4\nAF-1\n0\nexit\n", operations);
+
+        assertTrue(output.contains("登录成功"));
+        assertEquals("AF-1", operations.cancelledDraftId);
+    }
+
     private String run(String input, RecordingOperations operations) {
         Sha256PasswordHasher hasher = new Sha256PasswordHasher();
         InMemoryCredentialStore credentialStore = new InMemoryCredentialStore();
@@ -135,6 +145,7 @@ public class CuiAppTest {
         private String reasonText;
         private String replacementBarcode;
         private int replacementQuantity;
+        private String cancelledDraftId;
 
         @Override
         public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
@@ -152,6 +163,13 @@ public class CuiAppTest {
             lossPosition = position;
             lossQuantity = quantity;
             return OperationFeedback.ok("报损候选已受理（测试替身，未提交）");
+        }
+
+        @Override
+        public OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId) {
+            lastActor = actor;
+            cancelledDraftId = draftId;
+            return OperationFeedback.ok("测试替身未提交取消");
         }
 
         @Override

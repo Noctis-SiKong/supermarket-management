@@ -27,4 +27,9 @@ public final class UnavailableOperations implements Operations {
     public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
         return OperationFeedback.fail(MESSAGE);
     }
+
+    @Override
+    public OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId) {
+        return OperationFeedback.fail(MESSAGE);
+    }
 }

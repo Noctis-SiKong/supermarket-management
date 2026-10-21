@@ -135,6 +135,25 @@ public final class SharedOperations implements Operations {
         return OperationFeedback.ok("售后已提交：" + result.value().requestKey());
     }
 
+    @Override
+    public OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId) {
+        Objects.requireNonNull(actor, "actor");
+        if (draftId == null || draftId.isBlank()) {
+            return OperationFeedback.fail("售后草稿 ID 不能为空");
+        }
+        OperationContext operation = new OperationContext(
+                actor.session(), idClock.newRequestKey(),
+                AftersaleDraftOperations.CANCEL, draftId.trim());
+        Result<SubmissionPort.CommitReceipt> result = new AftersaleDraftService(store).cancel(
+                operation,
+                new OperationContext.ActorContext(
+                        actor.accountId(), SharedRoles.toShared(actor.role())));
+        if (!result.hasValue()) {
+            return OperationFeedback.fail("取消失败：" + result.code() + " " + result.detail());
+        }
+        return OperationFeedback.ok("售后草稿已取消：" + draftId.trim());
+    }
+
     private String derivedKey(String baseKey, String purpose) {
         return java.util.UUID.nameUUIDFromBytes(
                 (baseKey + ":" + purpose).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString();

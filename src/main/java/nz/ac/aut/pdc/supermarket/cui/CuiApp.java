@@ -73,7 +73,7 @@ public final class CuiApp {
         CuiActor actor = new CuiActor(session.accountId(), session.role(), session.session());
         while (true) {
             output.println();
-            output.println("1) 补货   2) 店内报损   3) 售后   0) 退出登录");
+            output.println("1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   0) 退出登录");
             String choice = prompt("请选择：");
             if (choice == null || EXIT_COMMAND.equalsIgnoreCase(choice.trim())) {
                 return;
@@ -86,6 +86,7 @@ public final class CuiApp {
                 case "1" -> replenish(actor);
                 case "2" -> recordLoss(actor);
                 case "3" -> aftersale(actor);
+                case "4" -> cancelAftersaleDraft(actor);
                 default -> output.println("无效选项，请重新选择");
             }
         }
@@ -181,6 +182,18 @@ public final class CuiApp {
                 reasonKind, reasonText, replacementBarcode, replacementQuantity, null);
         try {
             print(operations.aftersale(actor, request));
+        } catch (RuntimeException ex) {
+            output.println("操作失败：" + ex.getMessage());
+        }
+    }
+
+    private void cancelAftersaleDraft(CuiActor actor) {
+        String draftId = prompt("售后草稿 ID：");
+        if (draftId == null || draftId.isBlank()) {
+            return;
+        }
+        try {
+            print(operations.cancelAftersaleDraft(actor, draftId.trim()));
         } catch (RuntimeException ex) {
             output.println("操作失败：" + ex.getMessage());
         }

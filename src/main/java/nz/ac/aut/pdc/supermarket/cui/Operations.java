@@ -15,4 +15,6 @@ public interface Operations {
     OperationFeedback recordLoss(CuiActor actor, String barcode, Position position, int quantity);
 
     OperationFeedback aftersale(CuiActor actor, AftersaleRequest request);
+
+    OperationFeedback cancelAftersaleDraft(CuiActor actor, String draftId);
 }
