@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#37） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#38） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -119,3 +119,6 @@
 
 | 37 | B-09 草稿删除生产/CUI | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补无追溯草稿的真实删除链路与 CUI 入口 | AftersaleDraftService.delete + Operations/CuiApp + 真实 JsonStore 联测；160 tests | 用户要求继续完成；B-10 冲销仍未完成 |
 - #37 B-09 草稿删除生产/CUI、`implementation_log.md` §31（2026-10-21，160 项测试）
+
+| 38 | AC-79 尾差回归 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 复现同原行三条各1件的3.33/3.33/3.34 | AftersaleServiceTest；161 tests | 用户要求继续；B-10 冲销未完成 |
+- #38 AC-79 尾差回归、`implementation_log.md` §32（2026-10-21，161 项测试）

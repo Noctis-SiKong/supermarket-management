@@ -253,3 +253,9 @@
 - `AftersaleDraftServiceTest` 增加无读取追溯草稿真实删除并验证 DOCUMENT 消失；A `DraftDeletionGuard` + B 校验器在同一 JsonStore 上联跑通过。
 - 测试：合并树累计 **160 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：有读取追溯的草稿仍只能走取消；B-10 整单冲销仍未完成。
+
+## 32. 2026-10-21 AC-79 精确尾差回归
+
+- `AftersaleServiceTest` 增加同一原销售行 3 件、三条各 1 件的用例；核销金额按稳定顺序得到 **3.33 / 3.33 / 3.34**，AC-79 尾差可复现。
+- 合并树累计 **161 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 剩余：B-10 整单冲销仍未完成；B-06 待 A。

@@ -68,6 +68,21 @@ public class AftersaleServiceTest {
     }
 
     @Test
+    public void ac79ThreeSingleUnitReturnsUseStableCentAllocation() {
+        AftersaleCommand command = command(
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+
+        assertEquals(
+                List.of(new BigDecimal("3.33"), new BigDecimal("3.33"), new BigDecimal("3.34")),
+                prepared.redemptions().stream().map(Redemption::amount).toList());
+    }
+
+    @Test
     public void sameLinesProduceSameResultRegardlessOfInputOrder() {
         AftersaleCommand first = command(
                 line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
