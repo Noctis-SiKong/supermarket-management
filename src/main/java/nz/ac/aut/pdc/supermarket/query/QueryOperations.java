@@ -18,4 +18,8 @@ public interface QueryOperations {
     QueryResult<QuotaView> quotaView(String saleLineId);
 
     QueryResult<List<Redemption>> redemptionHistory(String saleLineId);
+
+    QueryResult<LossRecordView> findLossRecord(String lossId);
+
+    QueryResult<List<LossRecordView>> lossRecordsForBarcode(String barcode);
 }

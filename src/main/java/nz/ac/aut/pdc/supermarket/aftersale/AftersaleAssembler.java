@@ -23,7 +23,10 @@ public final class AftersaleAssembler {
             String requestKey,
             OriginalSaleLine original,
             AftersaleCommandLine line,
-            BigDecimal amount) {
+            BigDecimal amount,
+            String exceptionAuthorizedBy,
+            String exceptionReason,
+            String relaxedRule) {
         return new Redemption(
                 idGenerator.nextId("RED"),
                 original.saleLineId(),
@@ -37,7 +40,21 @@ public final class AftersaleAssembler {
                 requestKey,
                 null,
                 line.opened(),
-                line.qualityProblem());
+                line.qualityProblem(),
+                exceptionAuthorizedBy,
+                exceptionReason,
+                relaxedRule);
+    }
+
+    /** 兼容旧调用：无资格例外事实。 */
+    public Redemption assembleRedemption(
+            String aftersaleId,
+            String requestKey,
+            OriginalSaleLine original,
+            AftersaleCommandLine line,
+            BigDecimal amount) {
+        return assembleRedemption(
+                aftersaleId, requestKey, original, line, amount, null, null, null);
     }
 
     public Replacement assembleReplacement(

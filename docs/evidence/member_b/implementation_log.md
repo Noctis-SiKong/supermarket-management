@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.6，2026-10-21（含 §6–§12 增补与独立审查修复记录）
+版本/日期：v0.7，2026-10-21（含 §6–§13 增补与独立审查修复记录）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -94,3 +94,13 @@
 - 新增 B 业务码 `QUERY_FAILED`、`DEPENDENCY_BLOCKED`、`REVERSAL_FAILED`，待通知 A 登记；D1 只做阻断，不级联重建；款项/顾客交回未处理。
 - 测试：`QueryServiceTest`(5)、`ReversalServiceTest`(7)；累计 **68 项测试全部通过**（BUILD SUCCESS）。
 - 边界：权限范围/真实 A 数据未接入；V2.1 图尚未包含 `query`/`reversal` 新包；未执行 AC。
+
+## 13. 2026-10-21 增补：独立可完成规则收口
+
+- 售后：`Redemption` 增加 CR07-09 例外字段（授权人/原因/放宽规则），`AftersaleService` 在例外生效时写入；支持同一原行多条明细的顺序额度扣减；新增 `SettlementCalculator`/`Settlement`/`SettlementDirection`，输出退款/补收/无差候选并接入 `AftersaleResult.Prepared`。
+- 报损：`LossRecord.dispose(String)` 将状态转为 DISPOSED，保留原字段；新增测试。
+- 查询：新增 `LossRecordView`、`LossRecordReader`，`QueryService` 支持按 ID/条码查损耗记录；补 4 项测试。
+- 冲销：新增 `DependencyChecker`（直接/传递依赖与环检测）；补 4 项测试。
+- CUI：补非法位置与换货质量事实分派测试。
+- 测试：`clean verify` **84 项全部通过**；AC 索引见 `docs/evidence/member_b/ac_coverage_b.md`。
+- 边界：仍用替身；D1 只阻断不级联；顾客交回损耗记录器、真实 A 数据/权限未接；未执行正式 AC。

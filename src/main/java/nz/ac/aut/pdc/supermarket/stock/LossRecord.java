@@ -32,4 +32,16 @@ public record LossRecord(
         Objects.requireNonNull(origin, "origin");
         Objects.requireNonNull(dispositionState, "dispositionState");
     }
+
+    /** 记录处置结果，状态转为 DISPOSED；不保存、不提交。 */
+    public LossRecord dispose(String disposition) {
+        if (disposition == null || disposition.isBlank()) {
+            throw new IllegalArgumentException("disposition must not be blank");
+        }
+        return new LossRecord(
+                lossId, sourceLineId, barcode, position, quantity, origin,
+                disposition, LossState.DISPOSED);
+    }
 }
+
+

@@ -15,11 +15,11 @@
 | `StockOperations` / `StockService` / `StockValidator` | 已实现 | `stock/`；IF-07 候选，不提交 |
 | `StockPorts` / `SubmissionGateway` | 已实现（B 侧端口） | 正式适配 A 的 IF-03/04/05/06；提交未接线 |
 | `ReplenishmentService` / `LossService` | 已实现（候选） | 不提交；见 `implementation_log.md` §6 |
-| `QuotaViewBuilder` / `QuotaCalculator` / `QualityPairValidator` | 已实现（纯函数） | `aftersale/` |
+| `QuotaViewBuilder` / `QuotaCalculator` / `QualityPairValidator` / `SettlementCalculator` | 已实现（纯函数） | `aftersale/`；结算候选已接入编排 |
 | `AftersaleService` / `AftersaleAssembler` / `AftersaleCommand` | 已实现（编排骨架） | 资格简化规则；不提交；见 §9 |
 | `BusinessTransaction` / `OperationResult` | **未实现** | 目标模板，后续跨模块复用；当前各服务用三态结果 |
-| `ReversalPlan` / `ReversalService` / D1 消费 | **已实现骨架（不提交）** | `reversal/`；D1 只做阻断检查，不级联重建；依赖 A 的 IF-04/05 真实实现 |
-| 查询模块（`query`） | **已实现骨架（只读）** | `query/QueryService`：原行/额度/核销历史；权限范围待 A 的 IF-04 |
+| `ReversalPlan` / `ReversalService` / `DependencyChecker` / D1 消费 | **已实现骨架（不提交）** | `reversal/`；D1 只做阻断/环检测，不级联重建；依赖 A 的 IF-04/05 |
+| 查询模块（`query`） | **已实现骨架（只读）** | `query/QueryService`：原行/额度/核销历史/损耗记录；权限范围待 A 的 IF-04 |
 | A 的 `shared/`、`infrastructure/` | **未交付** | 联调/真实提交前置 |
 | 款项/顾客交回损耗/权限校验细节 | **未实现** | 骨架边界，报告需如实说明 |
 
@@ -51,3 +51,4 @@
 - 四张图的 PNG 尚未入库，待 B 用 mermaid.live 渲染后放 `v2_1/rendered/`（建议命名 `A_overview.png`、`B_auth_cui.png`、`C_stock.png`、`D_aftersale.png`）。
 - 渲染时确认 `RedemptionKind` 末字符未被裁切；`auth/cui` 图可裁掉左侧多余空白。
 - 图注必须保留“仅类与依赖、不含字段/方法”，不得把结构快照表述为完整详细类图。
+

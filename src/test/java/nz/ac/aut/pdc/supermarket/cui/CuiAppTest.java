@@ -71,6 +71,28 @@ public class CuiAppTest {
         assertEquals(null, operations.replenishBarcode);
     }
 
+    @Test
+    public void invalidPositionIsRejectedBeforeOperations() {
+        RecordingOperations operations = new RecordingOperations();
+
+        String output = run("alice\nsecret\n2\n690123\nX\n2\n0\nexit\n", operations);
+
+        assertTrue(output.contains("输入错误：位置只能是 S 或 W"));
+        assertEquals(null, operations.lossBarcode);
+    }
+
+    @Test
+    public void exchangeAftersaleDispatchesQualityFact() {
+        RecordingOperations operations = new RecordingOperations();
+
+        String output = run("alice\nsecret\n3\nSL-1\nEXCHANGE\n1\nn\ny\n0\nexit\n", operations);
+
+        assertTrue(output.contains("登录成功"));
+        assertEquals(RedemptionKind.EXCHANGE, operations.kind);
+        assertEquals(Boolean.FALSE, operations.opened);
+        assertEquals(Boolean.TRUE, operations.qualityProblem);
+    }
+
     private String run(String input, RecordingOperations operations) {
         Sha256PasswordHasher hasher = new Sha256PasswordHasher();
         InMemoryCredentialStore credentialStore = new InMemoryCredentialStore();

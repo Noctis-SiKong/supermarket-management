@@ -12,11 +12,13 @@ public sealed interface AftersaleResult
     record Prepared(
             List<Redemption> redemptions,
             List<Replacement> replacements,
-            List<StockEntryView> stockEntries) implements AftersaleResult {
+            List<StockEntryView> stockEntries,
+            List<Settlement> settlements) implements AftersaleResult {
         public Prepared {
             redemptions = List.copyOf(Objects.requireNonNull(redemptions, "redemptions"));
             replacements = List.copyOf(Objects.requireNonNull(replacements, "replacements"));
             stockEntries = List.copyOf(Objects.requireNonNull(stockEntries, "stockEntries"));
+            settlements = List.copyOf(Objects.requireNonNull(settlements, "settlements"));
         }
     }
 
@@ -34,6 +36,7 @@ public sealed interface AftersaleResult
         }
     }
 
+    /** 为避免 aftersale 直接暴露 stock 实体，用最小只读视图承载候选流水。 */
     record StockEntryView(
             String id,
             String barcode,

@@ -7,7 +7,8 @@ import java.util.Objects;
  * 原销售行的一次核销明细（ERD REDEMPTION 的 B 侧不可变模型）。
  *
  * <p>业务类型与账务方向分离：kind=RETURN/EXCHANGE，effect=CONSUME/RELEASE。
- * RELEASE 必须通过 reverseOfId 指向被释放的原核销。</p>
+ * RELEASE 必须通过 reverseOfId 指向被释放的原核销。资格例外（CR07-09）事实
+ * 写在例外字段中，便于审计；未使用例外时为空。</p>
  */
 public record Redemption(
         String redemptionId,
@@ -22,7 +23,10 @@ public record Redemption(
         String requestKey,
         String reverseOfId,
         boolean opened,
-        boolean qualityProblem) {
+        boolean qualityProblem,
+        String exceptionAuthorizedBy,
+        String exceptionReason,
+        String relaxedRule) {
 
     public Redemption {
         if (redemptionId == null || redemptionId.isBlank()) {
@@ -46,5 +50,25 @@ public record Redemption(
         if (effect == Effect.RELEASE && (reverseOfId == null || reverseOfId.isBlank())) {
             throw new IllegalArgumentException("RELEASE must reference the original redemption");
         }
+    }
+
+    /** 兼容旧调用：无资格例外事实。 */
+    public Redemption(
+            String redemptionId,
+            String sourceLineId,
+            String originalSaleLineId,
+            String originalBarcode,
+            String aftersaleId,
+            RedemptionKind kind,
+            Effect effect,
+            int quantity,
+            BigDecimal amount,
+            String requestKey,
+            String reverseOfId,
+            boolean opened,
+            boolean qualityProblem) {
+        this(redemptionId, sourceLineId, originalSaleLineId, originalBarcode, aftersaleId,
+                kind, effect, quantity, amount, requestKey, reverseOfId, opened, qualityProblem,
+                null, null, null);
     }
 }

@@ -18,6 +18,10 @@ import nz.ac.aut.pdc.supermarket.aftersale.QuotaViewBuilder;
 import nz.ac.aut.pdc.supermarket.aftersale.Redemption;
 import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.aftersale.Effect;
+import nz.ac.aut.pdc.supermarket.stock.LossOrigin;
+import nz.ac.aut.pdc.supermarket.stock.LossRecord;
+import nz.ac.aut.pdc.supermarket.stock.LossState;
+import nz.ac.aut.pdc.supermarket.stock.Position;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -89,6 +93,74 @@ public class QueryServiceTest {
 
         assertTrue(result instanceof QueryResult.Failed);
         assertEquals("QUERY_FAILED", ((QueryResult.Failed<SaleLineView>) result).code());
+    }
+
+    @Test
+    public void findLossRecordReturnsReadOnlyView() {
+        QueryService service = serviceWithLoss();
+
+        QueryResult<LossRecordView> result = service.findLossRecord("L-1");
+
+        assertTrue(result instanceof QueryResult.Value);
+        LossRecordView view = ((QueryResult.Value<LossRecordView>) result).value();
+        assertEquals("A", view.barcode());
+        assertEquals(LossState.DISPOSED, view.dispositionState());
+    }
+
+    @Test
+    public void missingLossRecordIsRejected() {
+        QueryService service = serviceWithLoss();
+
+        QueryResult<LossRecordView> result = service.findLossRecord("missing");
+
+        assertTrue(result instanceof QueryResult.Rejected);
+        assertEquals("NOT_FOUND", ((QueryResult.Rejected<LossRecordView>) result).code());
+    }
+
+    @Test
+    public void lossRecordsForBarcodeReturnsList() {
+        QueryService service = serviceWithLoss();
+
+        QueryResult<List<LossRecordView>> result = service.lossRecordsForBarcode("A");
+
+        assertTrue(result instanceof QueryResult.Value);
+        assertEquals(1, ((QueryResult.Value<List<LossRecordView>>) result).value().size());
+    }
+
+    @Test
+    public void blankBarcodeForLossQueryIsRejected() {
+        QueryResult<List<LossRecordView>> result = serviceWithLoss().lossRecordsForBarcode(" ");
+
+        assertTrue(result instanceof QueryResult.Rejected);
+        assertEquals("INVALID_INPUT", ((QueryResult.Rejected<List<LossRecordView>>) result).code());
+    }
+
+    private QueryService serviceWithLoss() {
+        InMemoryLossRecordReader reader = new InMemoryLossRecordReader();
+        reader.put(new LossRecord(
+                "L-1", null, "A", Position.S, 2, LossOrigin.STORE,
+                "已报废", LossState.DISPOSED));
+        return new QueryService(originalSaleReader, quotaLedgerReader, new QuotaViewBuilder(), reader);
+    }
+
+    private static final class InMemoryLossRecordReader implements LossRecordReader {
+        private final Map<String, LossRecord> records = new HashMap<>();
+
+        void put(LossRecord record) {
+            records.put(record.lossId(), record);
+        }
+
+        @Override
+        public Optional<LossRecord> findById(String lossId) {
+            return Optional.ofNullable(records.get(lossId));
+        }
+
+        @Override
+        public List<LossRecord> findByBarcode(String barcode) {
+            return records.values().stream()
+                    .filter(record -> record.barcode().equals(barcode))
+                    .toList();
+        }
     }
 
     private static final class InMemoryOriginalSaleReader implements OriginalSaleReader {

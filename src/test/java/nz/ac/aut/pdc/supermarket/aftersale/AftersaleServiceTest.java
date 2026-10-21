@@ -117,6 +117,10 @@ public class AftersaleServiceTest {
         AftersaleResult result = service.apply(workingCopy, command, Role.MANAGER);
 
         assertTrue(result instanceof AftersaleResult.Prepared);
+        Redemption redemption = ((AftersaleResult.Prepared) result).redemptions().get(0);
+        assertEquals("acc-manager", redemption.exceptionAuthorizedBy());
+        assertEquals("顾客坚持", redemption.exceptionReason());
+        assertEquals("已开封非质量", redemption.relaxedRule());
     }
 
     @Test
@@ -159,15 +163,19 @@ public class AftersaleServiceTest {
     }
 
     @Test
-    public void duplicateSaleLineIsRejected() {
+    public void multipleLinesForSameSaleLineConsumeQuotaSequentially() {
         AftersaleCommand command = command(
                 line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
                 line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 
         AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
 
-        assertTrue(result instanceof AftersaleResult.Rejected);
-        assertEquals("INVALID_INPUT", ((AftersaleResult.Rejected) result).code());
+        assertTrue(result instanceof AftersaleResult.Prepared);
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) result;
+        assertEquals(2, prepared.redemptions().size());
+        assertEquals(new BigDecimal("3.33"), prepared.redemptions().get(0).amount());
+        assertEquals(new BigDecimal("3.33"), prepared.redemptions().get(1).amount());
+        assertEquals(2, prepared.settlements().size());
     }
 
     @Test

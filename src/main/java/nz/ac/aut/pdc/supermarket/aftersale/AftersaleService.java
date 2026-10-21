@@ -1,15 +1,15 @@
 package nz.ac.aut.pdc.supermarket.aftersale;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 
 import nz.ac.aut.pdc.supermarket.auth.Role;
 import nz.ac.aut.pdc.supermarket.stock.Position;
@@ -20,11 +20,10 @@ import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /**
  * 售后编排骨架（WP-05）：资格校验 -> 额度视图/金额计算 -> 核销/替换候选
- * -> 替换品 IF-07 库存核对。不保存、不提交、不写文件。
+ * -> 替换品 IF-07 库存核对 -> 结算候选。不保存、不提交。
  *
- * <p>本骨架限制：同一原行一次命令只允许一条明细；顾客交回损耗与款项记录
- * 待后续模块接入。资格判定为简化规则：超 30 天或已开封非质量需要
- * CR07-09 店长/管理员例外；例外不改变数量/金额/库存校验。</p>
+ * <p>支持同一原行在一次命令内多条明细的顺序额度扣减；资格判定为简化规则：
+ * 超 30 天或已开封非质量需要 CR07-09 店长/管理员例外；例外不改变数量/金额/库存校验。</p>
  */
 public final class AftersaleService {
 
@@ -40,6 +39,7 @@ public final class AftersaleService {
     private final QualityPairValidator qualityPairValidator;
     private final AftersaleAssembler assembler;
     private final StockPorts.IdGenerator idGenerator;
+    private final SettlementCalculator settlementCalculator;
 
     public AftersaleService(
             OriginalSaleReader originalSaleReader,
@@ -50,7 +50,8 @@ public final class AftersaleService {
             QuotaCalculator quotaCalculator,
             QualityPairValidator qualityPairValidator,
             AftersaleAssembler assembler,
-            StockPorts.IdGenerator idGenerator) {
+            StockPorts.IdGenerator idGenerator,
+            SettlementCalculator settlementCalculator) {
         this.originalSaleReader = Objects.requireNonNull(originalSaleReader, "originalSaleReader");
         this.quotaLedgerReader = Objects.requireNonNull(quotaLedgerReader, "quotaLedgerReader");
         this.productSnapshotReader = Objects.requireNonNull(productSnapshotReader, "productSnapshotReader");
@@ -60,23 +61,38 @@ public final class AftersaleService {
         this.qualityPairValidator = Objects.requireNonNull(qualityPairValidator, "qualityPairValidator");
         this.assembler = Objects.requireNonNull(assembler, "assembler");
         this.idGenerator = Objects.requireNonNull(idGenerator, "idGenerator");
+        this.settlementCalculator = Objects.requireNonNull(settlementCalculator, "settlementCalculator");
+    }
+
+    /** 兼容旧调用：默认结算计算器。 */
+    public AftersaleService(
+            OriginalSaleReader originalSaleReader,
+            QuotaLedgerReader quotaLedgerReader,
+            ProductSnapshotReader productSnapshotReader,
+            StockOperations stockOperations,
+            QuotaViewBuilder quotaViewBuilder,
+            QuotaCalculator quotaCalculator,
+            QualityPairValidator qualityPairValidator,
+            AftersaleAssembler assembler,
+            StockPorts.IdGenerator idGenerator) {
+        this(originalSaleReader, quotaLedgerReader, productSnapshotReader, stockOperations,
+                quotaViewBuilder, quotaCalculator, qualityPairValidator, assembler, idGenerator,
+                new SettlementCalculator());
     }
 
     public AftersaleResult apply(
             StockPorts.WorkingCopyView workingCopy, AftersaleCommand command, Role actorRole) {
         Objects.requireNonNull(workingCopy, "workingCopy");
         Objects.requireNonNull(command, "command");
-        Optional<AftersaleResult.Rejected> duplicate = rejectDuplicateSaleLines(command.lines());
-        if (duplicate.isPresent()) {
-            return duplicate.get();
-        }
         try {
             Instant now = idGenerator.now();
             String aftersaleId = idGenerator.nextId("AF");
             List<Redemption> redemptions = new ArrayList<>();
             List<Replacement> replacements = new ArrayList<>();
             List<AftersaleResult.StockEntryView> stockViews = new ArrayList<>();
+            List<Settlement> settlements = new ArrayList<>();
             List<nz.ac.aut.pdc.supermarket.stock.StockEntry> stockOverlay = new ArrayList<>();
+            Map<String, List<Redemption>> pendingByLine = new HashMap<>();
 
             for (AftersaleCommandLine line : command.lines()) {
                 Optional<OriginalSaleLine> originalOptional = originalSaleReader.readLine(line.saleLineId());
@@ -86,14 +102,17 @@ public final class AftersaleService {
                 }
                 OriginalSaleLine original = originalOptional.get();
 
+                boolean exceptionRequired = requiresException(original, line, now);
                 Optional<AftersaleResult.Rejected> eligibility =
-                        checkEligibility(command, actorRole, original, line, now);
+                        checkEligibility(command, actorRole, exceptionRequired);
                 if (eligibility.isPresent()) {
                     return eligibility.get();
                 }
 
-                QuotaView view = quotaViewBuilder.build(
-                        original, quotaLedgerReader.effectiveFor(original.saleLineId()));
+                List<Redemption> history = new ArrayList<>(
+                        quotaLedgerReader.effectiveFor(original.saleLineId()));
+                history.addAll(pendingByLine.getOrDefault(original.saleLineId(), List.of()));
+                QuotaView view = quotaViewBuilder.build(original, history);
                 if (line.quantity() > view.remainingQty()) {
                     return new AftersaleResult.Rejected(
                             "INVALID_INPUT", "quantity", "本次数量超过原行剩余额度");
@@ -102,9 +121,19 @@ public final class AftersaleService {
                 BigDecimal amount = quotaCalculator.allocate(
                         line.quantity(), view, new SettlementContext(settlesRemaining));
                 Redemption redemption = assembler.assembleRedemption(
-                        aftersaleId, command.requestKey(), original, line, amount);
+                        aftersaleId,
+                        command.requestKey(),
+                        original,
+                        line,
+                        amount,
+                        exceptionRequired ? command.exceptionAuthorizedBy() : null,
+                        exceptionRequired ? command.exceptionReason() : null,
+                        exceptionRequired ? command.relaxedRule() : null);
                 redemptions.add(redemption);
+                pendingByLine.computeIfAbsent(original.saleLineId(), key -> new ArrayList<>())
+                        .add(redemption);
 
+                Replacement replacement = null;
                 if (line.kind() == RedemptionKind.EXCHANGE) {
                     Optional<ProductSnapshot> productOptional =
                             productSnapshotReader.find(line.replacementBarcode());
@@ -115,7 +144,7 @@ public final class AftersaleService {
                     ProductSnapshot product = productOptional.get();
                     BigDecimal replacementAmount = product.unitPrice()
                             .multiply(BigDecimal.valueOf(line.replacementQty()));
-                    Replacement replacement = assembler.assembleReplacement(
+                    replacement = assembler.assembleReplacement(
                             aftersaleId, original, line, redemption, product, replacementAmount);
                     if (line.qualityPair()) {
                         Optional<String> pairRejection =
@@ -153,36 +182,17 @@ public final class AftersaleService {
                                 entry.eventKey(), entry.transferKey()));
                     }
                 }
+                settlements.add(settlementCalculator.calculate(redemption, replacement));
             }
-            return new AftersaleResult.Prepared(redemptions, replacements, stockViews);
+            return new AftersaleResult.Prepared(redemptions, replacements, stockViews, settlements);
         } catch (RuntimeException ex) {
             return new AftersaleResult.Failed("AFTERSALE_FAILED", "售后处理暂时不可用");
         }
     }
 
-    private Optional<AftersaleResult.Rejected> rejectDuplicateSaleLines(
-            List<AftersaleCommandLine> lines) {
-        Set<String> seen = new HashSet<>();
-        for (AftersaleCommandLine line : lines) {
-            if (!seen.add(line.saleLineId())) {
-                return Optional.of(new AftersaleResult.Rejected(
-                        "INVALID_INPUT", "saleLineId",
-                        "骨架暂不支持同一次命令对同一原行提交多条明细"));
-            }
-        }
-        return Optional.empty();
-    }
-
     private Optional<AftersaleResult.Rejected> checkEligibility(
-            AftersaleCommand command,
-            Role actorRole,
-            OriginalSaleLine original,
-            AftersaleCommandLine line,
-            Instant now) {
-        LocalDate saleDate = original.saleTime().atZone(ZONE).toLocalDate();
-        boolean withinWindow = !now.atZone(ZONE).toLocalDate().isAfter(saleDate.plusDays(RETURN_WINDOW_DAYS));
-        boolean openedNonQuality = line.opened() && !line.qualityProblem();
-        if (withinWindow && !openedNonQuality) {
+            AftersaleCommand command, Role actorRole, boolean exceptionRequired) {
+        if (!exceptionRequired) {
             return Optional.empty();
         }
         if (actorRole == null || !actorRole.canAuthorizeException()) {
@@ -199,8 +209,14 @@ public final class AftersaleService {
         return Optional.empty();
     }
 
+    private boolean requiresException(OriginalSaleLine original, AftersaleCommandLine line, Instant now) {
+        LocalDate saleDate = original.saleTime().atZone(ZONE).toLocalDate();
+        boolean withinWindow = !now.atZone(ZONE).toLocalDate().isAfter(saleDate.plusDays(RETURN_WINDOW_DAYS));
+        boolean openedNonQuality = line.opened() && !line.qualityProblem();
+        return !(withinWindow && !openedNonQuality);
+    }
+
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
 }
-
