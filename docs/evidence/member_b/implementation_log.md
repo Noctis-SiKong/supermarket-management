@@ -307,3 +307,10 @@
 - `ReversalIntegrationTest` 增加：冲销后 S 余额恢复 10、原单保留并 VOIDED、重复冲销失败、REVERSAL/款项/库存数量不增加。
 - 合并树累计 **170 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 13 项（含 AC-35）。
 - 剩余：AC-52/83/84 收货 D1 精确测试仍未补；AC-87/88 待 A。
+
+## 40. 2026-10-21 AC-52/83/84 收货 D1 测试
+
+- 新增 `ReversalReceiptDependencyTest`：旧收货 W+10 后存在后续 W−3 时，旧收货整单冲销返回 `DEPENDENCY_BLOCKED`；后续 W+5 正收货不阻断。
+- 覆盖 AC-52、AC-83 的阻断方向与 AC-84 的允许方向。
+- 合并树累计 **172 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 16 项。
+- 剩余：AC-87/88 等 A 侧 IF-11 正式端口；AC-02/07/08/85 阻塞。
