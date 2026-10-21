@@ -16,7 +16,7 @@
 | 提交 | `f4ed044` |
 | JDK | 17 |
 | 构建 | `./mvnw -B clean verify` |
-| 结果 | **172 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
+| 结果 | **176 tests / 0 failed / 0 error / 1 skipped**，BUILD SUCCESS |
 | 说明 | 1 skipped 为 A `AttachmentTest` 的符号链接平台差异 |
 
 ## 2. B 相关 AC 状态
@@ -45,16 +45,19 @@
 | AC-34 | 换货补/退/零差 | `AftersaleServiceTest.ac34...` 现价 55/30/48 分别补 7/退 18/零差 | PASS（自动化） | 未接真实 CUI/库存提交 |
 | AC-35 | 整单作废反向恢复 | `ReversalIntegrationTest` 销售后冲销，S 余额恢复 10、原单保留 VOIDED、重复冲销失败 | PASS（自动化） | 未接正式 CUI 演示 |
 | AC-37 | 店长报损/管理员修正 | `LossServiceTest`、`StockOperationsIntegrationTest` | PARTIAL | 修正/处置未接 |
-| AC-46 | 原行部分退款 | `AftersaleServiceTest` | PARTIAL | 未逐项复现 AC-46 |
+| AC-46 | 原行部分退款 | `AftersaleServiceTest.ac46...` 历史两次 3.33 后本次 3.34 | PASS（自动化） | 未接正式 CUI |
 | AC-47 | 第 30/31 天边界 | `AftersaleServiceTest.ac47...` 上海 10-31 23:59:59 通过、11-01 00:00:00 拒绝 | PASS（自动化） | — |
 | AC-51 | 三角色登录/权限 | `LocalAuthServiceTest`、`SharedIdentityResolverTest` | PARTIAL | 真实 CUI/权限菜单未全验 |
 | AC-52 | D1 阻断旧收货 | `ReversalReceiptDependencyTest` 收货 W+10 后 W−3 阻断旧收货冲销 | PASS（自动化） | 未接正式 CUI |
 | AC-53 | 输入边界 | `InputValidatorTest`、`StockValidatorTest` | PARTIAL | 全部数值/图片边界未逐项 |
 | AC-54/55 | 促销分摊后按实付退款 | 无端到端 | PARTIAL | A 销售/售后真实联调 |
-| AC-56–58 | 双额度/零补差/幂等 | `AftersaleServiceTest`、`QuotaCalculatorTest` | PARTIAL | 无完整真实提交链 |
+| AC-56–57 | 双额度/零补差/幂等 | `AftersaleServiceTest`、`QuotaCalculatorTest` | PARTIAL | 无完整真实提交链 |
+| AC-58 | 零补差换货占满额度 | `AftersaleServiceTest.ac58...` 换 1 后同原行再退被拒 | PASS（自动化） | 未接正式 CUI |
 | AC-59 | 售后失败原子性/整单冲销 | `ReversalIntegrationTest`、`ReversalCommitValidatorTest` | PARTIAL | 未做故障注入/重启校验 |
 | AC-79 | 3 条各 1 件尾差 | `AftersaleServiceTest.ac79...` | **PASS（自动化）** | — |
-| AC-80/81/82 | 历史额度/先换后退/多资格 | `AftersaleServiceTest` 部分 | PARTIAL | 未逐项复现 |
+| AC-80 | 历史额度不回写 | `AftersaleServiceTest.ac80...` 历史退 3.33 后本次仍 3.33 | PASS（自动化） | — |
+| AC-81 | 先换后退 | `AftersaleServiceTest` 稳定排序部分 | PARTIAL | 未复现两种录入顺序 |
+| AC-82 | 同单独立资格事实 | `AftersaleServiceTest.ac82...` 两行 opened/quality/reason 独立保留 | PASS（自动化） | 未接真实提交 |
 | AC-83/84 | D1 整单拒绝/逆序解除 | AC-83 后续 W− 阻断；AC-84 后续 W+ 不阻断（`ReversalReceiptDependencyTest`） | PASS（自动化） | 未接正式 CUI |
 | AC-85 | 崩溃/恢复/单写者 | 无 | BLOCKED | A IF-04/05 |
 | AC-86 | 三角色期初权限 | `AOperationsTest` 部分 | PARTIAL | 真实 CUI/权限 |
@@ -80,7 +83,7 @@
 
 ## 4. 结论
 
-- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-47、AC-52、AC-79、AC-83/84、AC-89。
+- **可判 PASS 的自动化 AC**：AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-46、AC-47、AC-52、AC-58、AC-79、AC-80、AC-82、AC-83/84、AC-89。
 - 其余 B 相关 AC 多数为 **PARTIAL**，原因是缺少正式 CUI 入口、真实权限/恢复/故障注入或 A 的 IF-11 正式端口；不能把模块测试当作全部 AC 已通过。
 - **BLOCKED 关键项**：AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 读取准入）。
 

@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#47） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#48） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -149,3 +149,6 @@
 
 | 47 | AC-89/90 草稿取消与追溯重试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 CANCELLED 无副作用与 read 同键重试 | AftersaleDraftServiceTest；172 tests | 用户要求继续 AC；AC-90 真实中断未做 |
 - #47 AC-89/90 草稿取消与追溯重试、`implementation_log.md` §41（2026-10-21，172 项测试）
+
+| 48 | AC-46/58/80/82 精确测试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补顺序退款/历史额度/零差换货/独立资格 | AftersaleServiceTest；176 tests | 用户要求继续 AC；AC-81 两顺序等仍 PARTIAL |
+- #48 AC-46/58/80/82 精确测试、`implementation_log.md` §42（2026-10-21，176 项测试）

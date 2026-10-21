@@ -200,6 +200,78 @@ public class AftersaleServiceTest {
     }
 
     @Test
+    public void ac46SequentialReturnsUseRemainingOriginalAmount() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        quotaLedgerReader.put(SALE_LINE, historyRedemption("R-1", RedemptionKind.RETURN, new BigDecimal("3.33")));
+        quotaLedgerReader.put(SALE_LINE, historyRedemption("R-2", RedemptionKind.RETURN, new BigDecimal("3.33")));
+
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false)),
+                Role.CLERK);
+
+        assertEquals(new BigDecimal("3.34"), prepared.redemptions().get(0).amount());
+    }
+
+    @Test
+    public void ac80HistoricalRefundDoesNotRewriteConfirmedAmount() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        quotaLedgerReader.put(SALE_LINE, historyRedemption("R-1", RedemptionKind.RETURN, new BigDecimal("3.33")));
+
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false)),
+                Role.CLERK);
+
+        assertEquals(new BigDecimal("3.33"), prepared.redemptions().get(0).amount());
+    }
+
+    @Test
+    public void ac58ZeroDifferenceExchangeConsumesAllQuota() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 1, new BigDecimal("8.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        quotaLedgerReader.put(SALE_LINE,
+                historyRedemption("R-1", RedemptionKind.EXCHANGE, new BigDecimal("8.00")));
+
+        AftersaleResult result = service.apply(workingCopy,
+                command(line(RedemptionKind.RETURN, 1, true, true, null, 0, false)), Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+    }
+
+    @Test
+    public void ac82IndependentQualificationFactsArePreservedPerLine() {
+        originalSaleReader.put(new OriginalSaleLine(
+                "SL-2", BARCODE, 1, new BigDecimal("8.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        AftersaleCommand command = command(
+                new AftersaleCommandLine(SALE_LINE, RedemptionKind.RETURN, 1,
+                        true, true, AftersaleReasonKind.QUALITY, null, null, 0, false),
+                new AftersaleCommandLine("SL-2", RedemptionKind.RETURN, 1,
+                        false, false, AftersaleReasonKind.OTHER, "顾客原因", null, 0, false));
+
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) service.apply(
+                workingCopy, command, Role.CLERK);
+
+        assertEquals(2, prepared.redemptions().size());
+        assertEquals(true, prepared.redemptions().get(0).opened());
+        assertEquals(true, prepared.redemptions().get(0).qualityProblem());
+        assertEquals(false, prepared.redemptions().get(1).opened());
+        assertEquals(false, prepared.redemptions().get(1).qualityProblem());
+        assertEquals("顾客原因", prepared.redemptions().get(1).reasonText());
+    }
+
+    private Redemption historyRedemption(
+            String id, RedemptionKind kind, BigDecimal amount) {
+        return new Redemption(id, id, SALE_LINE, BARCODE, "AF-H",
+                kind, Effect.CONSUME, 1, amount, "REQ-H", null,
+                false, kind == RedemptionKind.EXCHANGE, "历史原因");
+    }
+
+    @Test
     public void partialReturnCalculatesQuotaAmountAndRefund() {
         AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
 

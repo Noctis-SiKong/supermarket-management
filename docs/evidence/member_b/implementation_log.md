@@ -321,3 +321,11 @@
 - AC-90：同一 read requestKey 重试两次，只保留一条 `READ_FOR_AFTERSALE`；售后最终提交同键重试已由现有集成测试覆盖。
 - 合并树累计 **172 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 17 项。
 - AC-90 仍缺真实进程中断注入，保持 PARTIAL。
+
+## 42. 2026-10-21 AC-46/58/80/82 精确测试
+
+- AC-46：历史两次 3.33 后本次 3.34，累计 10.00。
+- AC-80：历史退 3.33 已确认，本次仍 3.33，不回写过去。
+- AC-58：零补差换货占满额度后，同原行再退被拒。
+- AC-82：同单两条原行的 opened/quality/reason 事实独立保留。
+- 合并树累计 **176 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）；AC 自动化 PASS 增至 21 项。

@@ -10,14 +10,14 @@
 - 分支：`member-b/merge-main-2026-10-21`
 - 最新提交：`f4ed044`
 - 全量命令：`./mvnw -B clean verify`
-- 结果：**172 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）
+- 结果：**176 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）
 - 1 skipped：A `AttachmentTest` 的符号链接平台差异
 
 ## 2. 状态汇总
 
 | 状态 | AC |
 |---|---|
-| PASS（自动化） | AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-47、AC-52、AC-79、AC-83/84、AC-89 |
+| PASS（自动化） | AC-01、AC-05、AC-09、AC-12、AC-17、AC-19、AC-21、AC-30、AC-33、AC-34、AC-35、AC-46、AC-47、AC-52、AC-58、AC-79、AC-80、AC-82、AC-83/84、AC-89 |
 | PARTIAL | AC-03、AC-06、AC-09、AC-10、AC-12–15、AC-17、AC-22、AC-30、AC-33/34/35、AC-37、AC-46/47、AC-51–59、AC-80–84、AC-86–90 |
 | BLOCKED | AC-02（Main/pom）、AC-07/08（人工材料）、AC-85（A 恢复）、AC-87/88（A IF-11 准入） |
 | N/A | AC-25/38/39/49/50（已撤销） |
