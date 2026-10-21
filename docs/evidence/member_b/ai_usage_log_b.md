@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#40） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#41） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -128,3 +128,6 @@
 
 | 40 | B-10 冲销失败路径测试 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 D1 阻断与重复冲销拒绝测试 | ReversalCommitValidatorTest；165 tests | 用户要求先补测试；CUI 原键重试未做 |
 - #40 B-10 冲销失败路径测试、`implementation_log.md` §34（2026-10-21，165 项测试）
+
+| 41 | AC 执行记录/覆盖索引 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按 Spec AC 逐项登记 B 侧证据与阻塞 | ac_execution_b_2026-10-21.md、ac_coverage_b.md；165 tests | 用户要求继续 AC；PASS 仅 AC-01/05/19/21/79，其余 PARTIAL/BLOCKED |
+- #41 AC 执行记录/覆盖索引、`implementation_log.md` §35（2026-10-21，165 项测试）

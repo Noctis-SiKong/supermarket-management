@@ -274,3 +274,10 @@
 - 新增 `ReversalCommitValidatorTest`：后续有效库存变动命中 D1 时返回 `DEPENDENCY_BLOCKED`；目标已 VOIDED 时拒绝再次冲销。
 - 合并树累计 **165 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI 冲销原键重试仍未暴露；B-06 待 A。
+
+## 35. 2026-10-21 AC 执行记录与覆盖索引更新
+
+- 新增 `docs/evidence/member_b/ac_execution_b_2026-10-21.md`：按 AC-01～AC-90 的 B 相关场景登记执行证据、PASS/PARTIAL/BLOCKED/N/A 与缺口。
+- 更新 `ac_coverage_b.md`：基线改为 165 tests / 0 failed / 0 error / 1 skipped，删除“84 项/未接真实 JSON”的过期描述，指向正式执行记录。
+- 本轮可判 PASS 的自动化 AC：AC-01、AC-05、AC-19、AC-21、AC-79；其余多数 PARTIAL；AC-02/07/08/85/87/88 仍阻塞。
+- 未声称：全部 AC 通过、正式验收完成、CUI `java -jar` 可运行。
