@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.19，2026-10-21（含 §6–§25 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链与两轮 review 修复）
+版本/日期：v0.20，2026-10-21（含 §6–§26 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链、review 修复与 IF-11/CR07-11 草稿链）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -198,3 +198,13 @@
 - **数据形状**：AFTERSALE 扩展不再写多余 status/requestKey；DOC_EVENT 动作改为 `CONFIRM`。
 - 测试：新增 `AftersaleIntegrityValidatorTest`(2)；合并树累计 **149 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 未修：IF-11 `READ_FOR_AFTERSALE` 读取追溯、CR07-11 草稿创建/取消编排。
+
+## 26. 2026-10-21 IF-11 读取追溯与 CR07-11 草稿生命周期
+
+- 新增 `AftersaleDraftOperations`、`AftersaleDraftService`：DRAFT 创建、READ_FOR_AFTERSALE 追溯、CANCEL_AFTERSALE 取消，均独立 open/submit。
+- 新增 `AftersaleDraftValidator` 并注册到 `BCommitValidators`；创建/读取/取消分别校验 DRAFT 状态、追溯存在、取消只改状态+事件且无库存/退款/额度影响。
+- `SharedOperations.aftersale` 流程改为：创建草稿 → 读原行并保存追溯 → 重新 open → 提交售后；最终 ChangeSet 对 DRAFT 做 DOCUMENT 补丁并追加业务事实。
+- `AftersaleCommitValidator` 支持已有 DRAFT 的最终提交，要求已保存 READ_FOR_AFTERSALE；`AftersaleSubmissionService` 自动选择 draft 组装。
+- 同一 requestKey 重试先查最终结果，避免重复建草稿/售后。
+- 测试：新增 `AftersaleDraftServiceTest`(1)；合并树累计 **150 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI 尚未暴露取消菜单；A 侧对 IF-11 跨人读取的授权/返回准入仍需 A 接口最终对齐。

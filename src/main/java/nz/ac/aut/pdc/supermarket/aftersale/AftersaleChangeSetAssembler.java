@@ -12,6 +12,7 @@ import nz.ac.aut.pdc.shared.MoneyEntry;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
 import nz.ac.aut.pdc.shared.StockEntry;
+import nz.ac.aut.pdc.shared.WorkingCopy;
 
 /**
  * 把已校验的售后候选组装为 A 的统一 ChangeSet。
@@ -45,7 +46,48 @@ public final class AftersaleChangeSetAssembler {
         out.add(RecordData.of("DOC_EVENT", aftersaleId + "-EVENT", new DocEvent(
                 aftersaleId + "-EVENT", aftersaleId, 1, "CONFIRM",
                 actor.accountId(), null, "{}")));
+        addFacts(out, prepared, aftersaleId, operation);
+        return out.build();
+    }
 
+    /** 对已存在 DRAFT 的售后：补丁 DOCUMENT + 追加业务事实，不重复插入 DOCUMENT/AFTERSALE。 */
+    public ChangeSet assembleForDraft(
+            AftersaleResult.Prepared prepared,
+            String aftersaleId,
+            WorkingCopy baseline,
+            OperationContext operation,
+            OperationContext.ActorContext actor,
+            BusinessRequest request) {
+        Objects.requireNonNull(prepared, "prepared");
+        Objects.requireNonNull(aftersaleId, "aftersaleId");
+        Objects.requireNonNull(baseline, "baseline");
+        Objects.requireNonNull(operation, "operation");
+        Objects.requireNonNull(actor, "actor");
+        Objects.requireNonNull(request, "request");
+
+        RecordData document = baseline.find("DOCUMENT", aftersaleId)
+                .orElseThrow(() -> new IllegalArgumentException("Draft document missing"));
+        long nextEventVersion = baseline.records("DOC_EVENT").stream()
+                .filter(r -> r.as(DocEvent.class).documentId().equals(aftersaleId))
+                .mapToLong(r -> r.as(DocEvent.class).version())
+                .max().orElse(0) + 1;
+        ChangeSet.Builder out = new ChangeSet.Builder();
+        out.patch(new ChangeSet.Patch("DOCUMENT", aftersaleId, document.version(),
+                JsonCodec.write(java.util.Map.of(
+                        "status", "CONFIRMED",
+                        "confirmedBy", actor.accountId()))));
+        out.add(RecordData.of("DOC_EVENT", aftersaleId + "-CONFIRM", new DocEvent(
+                aftersaleId + "-CONFIRM", aftersaleId, nextEventVersion, "CONFIRM",
+                actor.accountId(), null, "{}")));
+        addFacts(out, prepared, aftersaleId, operation);
+        return out.build();
+    }
+
+    private void addFacts(
+            ChangeSet.Builder out,
+            AftersaleResult.Prepared prepared,
+            String aftersaleId,
+            OperationContext operation) {
         for (Redemption redemption : prepared.redemptions()) {
             out.add(RecordData.of("DOC_LINE", redemption.redemptionId(), new DocumentLine(
                     redemption.redemptionId(), aftersaleId,
@@ -75,7 +117,6 @@ public final class AftersaleChangeSetAssembler {
             out.add(RecordData.of("MONEY_ENTRY", moneyId, new MoneyEntry(
                     moneyId, aftersaleId, signed, operation.requestKey(), null)));
         }
-        return out.build();
     }
 
     private String sourceLineId(AftersaleResult.StockEntryView entry, AftersaleResult.Prepared prepared) {
@@ -95,3 +136,4 @@ public final class AftersaleChangeSetAssembler {
         throw new IllegalArgumentException("STOCK_ENTRY has no source line: " + entry.id());
     }
 }
+

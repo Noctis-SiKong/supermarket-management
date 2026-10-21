@@ -10,9 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import nz.ac.aut.pdc.shared.ChangeSet;
+import nz.ac.aut.pdc.shared.DocEvent;
 import nz.ac.aut.pdc.shared.DocumentHeader;
 import nz.ac.aut.pdc.shared.DocumentLine;
+import nz.ac.aut.pdc.shared.JsonCodec;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
@@ -48,15 +52,46 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         Objects.requireNonNull(baseline, "baseline");
         Objects.requireNonNull(changes, "changes");
 
-        List<RecordData> documents = inserts(changes, "DOCUMENT");
-        if (documents.size() != 1) {
-            return Result.rejected("INVALID_INPUT", "Exactly one AFTERSALE document required");
-        }
-        DocumentHeader header;
-        try {
-            header = documents.get(0).as(DocumentHeader.class);
-        } catch (RuntimeException ex) {
-            return Result.rejected("INVALID_INPUT", "Invalid AFTERSALE document");
+        RecordData baselineDocument = baseline.find("DOCUMENT", op.targetId()).orElse(null);
+        final DocumentHeader header;
+        if (baselineDocument != null
+                && "DRAFT".equals(baselineDocument.as(DocumentHeader.class).status())) {
+            if (!inserts(changes, "DOCUMENT").isEmpty()) {
+                return Result.rejected("INVALID_INPUT", "Draft completion must patch the existing document");
+            }
+            ChangeSet.Patch patch = changes.patches().stream()
+                    .filter(p -> p.table().equals("DOCUMENT") && p.id().equals(op.targetId()))
+                    .findFirst().orElse(null);
+            if (patch == null) {
+                return Result.rejected("INVALID_INPUT", "Draft completion requires DOCUMENT patch");
+            }
+            ObjectNode fields = (ObjectNode) JsonCodec.tree(patch.changedFields());
+            if (!"CONFIRMED".equals(fields.path("status").asText())) {
+                return Result.rejected("INVALID_INPUT", "Draft completion must set CONFIRMED");
+            }
+            boolean traced = baseline.records("DOC_EVENT").stream()
+                    .anyMatch(r -> r.as(DocEvent.class).documentId().equals(op.targetId())
+                            && "READ_FOR_AFTERSALE".equals(r.as(DocEvent.class).action()));
+            if (!traced) {
+                return Result.rejected("DRAFT_HAS_NO_READ_TRACE",
+                        "Aftersale completion requires saved read trace");
+            }
+            header = new DocumentHeader(
+                    op.targetId(), "AFTERSALE", "CONFIRMED", op.requestKey(),
+                    baselineDocument.as(DocumentHeader.class).requestFingerprint(),
+                    baselineDocument.as(DocumentHeader.class).createdBy(),
+                    baselineDocument.as(DocumentHeader.class).createdAt(),
+                    actor.accountId(), null, null);
+        } else {
+            List<RecordData> documents = inserts(changes, "DOCUMENT");
+            if (documents.size() != 1) {
+                return Result.rejected("INVALID_INPUT", "Exactly one AFTERSALE document required");
+            }
+            try {
+                header = documents.get(0).as(DocumentHeader.class);
+            } catch (RuntimeException ex) {
+                return Result.rejected("INVALID_INPUT", "Invalid AFTERSALE document");
+            }
         }
         if (!"AFTERSALE".equals(header.kind()) || !"CONFIRMED".equals(header.status())) {
             return Result.rejected("INVALID_INPUT", "AFTERSALE document must be CONFIRMED");

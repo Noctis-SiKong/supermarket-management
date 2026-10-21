@@ -65,7 +65,16 @@ public final class AftersaleSubmissionService {
         if (prepared.redemptions().isEmpty()) {
             return Result.rejected("INVALID_INPUT", "Aftersale prepared no redemption");
         }
-        ChangeSet changes = assembler.assemble(prepared, operation.targetId(), operation, actor, request);
+        ChangeSet changes;
+        var existingDraft = workingCopy.find("DOCUMENT", operation.targetId());
+        if (existingDraft.isPresent()
+                && "DRAFT".equals(existingDraft.get().as(nz.ac.aut.pdc.shared.DocumentHeader.class).status())) {
+            changes = assembler.assembleForDraft(
+                    prepared, operation.targetId(), workingCopy, operation, actor, request);
+        } else {
+            changes = assembler.assemble(prepared, operation.targetId(), operation, actor, request);
+        }
         return store.submit(operation, request, workingCopy, changes);
     }
 }
+

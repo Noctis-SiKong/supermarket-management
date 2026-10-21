@@ -18,6 +18,12 @@ public final class BCommitValidators {
                 AftersaleChangeSetAssembler.OPERATION,
                 new AftersaleCommitValidator(stockAdapter),
                 DraftDeletion.OPERATION,
-                new AftersaleDraftDeletionValidator());
+                new AftersaleDraftDeletionValidator(),
+                AftersaleDraftOperations.CREATE,
+                new AftersaleDraftValidator(AftersaleDraftOperations.CREATE),
+                AftersaleDraftOperations.READ,
+                new AftersaleDraftValidator(AftersaleDraftOperations.READ),
+                AftersaleDraftOperations.CANCEL,
+                new AftersaleDraftValidator(AftersaleDraftOperations.CANCEL));
     }
 }
