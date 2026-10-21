@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.11，2026-10-21（含 §6–§17 增补、合并 main、CR07-10、IF-07、校验器与售后 ChangeSet）
+版本/日期：v0.12，2026-10-21（含 §6–§18 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet 与 AFTERSALE 校验）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -132,3 +132,11 @@
 - 新增 `AftersaleSubmissionService`：`lookupResult` 幂等检查 → B 售后候选 → ChangeSet → A `SubmissionPort.submit`；不嵌套 submit、不写文件。
 - 测试：`AftersaleChangeSetAssemblerTest`(1)、`AftersaleSubmissionServiceTest`(1)；合并树累计 **132 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：B `AftersaleService` 仍用 B 库存/候选端口；`AFTERSALE` 六参 validator 尚未注册；认证/CUI 真实适配未做。
+
+## 18. 2026-10-21 Stage 3d：AFTERSALE 校验器与注册表
+
+- 新增 `AftersaleCommitValidator`：六参复核 AFTERSALE 单据/核销/替换品一致性、CR07-10 原因文本、库存候选；`documents` 必须唯一且 target/confirmedBy 匹配。
+- 新增 `BCommitValidators`：注册 `AFTERSALE` 与 `AFTERSALE_DRAFT_DELETE` 校验器，供装配层交给 A `JsonStore`。
+- 修正 `SharedStockAdapter.review`：无 STOCK_ENTRY 时返回成功（纯退货/无库存变更），不再被 B `StockValidator` 的空组拒绝。
+- 测试：`AftersaleCommitValidatorTest` 4 项；合并树累计 **136 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：注册表尚未实际传给 A JsonStore；B 售后 submission 测试仍用 capturing SubmissionPort；认证/CUI 未接。

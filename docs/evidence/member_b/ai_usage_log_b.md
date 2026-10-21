@@ -8,7 +8,7 @@
 
 | 工具 | 模型/版本 | 主要用途 |
 |---|---|---|
-| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#23） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
+| DeepSeek Harness（DSH，版本 0.2.1-rc.2） | deepseek-flash（版本 1017）；思考程度 high（#1–#4、#7–#8、#12、#16、#19）/ max（#5–#6、#9–#11、#13–#15、#17–#18、#20–#24） | 环境与构建核对、框架复现、设计辅助、代码实现与调试、评审材料整理 |
 
 ## A.2 提示词日志（B 侧）
 
@@ -37,6 +37,7 @@
 | 21 | 集成-IF-07 A 适配器 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 在合并分支实现 A StockDependency 的真实适配 | SharedWorkingCopyView/SharedStockProjection/SharedStockAdapter；5 项测试；125 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；只读/不提交；CommitValidator/认证/CUI 未做 |
 | 22 | 集成-六参 CommitValidator/草稿删除 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 实现 AFTERSALE_DRAFT_DELETE 与 stock 六参 CommitValidator | AftersaleDraftDeletionValidator + SharedStockCommitValidator；5 项测试；130 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；A 的 DraftDeletionGuard 仍负责结构红线；未注册最终装配 |
 | 23 | 集成-售后 ChangeSet/提交入口 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 把 B 售后候选组装为 A ChangeSet 并接 SubmissionPort | AftersaleChangeSetAssembler + AftersaleSubmissionService；2 项测试；132 tests / 0 failed / 0 error / 1 skipped | 用户继续 Stage 3；未嵌套 submit；AFTERSALE validator/认证/CUI 未接 |
+| 24 | 集成-AFTERSALE 校验器/注册表 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 补 AFTERSALE 六参校验器与注册表 | AftersaleCommitValidator + BCommitValidators；SharedStockAdapter 空 stock 修复；4 项测试；136 tests | 用户继续 Stage 3；注册表未交 A JsonStore；认证/CUI 未接 |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -62,11 +63,13 @@
 - #21 SharedStockAdapter/SharedWorkingCopyView/SharedStockProjection、`SharedStockAdapterTest`、`implementation_log.md` §15（2026-10-21，125 项测试）
 - #22 AftersaleDraftDeletionValidator/SharedStockCommitValidator、`AftersaleDraftDeletionValidatorTest`、`implementation_log.md` §16（2026-10-21，130 项测试）
 - #23 AftersaleChangeSetAssembler/AftersaleSubmissionService、对应测试、`implementation_log.md` §17（2026-10-21，132 项测试）
+- #24 AftersaleCommitValidator/BCommitValidators、`AftersaleCommitValidatorTest`、`implementation_log.md` §18（2026-10-21，136 项测试）
 
 ## 待补（按阶段追加，不预先填写）
 
 - A.2 后续条目：本人对评审的逐条决定、类图 V2 与差异、模块实现、调试、AC 执行、报告装配。
 - A.3 人机贡献划分：各阶段结束后按事实整理（主要由人工设计 / 主要由 AI 生成后经审核），在报告装配时提交给 A 汇总。
+
 
 
 

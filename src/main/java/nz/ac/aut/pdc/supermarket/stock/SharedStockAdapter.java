@@ -69,6 +69,9 @@ public final class SharedStockAdapter implements AOperations.StockDependency {
                     changed.add(record.as(StockEntry.class));
                 }
             }
+            if (changed.isEmpty()) {
+                return Result.value(null);
+            }
             boolean stockPatchOrRemoval = completeChanges.patches().stream()
                     .anyMatch(p -> p.table().equals("STOCK_ENTRY"))
                     || completeChanges.removals().stream()
@@ -115,3 +118,4 @@ public final class SharedStockAdapter implements AOperations.StockDependency {
         return lines;
     }
 }
+
