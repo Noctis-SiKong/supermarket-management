@@ -31,7 +31,15 @@ public final class AftersaleSubmissionService {
         this.store = Objects.requireNonNull(store, "store");
     }
 
-    public Result<SubmissionPort.CommitReceipt> submit(
+    public record Prepared(WorkingCopy workingCopy,BusinessRequest request,ChangeSet changes,AftersaleResult.Prepared summary) {}
+    public Result<SubmissionPort.CommitReceipt> submit(AftersaleCommand command,WorkingCopy workingCopy,OperationContext operation,OperationContext.ActorContext actor) {
+        var prior=store.lookupResult(operation,BusinessRequest.of(command));
+        if(prior.status()!=Result.Status.NOT_FOUND)return prior;
+        var prepared=prepare(command,workingCopy,operation,actor);
+        if(!prepared.hasValue())return prepared.failure();
+        return store.submit(operation,prepared.value().request(),prepared.value().workingCopy(),prepared.value().changes());
+    }
+    public Result<Prepared> prepare(
             AftersaleCommand command,
             WorkingCopy workingCopy,
             OperationContext operation,
@@ -46,7 +54,7 @@ public final class AftersaleSubmissionService {
         BusinessRequest request = BusinessRequest.of(command);
         Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, request);
         if (prior.status() != Result.Status.NOT_FOUND) {
-            return prior;
+            return prior.status()==Result.Status.SUCCESS?Result.rejected("ALREADY_COMMITTED","Query the original commit receipt"):prior.failure();
         }
         if (operation.targetId() == null || operation.targetId().isBlank()) {
             return Result.rejected("INVALID_INPUT", "Aftersale target document id required");
@@ -74,7 +82,7 @@ public final class AftersaleSubmissionService {
         } else {
             changes = assembler.assemble(prepared, operation.targetId(), operation, actor, request);
         }
-        return store.submit(operation, request, workingCopy, changes);
+        return Result.prepared(new Prepared(workingCopy,request,changes,prepared));
     }
 }
 

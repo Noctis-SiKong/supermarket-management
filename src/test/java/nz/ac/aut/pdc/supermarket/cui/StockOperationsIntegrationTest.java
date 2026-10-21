@@ -71,7 +71,7 @@ public class StockOperationsIntegrationTest {
             OperationFeedback replenished = operations.replenish(actor, "00123456", 3);
             CuiActor managerActor = new CuiActor(manager.accountId(), Role.MANAGER, manager.session());
             OperationFeedback lost = operations.recordLoss(
-                    managerActor, "00123456", nz.ac.aut.pdc.supermarket.stock.Position.S, 2);
+                    managerActor, "00123456", nz.ac.aut.pdc.supermarket.stock.Position.S, 2,"虚构破损报损");
 
             assertTrue(replenished.message(), replenished.success());
             assertTrue(lost.message(), lost.success());

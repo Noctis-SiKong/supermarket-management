@@ -33,7 +33,7 @@ public final class QualityPairValidator {
         if (redemption.quantity() != replacement.quantity()) {
             return Optional.of("原商品与替换品数量必须相同");
         }
-        if (replacement.replacementAmount().compareTo(redemption.amount()) != 0) {
+        if (new SettlementCalculator().calculate(redemption,replacement).direction()!=SettlementDirection.NONE) {
             return Optional.of("质量零差配对要求补退差为 0");
         }
         return Optional.empty();

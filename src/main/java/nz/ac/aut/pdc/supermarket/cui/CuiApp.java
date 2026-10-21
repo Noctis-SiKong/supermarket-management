@@ -13,10 +13,9 @@ import nz.ac.aut.pdc.supermarket.auth.AuthService;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /**
- * 最小 CUI：登录 + 角色菜单 + 补货/报损/售后分派。
+ * 完整 P1 CUI：角色业务、报价确认、历史和原键重试。
  *
- * <p>菜单只调用 {@link Operations} 接口；真实业务适配器接入前使用
- * {@link UnavailableOperations}，不会伪造库存或提交结果。交互错误反馈
+ * <p>菜单只调用 {@link Operations} 接口；统一运行适配器只返回授权投影和提交反馈，不暴露全量工作副本。交互错误反馈
  * 与退出路径遵循 FR-11。</p>
  */
 public final class CuiApp {
@@ -74,6 +73,7 @@ public final class CuiApp {
         while (true) {
             output.println();
             output.println("1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   5) 删除未读取草稿   6) 整单冲销   0) 退出登录");
+            if(operations instanceof MaintenanceOperations) output.println("7) 商品维护  8) 期初登记  9) 收货登记  10) 收货审核  11) 收货补正  12) 促销  13) 销售  14) 查询  15) 按原请求键重试  16) 损耗处置  17) 管理员报损修正  18) 多行／混合售后");
             String choice = prompt("请选择：");
             if (choice == null || EXIT_COMMAND.equalsIgnoreCase(choice.trim())) {
                 return;
@@ -89,9 +89,111 @@ public final class CuiApp {
                 case "4" -> cancelAftersaleDraft(actor);
                 case "5" -> deleteAftersaleDraft(actor);
                 case "6" -> reverseDocument(actor);
-                default -> output.println("无效选项，请重新选择");
+                default -> maintenance(actor,choice.trim());
             }
         }
+    }
+
+    private static final class CancelInput extends RuntimeException {}
+    private String required(String message) {
+        String value=prompt(message);
+        if(value==null || value.equalsIgnoreCase("exit")) throw new CancelInput();
+        return value.trim();
+    }
+    private int quantity(String message) {
+        try{return inputValidator.parseQuantity(required(message));}
+        catch(InputValidator.InvalidInputException e){throw new IllegalArgumentException(e.getMessage());}
+    }
+    private java.util.List<nz.ac.aut.pdc.supermarket.app.AOperations.Item> items() {
+        var items=new java.util.ArrayList<nz.ac.aut.pdc.supermarket.app.AOperations.Item>();
+        while(true) {
+            String barcode=required("商品条码（空行结束明细，exit 放弃）：");
+            if(barcode.isEmpty()) break;
+            items.add(new nz.ac.aut.pdc.supermarket.app.AOperations.Item(barcode,quantity("数量（1-9999）：")));
+        }
+        return items;
+    }
+    private java.util.List<nz.ac.aut.pdc.infrastructure.AttachmentStore.Attachment> attachments(MaintenanceOperations full,CuiActor actor,String receiptId) {
+        var files=new java.util.ArrayList<nz.ac.aut.pdc.infrastructure.AttachmentStore.Attachment>();
+        while(true) {
+            String path=required("JPG/PNG 本地路径（空行跳过／结束）：");
+            if(path.isEmpty()) return files;
+            var imported=full.attach(actor,path,receiptId,files.size());
+            if(!imported.hasValue()) {output.println("附件未导入："+imported.code());continue;}
+            files.add(imported.value()); output.println("附件已导入待随收货提交");
+        }
+    }
+    private void maintenance(CuiActor actor,String choice) {
+        if(!(operations instanceof MaintenanceOperations full)) {output.println("无效选项，请重新选择");return;}
+        try {
+            var clock=new nz.ac.aut.pdc.shared.IdClock(java.time.Clock.systemUTC());
+            String key=clock.newRequestKey();
+            switch(choice) {
+                case "7" -> {
+                    String mode=required("new 新增 / edit 修改：");if(!mode.equals("new") && !mode.equals("edit"))throw new IllegalArgumentException("请选择 new 或 edit");
+                    String barcode=required("条码："),name=required("品牌及商品名："),unit=required("单位：");
+                    var price=new java.math.BigDecimal(required("售价（两位小数）："));
+                    String note=price.signum()==0?required("零价说明（必填）："):null;
+                    print(full.executeA(actor,"PRODUCT_PUT",new nz.ac.aut.pdc.supermarket.app.AOperations.ProductPut(new nz.ac.aut.pdc.supermarket.catalog.Product(barcode,name,unit,price,note),mode.equals("new")?0:-1),key));
+                }
+                case "8" -> {
+                    String barcode=required("条码："); int qty=quantity("期初数量：");
+                    var position=nz.ac.aut.pdc.shared.StockEntry.Position.valueOf(required("位置 S/W：").toUpperCase(Locale.ROOT));
+                    print(full.executeA(actor,"OPENING",new nz.ac.aut.pdc.supermarket.app.AOperations.Opening(new nz.ac.aut.pdc.supermarket.app.AOperations.Item(barcode,qty),position,required("期初来源说明：")),key));
+                }
+                case "9" -> {
+                    var rows=items(); String receiptId=clock.entityId(key,"document");
+                    print(full.executeA(actor,"RECEIPT_CREATE",new nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptCreate(rows,attachments(full,actor,receiptId)),key));
+                }
+                case "10" -> {
+                    String id=required("收货单号："); print(full.inspect(actor,"DOCUMENT",id));
+                    Boolean approve=readYesNo("审核通过？y/n（n=退回补正）："); if(approve==null)return;
+                    String opinion=required("审核意见：");
+                    print(full.executeA(actor,"RECEIPT_REVIEW",new nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptReview(id,0,approve,opinion,attachments(full,actor,id)),key));
+                }
+                case "11" -> {
+                    String id=required("收货单号："); print(full.inspect(actor,"DOCUMENT",id));
+                    output.println("输入补正后的全部明细；遗漏的未入账明细将删除，原商品保留稳定行号。");
+                    var rows=items(); print(full.executeA(actor,"RECEIPT_CORRECT",new MaintenanceOperations.ReceiptEdit(id,rows,required("补正原因：")),key));
+                }
+                case "12" -> {
+                    String id=required("活动 ID（空行新建）："); if(id.isEmpty())id=clock.entityId(key,"promotion");
+                    var kind=nz.ac.aut.pdc.supermarket.promotion.Promotion.Kind.valueOf(required("PERCENT 折扣 / REDUCTION 满减：").toUpperCase(Locale.ROOT));
+                    java.math.BigDecimal percent=null,threshold=null,reduction=null;
+                    if(kind==nz.ac.aut.pdc.supermarket.promotion.Promotion.Kind.PERCENT) percent=new java.math.BigDecimal(required("实付百分比（1-99）："));
+                    else {threshold=new java.math.BigDecimal(required("满减门槛："));reduction=new java.math.BigDecimal(required("减免金额："));}
+                    String priority=required("优先级（空行未设置）："),start=required("开始日 yyyy-MM-dd："),end=required("结束日 yyyy-MM-dd：");
+                    var barcodes=new java.util.HashSet<>(java.util.Arrays.asList(required("适用条码（逗号分隔）：").split("\\s*,\\s*")));
+                    var promotion=new nz.ac.aut.pdc.supermarket.promotion.Promotion(id,kind,percent,threshold,reduction,priority.isEmpty()?null:Integer.valueOf(priority),start,end,barcodes);
+                    print(full.executeA(actor,"PROMOTION_PUT",new nz.ac.aut.pdc.supermarket.app.AOperations.PromotionPut(promotion,-1),key));
+                }
+                case "13" -> {
+                    var rows=items();var quote=full.quoteSale(actor,rows,key);print(quote);if(!quote.success())return; Boolean paid=readYesNo("模拟付款成功并确认成交？y/n：");if(paid==null || !paid)return;
+                    print(full.executeA(actor,"SALE",new nz.ac.aut.pdc.supermarket.app.AOperations.Sale(rows,true),key));
+                }
+                case "14" -> {
+                    String category=required("查询 PRODUCT 商品 / STOCK 库存 / PROMOTION 活动 / DOCUMENT 单据 / QUOTA 额度：").toUpperCase(Locale.ROOT);
+                    print(full.inspect(actor,category,category.equals("DOCUMENT")?required("单据号（空行列出当前身份可见单据）："):category.equals("QUOTA")?required("原销售行凭证："):null));
+                }
+                case "18" -> {
+                    var rows=new java.util.ArrayList<AftersaleRequest>();
+                    while(true) {var row=readAftersaleLine();if(row==null)return;rows.add(row);Boolean more=readYesNo("继续添加售后明细？y/n：");if(more==null)return;if(!more)break;}
+                    String supplied=retryKey();String finalKey=supplied==null?java.util.UUID.randomUUID().toString():supplied;
+                    var quote=full.quoteAftersale(actor,rows,finalKey);print(quote);if(!quote.success())return;Boolean confirm=readYesNo("确认本次售后结算？y/n（n 保留可取消草稿）：");if(confirm==null || !confirm)return;
+                    print(full.aftersaleBatch(actor,rows,finalKey));
+                }
+                case "16", "17" -> {
+                    print(full.inspect(actor,"LOSS",null));
+                    String id=required("损耗记录 ID：");
+                    int qty=choice.equals("17")?quantity("修正后的数量："):0;
+                    var request=new nz.ac.aut.pdc.supermarket.stock.LossWorkflow.Request(id,qty,required("实际去向／处置结果："),required("原因："));
+                    print(full.executeA(actor,choice.equals("17")?nz.ac.aut.pdc.supermarket.stock.LossWorkflow.CORRECT:nz.ac.aut.pdc.supermarket.stock.LossWorkflow.DISPOSE,request,key));
+                }
+                case "15" -> print(full.retry(actor,required("原请求键（保留原始输入，禁止换键盲重做）：")));
+                default -> output.println("无效选项，请重新选择");
+            }
+        } catch(CancelInput ignored) { output.println("已放弃本次输入"); }
+        catch(RuntimeException e) { output.println("输入或操作被拒绝："+e.getMessage()); }
     }
 
     private void replenish(CuiActor actor) {
@@ -123,33 +225,34 @@ public final class CuiApp {
         if (quantity == null) {
             return;
         }
-        print(operations.recordLoss(actor, barcode.trim(), position, quantity));
+        if(operations instanceof MaintenanceOperations) {String reason=prompt("报损原因（必填）：");if(reason==null)return;print(operations.recordLoss(actor,barcode.trim(),position,quantity,reason));}
+            else print(operations.recordLoss(actor, barcode.trim(), position, quantity));
     }
 
-    private void aftersale(CuiActor actor) {
+    private AftersaleRequest readAftersaleLine() {
         String saleLineId = prompt("原销售行 ID：");
         if (saleLineId == null) {
-            return;
+            return null;
         }
         String kindCode = prompt("售后类型（RETURN / EXCHANGE）：");
         if (kindCode == null) {
-            return;
+            return null;
         }
         RedemptionKind kind = parseKind(kindCode);
         if (kind == null) {
-            return;
+            return null;
         }
         Integer quantity = readQuantity("售后数量（1-9999）：");
         if (quantity == null) {
-            return;
+            return null;
         }
         Boolean opened = readYesNo("原商品是否已开封（y/n）：");
         if (opened == null) {
-            return;
+            return null;
         }
         Boolean qualityProblem = readYesNo("是否质量问题（y/n）：");
         if (qualityProblem == null) {
-            return;
+            return null;
         }
         AftersaleReasonKind reasonKind;
         String reasonText = null;
@@ -160,7 +263,7 @@ public final class CuiApp {
             reasonText = prompt("其他原因（必填）：");
             if (reasonText == null || reasonText.isBlank()) {
                 output.println("输入错误：其他原因必须填写原因文本");
-                return;
+                return null;
             }
             reasonText = reasonText.trim();
         }
@@ -170,25 +273,33 @@ public final class CuiApp {
             replacementBarcode = prompt("替换品条码：");
             if (replacementBarcode == null || replacementBarcode.isBlank()) {
                 output.println("输入错误：换货必须填写替换品条码");
-                return;
+                return null;
             }
             replacementBarcode = replacementBarcode.trim();
             Integer parsedReplacementQuantity = readQuantity("替换数量（1-9999）：");
             if (parsedReplacementQuantity == null) {
-                return;
+                return null;
             }
             replacementQuantity = parsedReplacementQuantity;
         }
-        AftersaleRequest request = new AftersaleRequest(
-                saleLineId.trim(), kind, quantity, opened, qualityProblem,
-                reasonKind, reasonText, replacementBarcode, replacementQuantity, null);
-        try {
-            print(operations.aftersale(actor, request));
-        } catch (RuntimeException ex) {
-            output.println("操作失败：" + ex.getMessage());
-        }
+        return new AftersaleRequest(saleLineId.trim(),kind,quantity,opened,qualityProblem,reasonKind,reasonText,replacementBarcode,replacementQuantity,null);
     }
-
+    private void aftersale(CuiActor actor) {
+        try {var request=readAftersaleLine();if(request==null)return;
+            if(operations instanceof MaintenanceOperations full) {
+                String supplied=retryKey();String key=supplied==null?java.util.UUID.randomUUID().toString():supplied;
+                var quote=full.quoteAftersale(actor,java.util.List.of(request),key);print(quote);if(!quote.success())return;
+                Boolean confirm=readYesNo("确认本次售后结算？y/n（n 保留可取消草稿）：");if(confirm==null || !confirm)return;
+                print(full.aftersaleBatch(actor,java.util.List.of(request),key));
+            } else print(operations.aftersale(actor,request));
+        } catch(RuntimeException e){output.println("操作拒绝："+e.getMessage());}
+    }
+    private String retryKey() {
+        String value=prompt("原请求键（首次留空；结果未知时填写原键并保留相同输入）：");
+        if(value==null)throw new CancelInput();
+        if(value.isBlank())return null;
+        return java.util.UUID.fromString(value.trim()).toString();
+    }
     private void reverseDocument(CuiActor actor) {
         String targetId = prompt("待冲销单据 ID：");
         if (targetId == null || targetId.isBlank()) {
@@ -200,7 +311,8 @@ public final class CuiApp {
             return;
         }
         try {
-            print(operations.reverseDocument(actor, targetId.trim(), reason.trim()));
+            if(operations instanceof SharedOperations full) {String key=retryKey();print(full.reverseDocument(actor,targetId.trim(),reason.trim(),key==null?java.util.UUID.randomUUID().toString():key));}
+            else print(operations.reverseDocument(actor, targetId.trim(), reason.trim()));
         } catch (RuntimeException ex) {
             output.println("操作失败：" + ex.getMessage());
         }
@@ -288,7 +400,8 @@ public final class CuiApp {
         output.print(message);
         output.flush();
         try {
-            return input.readLine();
+            String value=input.readLine();
+            return value!=null && value.trim().equalsIgnoreCase("exit")?null:value;
         } catch (IOException ex) {
             return null;
         }

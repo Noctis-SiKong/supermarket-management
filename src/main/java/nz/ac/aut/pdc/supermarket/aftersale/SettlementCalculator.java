@@ -13,6 +13,8 @@ public final class SettlementCalculator {
 
     public Settlement calculate(Redemption redemption, Replacement replacement) {
         Objects.requireNonNull(redemption, "redemption");
+        if(replacement!=null && replacement.qualityRedemptionId()!=null)
+            return new Settlement(redemption.redemptionId(),replacement.lineId(),SettlementDirection.NONE,BigDecimal.ZERO.setScale(2));
         String replacementId = replacement == null ? null : replacement.lineId();
         BigDecimal difference = redemption.amount().subtract(
                 replacement == null ? BigDecimal.ZERO : replacement.replacementAmount());

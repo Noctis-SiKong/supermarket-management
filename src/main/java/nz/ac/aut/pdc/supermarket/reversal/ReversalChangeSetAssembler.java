@@ -39,7 +39,7 @@ public final class ReversalChangeSetAssembler {
         RecordData targetRecord = baseline.find("DOCUMENT", targetDocumentId)
                 .orElseThrow(() -> new IllegalArgumentException("Target document missing"));
         DocumentHeader target = targetRecord.as(DocumentHeader.class);
-        if (!"CONFIRMED".equals(target.status()) || "REVERSAL".equals(target.kind())) {
+        if (!Set.of("CONFIRMED","APPROVED").contains(target.status()) || "REVERSAL".equals(target.kind())) {
             throw new IllegalArgumentException("Only confirmed non-reversal documents can be reversed");
         }
         String requestKey = operation.requestKey();
@@ -48,7 +48,7 @@ public final class ReversalChangeSetAssembler {
         out.add(RecordData.of("DOCUMENT", reversalId, new DocumentHeader(
                 reversalId, "REVERSAL", "CONFIRMED", requestKey,
                 JsonCodec.fingerprint(OPERATION, actor.accountId(), request),
-                actor.accountId(), null, actor.accountId(), null, null)));
+                actor.accountId(), null, actor.accountId(), null, request.as(DocumentReversalCommand.class).reason())));
         out.add(RecordData.of("REVERSAL", reversalId, Map.of(
                 "target_document_id", targetDocumentId,
                 "authorized_by", actor.accountId())));
@@ -112,6 +112,17 @@ public final class ReversalChangeSetAssembler {
         }
         out.patch(new ChangeSet.Patch("DOCUMENT", targetDocumentId, targetRecord.version(),
                 JsonCodec.write(Map.of("status", "VOIDED"))));
+        if (target.kind().equals("LOSS_CORRECTION")) {
+            var correction=baseline.find("LOSS_CORRECTION",targetDocumentId).orElseThrow().as(nz.ac.aut.pdc.supermarket.stock.LossWorkflow.Correction.class);
+            var before=JsonCodec.read(JsonCodec.tree(correction.beforeAfterSnapshot()).path("before").toString(),nz.ac.aut.pdc.supermarket.stock.LossRecord.class);
+            var loss=baseline.find("LOSS_RECORD",correction.lossId()).orElseThrow();
+            Map<String,Object> restored=new java.util.LinkedHashMap<>();restored.put("disposition",before.disposition());restored.put("dispositionState",before.dispositionState());
+            out.patch(new ChangeSet.Patch("LOSS_RECORD",loss.id(),loss.version(),JsonCodec.write(restored)));
+        }
+        if (target.kind().equals("RECEIPT")) {
+            var receipt=baseline.find("RECEIPT",targetDocumentId).orElseThrow();
+            out.patch(new ChangeSet.Patch("RECEIPT",targetDocumentId,receipt.version(),JsonCodec.write(Map.of("reviewState","VOIDED"))));
+        }
         return out.build();
     }
 }

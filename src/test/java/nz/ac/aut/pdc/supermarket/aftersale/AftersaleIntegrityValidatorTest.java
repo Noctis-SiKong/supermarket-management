@@ -22,6 +22,11 @@ public class AftersaleIntegrityValidatorTest {
                         "AF-1", "AFTERSALE", "CONFIRMED", "REQ-1", "FP", "acc-1",
                         "2026-10-21T04:00:00Z", "acc-1", "2026-10-21T04:00:00Z", null)),
                 RecordData.of("AFTERSALE", "AF-1", java.util.Map.of()),
+                RecordData.of("DOCUMENT","S-1",new DocumentHeader("S-1","SALE","CONFIRMED","sale-key","fp","acc-1","2026-10-21T04:00:00Z","acc-1","2026-10-21T04:00:00Z",null)),
+                RecordData.of("SALE","S-1",java.util.Map.of()),
+                RecordData.of("DOC_LINE","SL-1",new nz.ac.aut.pdc.shared.DocumentLine("SL-1","S-1","SALE","6901234567890",3)),
+                RecordData.of("SALE_LINE","SL-1",new nz.ac.aut.pdc.supermarket.sales.Pricing.SaleLineSnapshot("SL-1","虚构商品",new BigDecimal("3.33"),new BigDecimal("9.99"),null,false,BigDecimal.ZERO,new BigDecimal("9.99"))),
+                RecordData.of("DOC_LINE","R-1",new nz.ac.aut.pdc.shared.DocumentLine("R-1","AF-1","RETURN","6901234567890",1)),
                 RecordData.of("REDEMPTION", "R-1", new Redemption(
                         "R-1", "R-1", "SL-1", "6901234567890", "AF-1",
                         RedemptionKind.RETURN, Effect.CONSUME, 1, new BigDecimal("3.33"),

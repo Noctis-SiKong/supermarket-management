@@ -24,7 +24,7 @@ public class StockOperationValidatorTest {
     private final StockOperationValidator validator =
             new StockOperationValidator(StockChangeSetAssembler.REPLENISHMENT);
     private final OperationContext op = new OperationContext(
-            null, "REQ-1", StockChangeSetAssembler.REPLENISHMENT, "DOC-1");
+            null, "11111111-1111-1111-1111-111111111111", StockChangeSetAssembler.REPLENISHMENT, new nz.ac.aut.pdc.shared.IdClock(java.time.Clock.systemUTC()).entityId("11111111-1111-1111-1111-111111111111","document"));
     private final OperationContext.ActorContext actor =
             new OperationContext.ActorContext("acc-1", OperationContext.Role.CLERK);
     private final BusinessRequest request = BusinessRequest.of(Map.of(
@@ -33,7 +33,7 @@ public class StockOperationValidatorTest {
     @Test
     public void validReplenishmentPasses() {
         Result<Void> result = validator.validate(
-                op, actor, request, new WorkingCopy("wc-1", 1, List.of()),
+                op, actor, request, baseline(),
                 changes(), Instant.parse("2026-10-21T04:00:00Z"));
 
         assertEquals(result.code(), Result.Status.VALUE, result.status());
@@ -50,7 +50,7 @@ public class StockOperationValidatorTest {
                         .toList(), List.of(), List.of());
 
         Result<Void> result = validator.validate(
-                op, actor, request, new WorkingCopy("wc-1", 1, List.of()),
+                op, actor, request, baseline(),
                 tampered, Instant.parse("2026-10-21T04:00:00Z"));
 
         assertEquals(Result.Status.REJECTED, result.status());
@@ -65,19 +65,36 @@ public class StockOperationValidatorTest {
                 .build();
 
         Result<Void> result = validator.validate(
-                op, actor, request, new WorkingCopy("wc-1", 1, List.of()),
+                op, actor, request, baseline(),
                 withProduct, Instant.parse("2026-10-21T04:00:00Z"));
 
         assertEquals(Result.Status.REJECTED, result.status());
     }
 
+    private WorkingCopy baseline() {
+        return new WorkingCopy("wc-1",1,List.of(
+            RecordData.of("PRODUCT","00123456",new Product("00123456","虚构商品","件",new BigDecimal("3.33"),null)),
+            RecordData.of("DOC_LINE","opening-line",new DocumentLine("opening-line","fictional-opening","OPENING","00123456",10)),
+            RecordData.of("STOCK_ENTRY","opening-entry",new nz.ac.aut.pdc.shared.StockEntry("opening-entry","opening-line",nz.ac.aut.pdc.shared.StockEntry.Position.W,10,"opening-event",null,null,null,1))));
+    }
+    @Test public void fractionalAndOverflowQuantitiesCannotBeTruncated() {
+        for(Object quantity:List.of(new BigDecimal("3.9"),new BigDecimal("4294967299"))) {
+            var raw=BusinessRequest.of(Map.of("barcode","00123456","quantity",quantity));
+            assertEquals(Result.Status.REJECTED,validator.validate(op,actor,raw,baseline(),changes(),Instant.now()).status());
+        }
+    }
+    @Test public void patchesRemovalsAndRoleEscalationAreRejected() {
+        var good=changes();
+        var patch=new ChangeSet(good.inserts(),List.of(new ChangeSet.Patch("DOCUMENT","other",1,"{}")));
+        var removal=new ChangeSet(good.inserts(),List.of(),List.of(new ChangeSet.Removal("DOC_LINE","opening-line",1)));
+        assertEquals(Result.Status.REJECTED,validator.validate(op,actor,request,baseline(),patch,Instant.now()).status());
+        assertEquals(Result.Status.REJECTED,validator.validate(op,actor,request,baseline(),removal,Instant.now()).status());
+        assertEquals("FORBIDDEN",validator.validate(op,new OperationContext.ActorContext("admin",OperationContext.Role.ADMIN),request,baseline(),good,Instant.now()).code());
+    }
     private ChangeSet changes() {
-        ReplenishmentResult.Prepared prepared = new ReplenishmentResult.Prepared(
-                "TR-1",
-                List.of(new StockEntry("SE-W", "00123456", Position.W, -3, "EV-W", "TR-1", null, null),
-                        new StockEntry("SE-S", "00123456", Position.S, 3, "EV-S", "TR-1", null, null)),
-                List.of());
-        return assembler.assembleReplenishment(
-                prepared, "DOC-1", "LINE-1", op, actor, request);
+        var time=Instant.parse("2026-10-21T04:00:00Z");
+        var result=StockBusiness.prepare(op,actor,request,baseline(),new nz.ac.aut.pdc.shared.IdClock(java.time.Clock.fixed(time,java.time.ZoneOffset.UTC)));
+        org.junit.Assert.assertTrue(result.detail(),result.hasValue());
+        return nz.ac.aut.pdc.infrastructure.SubmissionTime.assign(baseline(),result.value(),time);
     }
 }

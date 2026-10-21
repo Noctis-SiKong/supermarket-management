@@ -2,99 +2,30 @@ package nz.ac.aut.pdc.supermarket.cui;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Clock;
-import java.util.HashMap;
+import java.time.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
-import nz.ac.aut.pdc.infrastructure.DataRoot;
-import nz.ac.aut.pdc.infrastructure.JsonStore;
+import nz.ac.aut.pdc.infrastructure.*;
 import nz.ac.aut.pdc.shared.IdClock;
-import nz.ac.aut.pdc.shared.OperationContext;
-import nz.ac.aut.pdc.shared.Result;
-import nz.ac.aut.pdc.shared.SubmissionPort;
-import nz.ac.aut.pdc.supermarket.aftersale.AftersaleIntegrityValidator;
-import nz.ac.aut.pdc.supermarket.aftersale.BCommitValidators;
-import nz.ac.aut.pdc.supermarket.app.AOperations;
+import nz.ac.aut.pdc.supermarket.app.*;
 import nz.ac.aut.pdc.supermarket.auth.AuthService;
-import nz.ac.aut.pdc.supermarket.auth.LocalAuthService;
-import nz.ac.aut.pdc.supermarket.auth.Sha256PasswordHasher;
-import nz.ac.aut.pdc.supermarket.auth.SharedCredentialStore;
-import nz.ac.aut.pdc.supermarket.auth.SharedIdentityResolver;
-import nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter;
 
-/**
- * B 侧应用装配：A DataRoot/JsonStore + B 认证 + B 校验器 + A/S 业务校验器。
- *
- * <p>入口 main/pom 仍由 A 的 Maven 框架决定；本类只提供可复用的装配，
- * 不创建 CUI、不写真实 data/ 之外的路径。</p>
- */
+/** Compatibility facade delegating to the one Application assembly. */
 public final class BApplication implements AutoCloseable {
-
-    private final JsonStore store;
-    private final AuthService authService;
-    private final IdClock idClock;
-
-    public BApplication(Path projectRoot, List<JsonStore.Credential> credentials) throws IOException {
-        this(projectRoot, credentials, new IdClock(Clock.system(IdClock.BUSINESS_ZONE)));
+    private final Application app;
+    private final RepositoryBIntegration integration;
+    public BApplication(Path root,List<JsonStore.Credential> credentials) throws IOException {
+        this(root,credentials,new IdClock(Clock.systemUTC()));
     }
-
-    public BApplication(
-            Path projectRoot, List<JsonStore.Credential> credentials, IdClock idClock) throws IOException {
-        Objects.requireNonNull(projectRoot, "projectRoot");
-        Objects.requireNonNull(credentials, "credentials");
-        this.idClock = Objects.requireNonNull(idClock, "idClock");
-
-        DataRoot dataRoot = DataRoot.forProject(projectRoot);
-        AtomicReference<AuthService> authRef = new AtomicReference<>();
-        OperationContext.IdentityResolver identityResolver = session -> {
-            AuthService auth = authRef.get();
-            if (auth == null) {
-                return Result.failed("AUTH_TECHNICAL_FAILURE", "Authentication not initialized");
-            }
-            return new SharedIdentityResolver(auth).resolve(session);
-        };
-
-        SharedStockAdapter stockAdapter = new SharedStockAdapter();
-        AftersaleIntegrityValidator aftersaleIntegrity = new AftersaleIntegrityValidator();
-        AOperations aOperations = new AOperations(idClock, identityResolver, stockAdapter);
-        Map<String, SubmissionPort.CommitValidator> validators = new HashMap<>(aOperations.validators());
-        validators.putAll(BCommitValidators.create(stockAdapter));
-
-        this.store = new JsonStore(
-                dataRoot,
-                identityResolver,
-                Map.copyOf(validators),
-                state -> {
-                    aOperations.validateRecovered(state);
-                    stockAdapter.validateRecovered(state);
-                    aftersaleIntegrity.validate(state);
-                },
-                path -> { },
-                JsonStore.RecoveryMode.CURRENT,
-                credentials);
-        this.authService = new LocalAuthService(
-                new SharedCredentialStore(store), new Sha256PasswordHasher());
-        authRef.set(authService);
+    public BApplication(Path root,List<JsonStore.Credential> credentials,IdClock ids) throws IOException {
+        integration=new RepositoryBIntegration(credentials);
+        try { app=new Application(DataRoot.forProject(root),integration,new Clock() {
+            public ZoneId getZone(){return ZoneOffset.UTC;}
+            public Clock withZone(ZoneId zone){return this;}
+            public Instant instant(){return ids.now();}
+        }); } catch(IOException e){throw e;} catch(Exception e){throw new IOException("Assembly failed",e);}
     }
-
-    public AuthService authService() {
-        return authService;
-    }
-
-    public JsonStore store() {
-        return store;
-    }
-
-    /** CUI 真实操作端口；售后已接 A open/submit，补货/报损仍显式未接线。 */
-    public Operations operations() {
-        return new SharedOperations(store, idClock);
-    }
-
-    @Override
-    public void close() throws IOException {
-        store.close();
-    }
+    public AuthService authService(){return integration.auth();}
+    public JsonStore store(){return (JsonStore)app.submissions();}
+    public Operations operations(){return integration.cuiOperations(app);}
+    public void close() throws IOException {try{app.close();}catch(IOException e){throw e;}catch(Exception e){throw new IOException(e);}}
 }

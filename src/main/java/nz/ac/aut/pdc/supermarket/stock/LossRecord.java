@@ -25,7 +25,8 @@ public record LossRecord(
         if (barcode == null || barcode.isBlank()) {
             throw new IllegalArgumentException("barcode must not be blank");
         }
-        Objects.requireNonNull(position, "position");
+        if(origin==LossOrigin.STORE) Objects.requireNonNull(position,"position");
+        else if(position!=null) throw new IllegalArgumentException("Customer return has no stock position");
         if (quantity < 1) {
             throw new IllegalArgumentException("quantity must be positive");
         }

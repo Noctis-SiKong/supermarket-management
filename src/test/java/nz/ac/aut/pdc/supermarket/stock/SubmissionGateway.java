@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * IF-05 统一提交的 B 侧适配端口。
+ * 历史捕获式测试载荷；非生产提交入口，生产仅用 shared.SubmissionPort。
  *
  * <p>正式实现由 A 维护；本骨架用捕获式替身验证"只提交一次、候选正确"，
  * 不写 JSON、不代表真实原子提交。IF-05 的三态结果用嵌套类型表达。</p>

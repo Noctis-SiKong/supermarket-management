@@ -48,7 +48,7 @@ public final class StockValidator {
         Map<BalanceKey, Integer> netDeltas = new HashMap<>();
         for (StockChangeLine line : changes) {
             BalanceKey key = new BalanceKey(line.barcode(), line.position());
-            netDeltas.merge(key, line.delta(), Integer::sum);
+            netDeltas.merge(key, line.delta(), Math::addExact);
         }
 
         for (Map.Entry<BalanceKey, Integer> entry : netDeltas.entrySet().stream()

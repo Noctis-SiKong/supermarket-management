@@ -38,11 +38,12 @@ public class QualityPairValidatorTest {
     }
 
     @Test
-    public void nonZeroDifferenceIsRejected() {
+    public void currentPriceChangeStillUsesQualityZeroSettlement() {
         Redemption redemption = redemption(true, RedemptionKind.EXCHANGE, Effect.CONSUME, "8.00");
         Replacement replacement = replacement("A", 1, "9.00", redemption.redemptionId());
 
-        assertTrue(validator.validate(line, redemption, replacement).isPresent());
+        assertTrue(validator.validate(line, redemption, replacement).isEmpty());
+        org.junit.Assert.assertEquals(SettlementDirection.NONE,new SettlementCalculator().calculate(redemption,replacement).direction());
     }
 
     @Test

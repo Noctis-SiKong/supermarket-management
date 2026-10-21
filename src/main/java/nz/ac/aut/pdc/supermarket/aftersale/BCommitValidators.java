@@ -15,14 +15,14 @@ public final class BCommitValidators {
     public static Map<String, SubmissionPort.CommitValidator> create(
             SharedStockAdapter stockAdapter) {
         return Map.of(
+                nz.ac.aut.pdc.supermarket.stock.LossWorkflow.DISPOSE,new nz.ac.aut.pdc.supermarket.stock.LossWorkflow(),
+                nz.ac.aut.pdc.supermarket.stock.LossWorkflow.CORRECT,new nz.ac.aut.pdc.supermarket.stock.LossWorkflow(),
                 AftersaleChangeSetAssembler.OPERATION,
                 new AftersaleCommitValidator(stockAdapter),
                 DraftDeletion.OPERATION,
                 new AftersaleDraftDeletionValidator(),
                 AftersaleDraftOperations.CREATE,
                 new AftersaleDraftValidator(AftersaleDraftOperations.CREATE),
-                AftersaleDraftOperations.READ,
-                new AftersaleDraftValidator(AftersaleDraftOperations.READ),
                 AftersaleDraftOperations.CANCEL,
                 new AftersaleDraftValidator(AftersaleDraftOperations.CANCEL),
                 nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT,

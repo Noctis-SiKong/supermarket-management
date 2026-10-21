@@ -20,29 +20,7 @@ public final class SharedSaleReader implements OriginalSaleReader {
 
     @Override
     public Optional<OriginalSaleLine> readLine(String saleLineId) {
-        if (saleLineId == null || saleLineId.isBlank()) {
-            return Optional.empty();
-        }
-        var documentLineRecord = workingCopy.find("DOC_LINE", saleLineId).orElse(null);
-        var saleLineRecord = workingCopy.find("SALE_LINE", saleLineId).orElse(null);
-        if (documentLineRecord == null || saleLineRecord == null) {
-            return Optional.empty();
-        }
-        DocumentLine documentLine = documentLineRecord.as(DocumentLine.class);
-        var documentRecord = workingCopy.find("DOCUMENT", documentLine.documentId()).orElse(null);
-        if (documentRecord == null) {
-            return Optional.empty();
-        }
-        DocumentHeader document = documentRecord.as(DocumentHeader.class);
-        if (document.confirmedAt() == null) {
-            return Optional.empty();
-        }
-        Pricing.SaleLineSnapshot snapshot = saleLineRecord.as(Pricing.SaleLineSnapshot.class);
-        return Optional.of(new OriginalSaleLine(
-                saleLineId,
-                documentLine.barcode(),
-                documentLine.quantity(),
-                snapshot.paidAmount(),
-                Instant.parse(document.confirmedAt())));
+        return nz.ac.aut.pdc.supermarket.sales.OriginalSaleAccess.originalLine(workingCopy,saleLineId)
+            .map(s -> new OriginalSaleLine(s.lineId(),s.barcode(),s.originalQuantity(),s.paidAmount(),Instant.parse(s.soldAt())));
     }
 }

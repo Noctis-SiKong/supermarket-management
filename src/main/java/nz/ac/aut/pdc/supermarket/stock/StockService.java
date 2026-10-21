@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * IF-07 的骨架实现：读取余额、校验变动、生成候选流水。
+ * IF-07 的纯候选实现：读取余额、校验变动、生成候选流水。
  *
  * <p>职责：编排只读读取 + 纯规则校验 + 候选组装；不保存、不分配 commitOrdinal、
  * 不调用提交入口。依赖全部通过构造器注入，便于替换为 A 的真实实现。</p>
@@ -108,7 +108,7 @@ public final class StockService implements StockOperations {
         }
         for (StockEntry entry : overlayEntries) {
             StockValidator.BalanceKey key = new StockValidator.BalanceKey(entry.barcode(), entry.position());
-            balances.merge(key, entry.delta(), Integer::sum);
+            balances.merge(key, entry.delta(), Math::addExact);
         }
         return balances;
     }
@@ -119,7 +119,7 @@ public final class StockService implements StockOperations {
         Map<StockValidator.BalanceKey, Integer> after = new HashMap<>(balancesBefore);
         for (StockChangeLine line : changes) {
             StockValidator.BalanceKey key = new StockValidator.BalanceKey(line.barcode(), line.position());
-            after.merge(key, line.delta(), Integer::sum);
+            after.merge(key, line.delta(), Math::addExact);
         }
         return after.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey(

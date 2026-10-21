@@ -38,12 +38,28 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
         if (!operation.equals(op.operation())) {
             return Result.rejected("INVALID_INPUT", "Wrong draft operation");
         }
-        return switch (operation) {
-            case AftersaleDraftOperations.CREATE -> validateCreate(op, actor, baseline, changes);
-            case AftersaleDraftOperations.READ -> validateRead(op, actor, baseline, changes);
-            case AftersaleDraftOperations.CANCEL -> validateCancel(op, actor, baseline, changes);
-            default -> Result.rejected("INVALID_INPUT", "Unknown draft operation");
-        };
+        try {
+            if(!op.targetId().equals(request.as(java.util.Map.class).get("draftId"))) return Result.rejected("REFERENCE_INVALID","Draft request target mismatch");
+            ChangeSet expected;
+            if(operation.equals(AftersaleDraftOperations.CREATE)) {
+                var check=validateCreate(op,actor,baseline,changes); if(!check.hasValue())return check;
+                var header=new DocumentHeader(op.targetId(),"AFTERSALE","DRAFT",op.requestKey(),JsonCodec.fingerprint(op.operation(),actor.accountId(),request),actor.accountId(),null,null,null,null);
+                expected=new ChangeSet(java.util.List.of(RecordData.of("DOCUMENT",op.targetId(),header),RecordData.of("AFTERSALE",op.targetId(),java.util.Map.of()),
+                    RecordData.of("DOC_EVENT",op.targetId()+"-CREATE",new DocEvent(op.targetId()+"-CREATE",op.targetId(),1,"CREATE",actor.accountId(),null,"{}"))),java.util.List.of());
+            } else if(operation.equals(AftersaleDraftOperations.CANCEL)) {
+                var check=requireOwnedDraft(op,actor,baseline);if(!check.hasValue())return check;
+                boolean traced=baseline.records("DOC_EVENT").stream().anyMatch(r -> r.data().path("documentId").asText().equals(op.targetId()) && r.data().path("action").asText().equals("READ_FOR_AFTERSALE"));
+                if(!traced)return Result.rejected("DRAFT_HAS_NO_READ_TRACE","No read trace; delete the eligible draft instead");
+                long version=baseline.records("DOC_EVENT").stream().filter(r -> r.data().path("documentId").asText().equals(op.targetId())).mapToLong(r -> r.data().path("version").asLong()).max().orElse(0)+1;
+                expected=new ChangeSet(java.util.List.of(RecordData.of("DOC_EVENT",op.targetId()+"-CANCEL",new DocEvent(op.targetId()+"-CANCEL",op.targetId(),version,"CANCEL_AFTERSALE",actor.accountId(),null,"{}"))),
+                    java.util.List.of(new ChangeSet.Patch("DOCUMENT",op.targetId(),baseline.find("DOCUMENT",op.targetId()).orElseThrow().version(),"{\"status\":\"CANCELLED\"}")));
+            } else return Result.rejected("INVALID_INPUT","Use the unique OriginalSaleAccess admission");
+            expected=nz.ac.aut.pdc.infrastructure.SubmissionTime.assign(baseline,expected,acceptedAt);
+            return nz.ac.aut.pdc.shared.CandidateEquality.same(expected,changes)?Result.value(null):Result.rejected("REFERENCE_INVALID","Unexpected lifecycle effects");
+        } catch(RuntimeException e){return Result.rejected("INVALID_INPUT","Invalid draft operation");}
+    }
+    public Result<Void> validateTargetCreation(OperationContext op,OperationContext.ActorContext actor,WorkingCopy wc,ChangeSet changes) {
+        return validateCreate(op,actor,wc,changes);
     }
 
     private Result<Void> validateCreate(
@@ -70,74 +86,10 @@ public final class AftersaleDraftValidator implements SubmissionPort.CommitValid
         return Result.value(null);
     }
 
-    private Result<Void> validateRead(
-            OperationContext op, OperationContext.ActorContext actor,
-            WorkingCopy baseline, ChangeSet changes) {
-        Result<Void> draft = requireOwnedDraft(op, actor, baseline);
-        if (!draft.hasValue()) {
-            return draft;
-        }
-        if (!changes.patches().isEmpty() || !changes.removals().isEmpty()) {
-            return Result.rejected("INVALID_INPUT", "Read trace only adds events");
-        }
-        List<RecordData> events = inserts(changes, "DOC_EVENT");
-        if (events.size() != 1
-                || !"READ_FOR_AFTERSALE".equals(events.get(0).as(DocEvent.class).action())) {
-            return Result.rejected("INVALID_INPUT", "Exactly one READ_FOR_AFTERSALE event required");
-        }
-        DocEvent event = events.get(0).as(DocEvent.class);
-        if (!actor.accountId().equals(event.actorId())) {
-            return Result.rejected("FORBIDDEN", "Read trace actor mismatch");
-        }
-        ObjectNode detail = (ObjectNode) JsonCodec.tree(event.detailSnapshot());
-        String originalLineId = detail.path("originalSaleLineId").asText("");
-        RecordData original = baseline.find("DOC_LINE", originalLineId).orElse(null);
-        if (original == null) {
-            return Result.rejected("REFERENCE_INVALID", "Read trace original sale line missing");
-        }
-        var saleDocument = baseline.find(
-                "DOCUMENT", original.as(DocumentLine.class).documentId()).orElse(null);
-        if (saleDocument == null
-                || !"SALE".equals(saleDocument.as(DocumentHeader.class).kind())
-                || !"CONFIRMED".equals(saleDocument.as(DocumentHeader.class).status())) {
-            return Result.rejected("REFERENCE_INVALID", "Read trace target is not a confirmed sale");
-        }
-        return Result.value(null);
-    }
-
-    private Result<Void> validateCancel(
-            OperationContext op, OperationContext.ActorContext actor,
-            WorkingCopy baseline, ChangeSet changes) {
-        Result<Void> draft = requireOwnedDraft(op, actor, baseline);
-        if (!draft.hasValue()) {
-            return draft;
-        }
-        List<ChangeSet.Patch> documentPatches = changes.patches().stream()
-                .filter(p -> p.table().equals("DOCUMENT") && p.id().equals(op.targetId()))
-                .toList();
-        if (documentPatches.size() != 1) {
-            return Result.rejected("INVALID_INPUT", "Cancel requires one DOCUMENT patch");
-        }
-        ObjectNode fields = (ObjectNode) JsonCodec.tree(documentPatches.get(0).changedFields());
-        if (!"CANCELLED".equals(fields.path("status").asText())) {
-            return Result.rejected("INVALID_INPUT", "Cancel must set CANCELLED");
-        }
-        List<RecordData> events = inserts(changes, "DOC_EVENT");
-        if (events.size() != 1
-                || !"CANCEL_AFTERSALE".equals(events.get(0).as(DocEvent.class).action())) {
-            return Result.rejected("INVALID_INPUT", "Exactly one CANCEL_AFTERSALE event required");
-        }
-        if (changes.inserts().stream().anyMatch(r ->
-                List.of("STOCK_ENTRY", "MONEY_ENTRY", "REDEMPTION").contains(r.table()))) {
-            return Result.rejected("INVALID_INPUT", "Cancel must not change effects");
-        }
-        return Result.value(null);
-    }
-
-    private Result<Void> requireOwnedDraft(
+    public Result<Void> requireOwnedDraft(
             OperationContext op, OperationContext.ActorContext actor, WorkingCopy baseline) {
         RecordData document = baseline.find("DOCUMENT", op.targetId()).orElse(null);
-        if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
+        if (document == null || !"AFTERSALE".equals(document.as(DocumentHeader.class).kind()) || baseline.find("AFTERSALE",op.targetId()).isEmpty() || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
             return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
         }
         if (!actor.accountId().equals(document.as(DocumentHeader.class).createdBy())) {

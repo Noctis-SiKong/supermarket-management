@@ -6,10 +6,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
 /**
- * 基于 SHA-256 的骨架密码哈希实现。
+ * 现有 SHA-256 本地密码哈希实现（v3 要求保留）。
  *
- * <p>仅用于骨架与测试；正式实现应使用带盐的 KDF（如 PBKDF2），
- * 但不改变 {@link PasswordHasher} 契约。</p>
+ * <p>本次复用原有算法，接统一存储凭证视图；未重写认证，
+ * 保持 {@link PasswordHasher} 契约。</p>
  */
 public final class Sha256PasswordHasher implements PasswordHasher {
 

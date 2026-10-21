@@ -59,32 +59,12 @@ public final class AftersaleDraftService {
             OperationContext operation,
             OperationContext.ActorContext actor,
             OriginalSaleLine original) {
-        Objects.requireNonNull(original, "original");
-        Result<WorkingCopy> opened = store.open(operation);
-        if (!opened.hasValue()) {
-            return opened.failure();
-        }
-        WorkingCopy workingCopy = opened.value();
-        String draftId = operation.targetId();
-        RecordData document = workingCopy.find("DOCUMENT", draftId).orElse(null);
-        if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
-            return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
-        }
-        long nextVersion = nextEventVersion(workingCopy, draftId);
-        String detail = JsonCodec.write(Map.of(
-                "originalSaleLineId", original.saleLineId(),
-                "barcode", original.barcode(),
-                "quantity", original.quantity(),
-                "amount", original.paidAmount(),
-                "returnedLineId", original.saleLineId()));
-        ChangeSet.Builder out = new ChangeSet.Builder();
-        out.add(RecordData.of("DOC_EVENT", draftId + "-READ", new DocEvent(
-                draftId + "-READ", draftId, nextVersion, "READ_FOR_AFTERSALE",
-                actor.accountId(), null, detail)));
-        return store.submit(operation,
-                BusinessRequest.of(Map.of("draftId", draftId,
-                        "originalSaleLineId", original.saleLineId())),
-                workingCopy, out.build());
+        var actual=new OperationContext(operation.sessionRef(),operation.requestKey(),nz.ac.aut.pdc.shared.AftersaleReadRequest.OPERATION,operation.targetId());
+        var access=new nz.ac.aut.pdc.supermarket.sales.OriginalSaleAccess(
+            session -> store.authenticate(new OperationContext(session,actual.requestKey(),actual.operation(),actual.targetId())),
+            new nz.ac.aut.pdc.shared.IdClock(java.time.Clock.systemUTC()),new AftersaleDraftAccess());
+        var result=access.readForAftersale(store,actual,new nz.ac.aut.pdc.shared.AftersaleReadRequest(original.saleLineId(),actual.targetId(),java.util.List.of(original.saleLineId())));
+        return result.hasValue()?new Result<>(Result.Status.SUCCESS,result.value().trace(),null,null,null,null):result.failure();
     }
 
     public Result<SubmissionPort.CommitReceipt> cancel(
@@ -123,21 +103,15 @@ public final class AftersaleDraftService {
     public Result<SubmissionPort.CommitReceipt> delete(
             OperationContext operation, OperationContext.ActorContext actor) {
         String draftId = operation.targetId();
-        Result<WorkingCopy> opened = store.open(operation);
-        if (!opened.hasValue()) {
-            return opened.failure();
-        }
-        WorkingCopy workingCopy = opened.value();
-        RecordData document = workingCopy.find("DOCUMENT", draftId).orElse(null);
-        if (document == null || !"DRAFT".equals(document.as(DocumentHeader.class).status())) {
-            return Result.rejected("INVALID_DRAFT", "Aftersale draft not found or not DRAFT");
-        }
-        DraftDeletion target = new DraftDeletion(draftId, document.version());
-        BusinessRequest request = BusinessRequest.of(target);
-        Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, request);
-        if (prior.status() != Result.Status.NOT_FOUND) {
-            return prior;
-        }
+        BusinessRequest request = BusinessRequest.of(new DraftDeletion(draftId));
+        var prior = store.lookupResult(operation, request);
+        if (prior.status()!=Result.Status.NOT_FOUND) return prior;
+        Result<WorkingCopy> opened=store.open(operation);
+        if(!opened.hasValue()) return opened.failure();
+        WorkingCopy workingCopy=opened.value();
+        RecordData document=workingCopy.find("DOCUMENT",draftId).orElse(null);
+        if(document==null || !"DRAFT".equals(document.as(DocumentHeader.class).status()))
+            return Result.rejected("INVALID_DRAFT","Aftersale draft missing or closed");
         ChangeSet.Builder out = new ChangeSet.Builder();
         out.remove(new ChangeSet.Removal("DOCUMENT", draftId, document.version()));
         addRemoval(out, workingCopy, "AFTERSALE", draftId);

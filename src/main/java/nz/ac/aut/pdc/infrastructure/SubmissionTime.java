@@ -6,9 +6,9 @@ import java.time.Instant;
 import java.util.*;
 
 /** Explicit server-managed field assignment. Historical and user-input dates are never stripped. */
-final class SubmissionTime {
+public final class SubmissionTime {
     private SubmissionTime() {}
-    static ChangeSet assign(WorkingCopy baseline, ChangeSet changes, Instant acceptedAt) {
+    public static ChangeSet assign(WorkingCopy baseline, ChangeSet changes, Instant acceptedAt) {
         String time = acceptedAt.toString();
         List<RecordData> inserts = new ArrayList<>();
         for (RecordData r : changes.inserts()) {

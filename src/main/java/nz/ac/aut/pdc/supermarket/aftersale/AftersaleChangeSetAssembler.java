@@ -93,6 +93,10 @@ public final class AftersaleChangeSetAssembler {
                     redemption.redemptionId(), aftersaleId,
                     redemption.kind().name(), redemption.originalBarcode(), redemption.quantity())));
             out.add(RecordData.of("REDEMPTION", redemption.redemptionId(), redemption));
+            String lossId=redemption.redemptionId()+"-LOSS";
+            out.add(RecordData.of("LOSS_RECORD",lossId,new nz.ac.aut.pdc.supermarket.stock.LossRecord(lossId,
+                redemption.sourceLineId(),redemption.originalBarcode(),null,redemption.quantity(),nz.ac.aut.pdc.supermarket.stock.LossOrigin.CUSTOMER_RETURN,
+                "顾客交回待处置（不回库）",nz.ac.aut.pdc.supermarket.stock.LossState.PENDING)));
         }
         for (Replacement replacement : prepared.replacements()) {
             out.add(RecordData.of("DOC_LINE", replacement.lineId(), new DocumentLine(
@@ -107,19 +111,20 @@ public final class AftersaleChangeSetAssembler {
                     StockEntry.Position.valueOf(entry.position().name()),
                     entry.delta(), entry.eventKey(), null, null, entry.transferKey(), 0)));
         }
-        for (Settlement settlement : prepared.settlements()) {
-            if (settlement.direction() == SettlementDirection.NONE) {
-                continue;
-            }
-            java.math.BigDecimal signed = settlement.direction() == SettlementDirection.REFUND
-                    ? settlement.amount().negate() : settlement.amount();
-            String moneyId = settlement.redemptionId() + "-MONEY";
-            out.add(RecordData.of("MONEY_ENTRY", moneyId, new MoneyEntry(
-                    moneyId, aftersaleId, signed, operation.requestKey(), null)));
+        java.math.BigDecimal total=java.math.BigDecimal.ZERO.setScale(2);
+        for (Settlement settlement:prepared.settlements()) {
+            if (settlement.direction()!=SettlementDirection.NONE)
+                total=total.add(settlement.direction()==SettlementDirection.REFUND?settlement.amount().negate():settlement.amount());
+        }
+        if (total.signum()!=0) {
+            String moneyId=aftersaleId+"-MONEY";
+            out.add(RecordData.of("MONEY_ENTRY",moneyId,new MoneyEntry(moneyId,aftersaleId,total,operation.requestKey(),null)));
         }
     }
 
     private String sourceLineId(AftersaleResult.StockEntryView entry, AftersaleResult.Prepared prepared) {
+        for (Replacement replacement:prepared.replacements())
+            if (entry.eventKey().equals("EV-AF-"+replacement.lineId())) return replacement.lineId();
         if (entry.transferKey() != null && !entry.transferKey().isBlank()) {
             return entry.transferKey();
         }

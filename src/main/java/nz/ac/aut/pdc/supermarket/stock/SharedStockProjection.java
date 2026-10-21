@@ -43,7 +43,7 @@ final class SharedStockProjection {
             totals.merge(
                     new StockValidator.BalanceKey(barcode, position(entry.position())),
                     entry.quantityDelta(),
-                    Integer::sum);
+                    Math::addExact);
         }
         for (Map.Entry<StockValidator.BalanceKey, Integer> entry : totals.entrySet()) {
             if (entry.getValue() < 0) {

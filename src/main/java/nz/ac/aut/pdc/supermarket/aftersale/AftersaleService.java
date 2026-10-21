@@ -106,13 +106,18 @@ public final class AftersaleService {
             List<nz.ac.aut.pdc.supermarket.stock.StockEntry> stockOverlay = new ArrayList<>();
             Map<String, List<Redemption>> pendingByLine = new HashMap<>();
 
-            for (AftersaleCommandLine line : orderedLines(command.lines())) {
+            for (Planned planned : orderedLines(command.lines())) {
+                AftersaleCommandLine line=planned.line();
                 Optional<OriginalSaleLine> originalOptional = originalSaleReader.readLine(line.saleLineId());
                 if (originalOptional.isEmpty()) {
                     return new AftersaleResult.Rejected(
                             "REFERENCE_INVALID", "saleLineId", "原销售行不存在：" + line.saleLineId());
                 }
                 OriginalSaleLine original = originalOptional.get();
+                boolean special=line.kind()==RedemptionKind.EXCHANGE && line.qualityProblem()
+                    && original.barcode().equals(line.replacementBarcode()) && line.quantity()==line.replacementQty();
+                if(line.qualityPair() && !special) return new AftersaleResult.Rejected("INVALID_INPUT","qualityPair","Invalid special quality pair");
+                if(special && !line.qualityPair()) line=new AftersaleCommandLine(line.saleLineId(),line.kind(),line.quantity(),line.opened(),line.qualityProblem(),line.reasonKind(),line.reasonText(),line.replacementBarcode(),line.replacementQty(),true);
 
                 Optional<AftersaleResult.Rejected> eligibility =
                         checkEligibility(original, line, now);
@@ -132,7 +137,7 @@ public final class AftersaleService {
                 BigDecimal amount = quotaCalculator.allocate(
                         line.quantity(), view, new SettlementContext(settlesRemaining));
                 Redemption redemption = assembler.assembleRedemption(
-                        aftersaleId, command.requestKey(), original, line, amount);
+                        aftersaleId, command.requestKey(), original, line, amount,planned.id());
                 redemptions.add(redemption);
                 pendingByLine.computeIfAbsent(original.saleLineId(), key -> new ArrayList<>())
                         .add(redemption);
@@ -164,7 +169,7 @@ public final class AftersaleService {
                             line.replacementBarcode(),
                             Position.S,
                             -line.replacementQty(),
-                            redemption.redemptionId(),
+                            replacement.lineId(),
                             null,
                             null,
                             "EV-AF-" + replacement.lineId(),
@@ -194,17 +199,14 @@ public final class AftersaleService {
         }
     }
 
-    private java.util.List<AftersaleCommandLine> orderedLines(
-            java.util.List<AftersaleCommandLine> lines) {
-        return lines.stream()
-                .sorted(java.util.Comparator
-                        .comparingInt((AftersaleCommandLine line) ->
-                                line.kind() == RedemptionKind.EXCHANGE ? 0 : 1)
-                        .thenComparing(line -> line.saleLineId() + "|" + line.kind() + "|"
-                                + line.quantity() + "|" + line.opened() + "|" + line.qualityProblem()
-                                + "|" + line.reasonKind() + "|" + line.reasonText() + "|"
-                                + line.replacementBarcode() + "|" + line.replacementQty()))
-                .toList();
+    private record Planned(AftersaleCommandLine line,String id) {}
+    private List<Planned> orderedLines(List<AftersaleCommandLine> lines) {
+        List<Planned> planned=new ArrayList<>();
+        for (var line:lines.stream().sorted(java.util.Comparator.comparing(nz.ac.aut.pdc.shared.JsonCodec::write)).toList())
+            planned.add(new Planned(line,idGenerator.nextId("RED")));
+        return planned.stream().sorted(java.util.Comparator
+            .comparingInt((Planned p) -> p.line().kind()==RedemptionKind.EXCHANGE?0:1)
+            .thenComparing(Planned::id)).toList();
     }
 
     private Optional<AftersaleResult.Rejected> checkEligibility(

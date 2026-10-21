@@ -9,7 +9,7 @@ import java.util.Optional;
  * IF-07 依赖的只读协作端口。
  *
  * <p>这些是 B 侧适配 A 公共契约的内部端口：正式实现由 A 的 WorkingCopy / IF-03 /
- * IF-06 提供，本骨架用测试替身（虚构、非生产）。</p>
+ * IF-06 提供，生产使用 SharedWorkingCopyView 等薄适配；替身仅在测试源码。</p>
  */
 public final class StockPorts {
 

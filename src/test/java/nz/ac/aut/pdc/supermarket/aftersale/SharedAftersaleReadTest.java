@@ -75,6 +75,7 @@ public class SharedAftersaleReadTest {
                         "2026-10-01T00:00:00Z", "acc-1", "2026-10-01T00:00:00Z", null)),
                 RecordData.of("DOC_LINE", "SL-1",
                         new DocumentLine("SL-1", "S-1", "SALE", "6901234567890", 3)),
+                RecordData.of("SALE","S-1",java.util.Map.of()),
                 RecordData.of("SALE_LINE", "SL-1", new Pricing.SaleLineSnapshot(
                         "SL-1", "商品", new BigDecimal("8.00"), new BigDecimal("24.00"),
                         null, false, BigDecimal.ZERO, new BigDecimal("10.00"))),

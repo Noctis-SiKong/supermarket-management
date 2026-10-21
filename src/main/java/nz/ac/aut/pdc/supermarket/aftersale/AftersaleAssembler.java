@@ -24,7 +24,11 @@ public final class AftersaleAssembler {
             OriginalSaleLine original,
             AftersaleCommandLine line,
             BigDecimal amount) {
-        String redemptionId = idGenerator.nextId("RED");
+        return assembleRedemption(aftersaleId,requestKey,original,line,amount,idGenerator.nextId("RED"));
+    }
+
+    public Redemption assembleRedemption(String aftersaleId,String requestKey,OriginalSaleLine original,
+            AftersaleCommandLine line,BigDecimal amount,String redemptionId) {
         return new Redemption(
                 redemptionId,
                 redemptionId,

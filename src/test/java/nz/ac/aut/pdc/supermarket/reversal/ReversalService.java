@@ -21,6 +21,7 @@ import nz.ac.aut.pdc.supermarket.stock.StockPorts;
  * <p>D1：若存在引用原核销的后续记录，则拒绝直接冲销；本骨架只做只读检查，
  * 不自动级联重建。B 新增业务码 `DEPENDENCY_BLOCKED`/`REVERSAL_FAILED` 需通知 A 登记。</p>
  */
+/** Historical candidate-plan fixture only; real whole-document reversal is tested through FullRuntimeTest. */
 public final class ReversalService {
 
     private final RedemptionReader redemptionReader;

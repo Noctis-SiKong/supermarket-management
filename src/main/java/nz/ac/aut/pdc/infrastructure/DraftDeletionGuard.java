@@ -12,7 +12,7 @@ final class DraftDeletionGuard {
         DraftDeletion target = request.as(DraftDeletion.class);
         require(Objects.equals(op.targetId(),target.documentId()),"REFERENCE_INVALID");
         RecordData document = baseline.find("DOCUMENT",target.documentId()).orElseThrow(() -> new IllegalArgumentException("REFERENCE_INVALID"));
-        require(document.version() == target.expectedVersion(),"STALE_WORKING_COPY");
+        require(target.expectedVersion() == 0 || document.version() == target.expectedVersion(),"STALE_WORKING_COPY");
         require(document.data().path("status").asText().equals("DRAFT"),"INVALID_INPUT");
         require(!document.data().hasNonNull("confirmedAt") && !document.data().hasNonNull("confirmedBy"),"DRAFT_HAS_EFFECTS");
         require(changes.inserts().isEmpty() && changes.patches().isEmpty(),"INVALID_INPUT");

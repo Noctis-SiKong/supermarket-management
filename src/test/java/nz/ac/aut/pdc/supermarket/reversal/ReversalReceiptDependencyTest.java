@@ -39,8 +39,10 @@ public class ReversalReceiptDependencyTest {
         ChangeSet changes = assembler.assemble(
                 warehouseBaseline(false), "RCV-1", op, actor, request, ids);
 
+        Instant accepted=ids.now();
+        changes=nz.ac.aut.pdc.infrastructure.SubmissionTime.assign(baseline,changes,accepted);
         Result<Void> result = validator.validate(
-                op, actor, request, baseline, changes, Instant.now());
+                op, actor, request, baseline, changes, accepted);
 
         assertEquals(Result.Status.REJECTED, result.status());
         assertEquals("DEPENDENCY_BLOCKED", result.code());
@@ -54,8 +56,10 @@ public class ReversalReceiptDependencyTest {
         ChangeSet changes = assembler.assemble(
                 warehouseBaseline(false), "RCV-1", op, actor, request, ids);
 
+        Instant accepted=ids.now();
+        changes=nz.ac.aut.pdc.infrastructure.SubmissionTime.assign(baseline,changes,accepted);
         Result<Void> result = validator.validate(
-                op, actor, request, baseline, changes, Instant.now());
+                op, actor, request, baseline, changes, accepted);
 
         assertEquals(result.code(), Result.Status.VALUE, result.status());
     }
@@ -71,20 +75,21 @@ public class ReversalReceiptDependencyTest {
     private WorkingCopy warehouseBaseline(boolean laterOutflow) {
         List<RecordData> records = new ArrayList<>();
         records.add(RecordData.of("DOCUMENT", "RCV-1", new DocumentHeader(
-                "RCV-1", "RECEIPT", "CONFIRMED", "44444444-4444-4444-4444-444444444444",
+                "RCV-1", "RECEIPT", "APPROVED", "44444444-4444-4444-4444-444444444444",
                 "FP", "clerk", "2026-10-01T00:00:00Z", "clerk", "2026-10-01T00:00:00Z", null)));
         records.add(RecordData.of("DOC_LINE", "L1",
                 new DocumentLine("L1", "RCV-1", "RECEIPT", "00123456", 10)));
         records.add(RecordData.of("STOCK_ENTRY", "E1", new StockEntry(
                 "E1", "L1", StockEntry.Position.W, 10, "EV1", null, null, null, 1)));
         records.add(RecordData.of("DOCUMENT", "RCV-2", new DocumentHeader(
-                "RCV-2", "RECEIPT", "CONFIRMED", "55555555-5555-5555-5555-555555555555",
+                "RCV-2", "RECEIPT", "APPROVED", "55555555-5555-5555-5555-555555555555",
                 "FP", "clerk", "2026-10-02T00:00:00Z", "clerk", "2026-10-02T00:00:00Z", null)));
         records.add(RecordData.of("DOC_LINE", "L2",
                 new DocumentLine("L2", "RCV-2", "RECEIPT", "00123456", laterOutflow ? 3 : 5)));
         records.add(RecordData.of("STOCK_ENTRY", "E2", new StockEntry(
                 "E2", "L2", StockEntry.Position.W, laterOutflow ? -3 : 5,
                 "EV2", null, null, null, 2)));
+        records.add(RecordData.of("RECEIPT","RCV-1",new nz.ac.aut.pdc.supermarket.app.AOperations.Receipt("RCV-1","APPROVED")));
         return new WorkingCopy("wc-1", 2, records);
     }
 }

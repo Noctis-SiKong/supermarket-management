@@ -104,7 +104,7 @@ public class AftersaleDraftServiceTest {
                     .as(DocumentHeader.class);
             assertEquals("CANCELLED", header.status());
             assertEquals(1, state.records("DOC_EVENT").stream()
-                    .filter(r -> r.id().equals(draftId + "-READ")).count());
+                    .filter(r -> r.id().equals(ids.entityId(readOp.requestKey(),"aftersale-read"))).count());
             assertEquals(0, state.records("REDEMPTION").size());
             assertEquals(2, state.records("STOCK_ENTRY").size());
             assertEquals(1, state.records("MONEY_ENTRY").size());

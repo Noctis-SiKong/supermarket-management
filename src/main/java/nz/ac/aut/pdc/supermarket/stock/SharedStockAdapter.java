@@ -100,6 +100,15 @@ public final class SharedStockAdapter implements AOperations.StockDependency {
     public void validateRecovered(WorkingCopy state) throws IOException {
         Objects.requireNonNull(state, "state");
         try {
+            java.util.Map<StockValidator.BalanceKey,Integer> totals=new java.util.HashMap<>();
+            var groups=state.records("STOCK_ENTRY").stream().map(r -> r.as(StockEntry.class))
+                .collect(java.util.stream.Collectors.groupingBy(StockEntry::commitOrdinal,java.util.TreeMap::new,java.util.stream.Collectors.toList()));
+            for(var group:groups.values()) {
+                var lines=toLines(state,group);
+                var rejected=validator.validate(lines,totals);
+                if(rejected.isPresent()) throw new IllegalArgumentException("Invalid historical atomic stock group: "+rejected.get().code());
+                for(var line:lines) totals.merge(new StockValidator.BalanceKey(line.barcode(),line.position()),line.delta(),Math::addExact);
+            }
             SharedStockProjection.balanceMap(state);
         } catch (RuntimeException ex) {
             throw new IOException("B stock recovery check failed", ex);

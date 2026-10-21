@@ -35,7 +35,7 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
     private final Map<String, Handle> handles = new HashMap<>();
     private record Handle(WorkingCopy copy, String actor, String operation, String target) {}
     private Snapshot state;
-    private boolean closed;
+    private boolean closed, submitting;
 
     public JsonStore(DataRoot root, IdentityResolver identities, Map<String, CommitValidator> validators,
                      IntegrityValidator domainIntegrity) throws IOException {
@@ -97,12 +97,15 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
         try { return identities.resolve(op.sessionRef()); }
         catch (RuntimeException e) { return Result.failed("AUTH_TECHNICAL_FAILURE", "Identity verification unavailable"); }
     }
+    /** Internal service authentication; no credential hashes or CUI views returned. */
+    public synchronized Result<ActorContext> authenticate(OperationContext op) { return actor(op); }
     @Override public synchronized Result<WorkingCopy> open(OperationContext op) {
         Result<ActorContext> actor = actor(op); if (!actor.hasValue()) return actor.failure();
         WorkingCopy wc = baseline();
         handles.put(wc.workingCopyId(), new Handle(wc, actor.value().accountId(), op.operation(), op.targetId()));
         return Result.value(wc);
     }
+    public Result<AttachmentStore.Attachment> importAttachment(java.nio.file.Path source,String receiptId,int count) { return new AttachmentStore(root).importImage(source,receiptId,count); }
     /** Bootstrap inject this method only into B's auth implementation; never into CUI/business readers. */
     public synchronized List<Credential> authenticationView() {
         if (closed) throw new IllegalStateException("Store closed");
@@ -125,6 +128,8 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
     }
     @Override public synchronized Result<CommitReceipt> submit(OperationContext op, BusinessRequest request, WorkingCopy wc, ChangeSet changes) {
         Result<ActorContext> actor = actor(op); if (!actor.hasValue()) return actor.failure();
+        if(submitting) return Result.rejected("INVALID_INPUT","Nested submit is forbidden; return candidates to the coordinator");
+        submitting=true;
         try {
             Result<CommitReceipt> prior = lookup(op, request, actor.value());
             if (prior.status() != Result.Status.NOT_FOUND) return prior;
@@ -187,11 +192,11 @@ public final class JsonStore implements SubmissionPort, AutoCloseable {
             state = snapshot; handles.clear();
             return new Result<>(Result.Status.SUCCESS, receipt, null, null, null, null);
         } catch (IllegalArgumentException e) {
-            String code = Set.of("EVENT_CONFLICT", "STALE_WORKING_COPY", "REFERENCE_INVALID", "INVALID_DELETION_GROUP", "DRAFT_HAS_READ_TRACE", "DRAFT_HAS_EFFECTS").contains(e.getMessage()) ? e.getMessage() : "INVALID_INPUT";
+            String code = e.getMessage() != null && Set.of("EVENT_CONFLICT", "STALE_WORKING_COPY", "REFERENCE_INVALID", "INVALID_DELETION_GROUP", "DRAFT_HAS_READ_TRACE", "DRAFT_HAS_EFFECTS").contains(e.getMessage()) ? e.getMessage() : "INVALID_INPUT";
             return Result.rejected(code, "Invalid request, reference or candidate");
         } catch (IOException | RuntimeException e) {
             return Result.failed("PERSISTENCE_FAILED", "No commit installed; retain original request and query result before retry");
-        }
+        } finally { submitting=false; }
     }
     private void save(Snapshot snapshot) throws IOException {
         byte[] bytes = JsonCodec.write(snapshot).getBytes(StandardCharsets.UTF_8);

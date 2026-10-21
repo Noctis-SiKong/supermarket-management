@@ -34,10 +34,10 @@ import nz.ac.aut.pdc.supermarket.stock.StockService;
 import nz.ac.aut.pdc.supermarket.stock.StockValidator;
 
 /**
- * CUI 真实操作适配器：售后走 A JsonStore 的真实 open/submit；
- * 补货/报损尚无真实 ChangeSet 组装，明确返回未接线，不伪造成功。
+ * 完整 CUI 的统一业务适配器：所有提交只走 JsonStore。
+ * 报价、受限投影、原键重试与所有业务入口使用真实服务。
  */
-public final class SharedOperations implements Operations {
+public final class SharedOperations implements MaintenanceOperations {
 
     private final JsonStore store;
     private final IdClock idClock;
@@ -47,105 +47,175 @@ public final class SharedOperations implements Operations {
         this.idClock = Objects.requireNonNull(idClock, "idClock");
     }
 
+    private record Quoted(String actor,WorkingCopy wc,BusinessRequest request,ChangeSet delta) {}
+    private final Map<String,Quoted> quotes=new java.util.HashMap<>();
+    @Override public OperationFeedback quoteSale(CuiActor actor,List<nz.ac.aut.pdc.supermarket.app.AOperations.Item> items,String key) {
+        var context=new OperationContext(actor.session(),key,"SALE",null);
+        var identity=store.authenticate(context);if(!identity.hasValue())return OperationFeedback.fail(identity.code());
+        var a=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,s -> store.authenticate(new OperationContext(s,key,"SALE",null)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter());
+        var candidate=a.prepare(store,context,BusinessRequest.of(new nz.ac.aut.pdc.supermarket.app.AOperations.Sale(items,true)));
+        if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail());
+        var prepared=candidate.value();quotes.put(key,new Quoted(identity.value().accountId(),prepared.workingCopy(),prepared.request(),prepared.changes()));
+        var sale=prepared.changes().inserts().stream().filter(r -> r.table().equals("SALE")).findFirst().orElseThrow().as(nz.ac.aut.pdc.supermarket.app.AOperations.SaleRecord.class);
+        return OperationFeedback.ok("待确认报价："+sale.quote()+"；尚未收款或扣存；请求键 "+key);
+    }
+    @Override public OperationFeedback quoteAftersale(CuiActor actor,List<AftersaleRequest> lines,String key) {return aftersaleOnce(actor,lines,key,false);}
+    private record Pending(String accountId,java.util.function.Supplier<OperationFeedback> retry) {}
+    private final Map<String,Pending> pending=new java.util.HashMap<>();
+    private OperationFeedback remember(CuiActor actor,String key,java.util.function.Supplier<OperationFeedback> action) {
+        var identity=store.authenticate(new OperationContext(actor.session(),key,"AUTH",null));
+        if(!identity.hasValue()) return OperationFeedback.fail(identity.code());
+        pending.put(key,new Pending(identity.value().accountId(),action));
+        var result=action.get();
+        return new OperationFeedback(result.success(),result.message()+"；请求键 "+key);
+    }
+    @Override public OperationFeedback retry(CuiActor actor,String key) {
+        var identity=store.authenticate(new OperationContext(actor.session(),key,"AUTH",null));
+        var saved=pending.get(key);
+        if(!identity.hasValue() || saved==null || !saved.accountId().equals(identity.value().accountId()))
+            return OperationFeedback.fail("原请求不在本会话或不属于当前身份；请保留原键和原始业务输入，不换键盲目提交。");
+        return saved.retry().get();
+    }
+    @Override public OperationFeedback executeA(CuiActor actor,String kind,Object input,String key) {
+        String requestKey=key==null?idClock.newRequestKey():key;
+        OperationContext context=new OperationContext(actor.session(),requestKey,kind,null);
+        var opened=store.open(context); if(!opened.hasValue()) return OperationFeedback.fail(opened.code());
+        WorkingCopy wc=opened.value(); Object resolved=input;
+        if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.ProductPut p && p.expectedVersion()<0) {
+            if(wc.find("PRODUCT",p.product().barcode()).isEmpty())return OperationFeedback.fail("待修改商品不存在；新增请使用 new");
+            resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.ProductPut(p.product(),wc.find("PRODUCT",p.product().barcode()).map(nz.ac.aut.pdc.shared.RecordData::version).orElse(0L));
+        }
+        if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.PromotionPut p && p.expectedVersion()<0)
+            resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.PromotionPut(p.promotion(),wc.find("PROMOTION",p.promotion().promotionId()).map(nz.ac.aut.pdc.shared.RecordData::version).orElse(0L));
+        if(input instanceof nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptReview r && r.expectedVersion()==0) {
+            var record=wc.find("DOCUMENT",r.receiptId());
+            if(record.isEmpty()) return OperationFeedback.fail("收货单不存在");
+            resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptReview(r.receiptId(),record.get().version(),r.approve(),r.opinion(),r.attachments());
+        }
+        if(input instanceof MaintenanceOperations.ReceiptEdit edit) {
+            var document=wc.find("DOCUMENT",edit.receiptId()); if(document.isEmpty()) return OperationFeedback.fail("收货单不存在");
+            Map<String,nz.ac.aut.pdc.supermarket.app.AOperations.Item> rows=new java.util.LinkedHashMap<>();
+            int sequence=0;
+            for(var item:edit.items()) {
+                String id=wc.records("DOC_LINE").stream().filter(r -> r.data().path("documentId").asText().equals(edit.receiptId()) && r.data().path("barcode").asText().equals(item.barcode()) && !rows.containsKey(r.id()))
+                    .map(nz.ac.aut.pdc.shared.RecordData::id).sorted().findFirst().orElse(idClock.entityId(requestKey,"corrected:"+sequence++));
+                rows.put(id,item);
+            }
+            resolved=new nz.ac.aut.pdc.supermarket.app.AOperations.ReceiptCorrect(edit.receiptId(),document.get().version(),rows,edit.reason());
+        }
+        BusinessRequest request=BusinessRequest.of(resolved);
+        if(input instanceof nz.ac.aut.pdc.supermarket.stock.LossWorkflow.Request loss) {
+            var contextLoss=new OperationContext(actor.session(),requestKey,kind,loss.lossId());
+            return remember(actor,requestKey,() -> {
+                var prior=store.lookupResult(contextLoss,request); if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
+                var current=store.open(contextLoss);if(!current.hasValue())return OperationFeedback.fail(current.code());
+                var who=store.authenticate(contextLoss);if(!who.hasValue())return OperationFeedback.fail(who.code());
+                try {var delta=new nz.ac.aut.pdc.supermarket.stock.LossWorkflow().prepare(contextLoss,who.value(),loss,current.value(),idClock.now());
+                    return feedback(store.submit(contextLoss,request,current.value(),delta));}
+                catch(RuntimeException e){return OperationFeedback.fail("报损后续操作拒绝："+e.getMessage());}
+            });
+        }
+        var a=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,session -> store.authenticate(new OperationContext(session,requestKey,kind,null)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter());
+        return remember(actor,requestKey,() -> {
+            var prior=store.lookupResult(context,request);
+            if(prior.status()!=Result.Status.NOT_FOUND) return feedback(prior);
+            var quoted=quotes.get(requestKey);
+            if(quoted!=null) {
+                var identity=store.authenticate(context);
+                if(!identity.hasValue() || !quoted.actor().equals(identity.value().accountId()) || !quoted.request().equals(request))return OperationFeedback.fail("REQUEST_KEY_CONFLICT");
+                return feedback(store.submit(context,request,quoted.wc(),quoted.delta()));
+            }
+            var prepared=a.prepare(store,context,request);
+            if(!prepared.hasValue()) return OperationFeedback.fail(prepared.code()+" "+prepared.detail());
+            return feedback(store.submit(context,request,prepared.value().workingCopy(),prepared.value().changes()));
+        });
+    }
+    private OperationFeedback feedback(Result<SubmissionPort.CommitReceipt> result) {
+        return result.status()==Result.Status.SUCCESS ? OperationFeedback.ok("已提交："+result.value().requestKey()+"；单据／行凭证 "+result.value().resultIds())
+            : OperationFeedback.fail("未提交："+result.code()+" "+result.detail());
+    }
+    @Override public Result<nz.ac.aut.pdc.infrastructure.AttachmentStore.Attachment> attach(CuiActor actor,String source,String receiptId,int additional) {
+        var op=new OperationContext(actor.session(),idClock.newRequestKey(),"ATTACHMENT",receiptId);
+        var identity=store.authenticate(op); if(!identity.hasValue()) return identity.failure();
+        if(identity.value().role()!=OperationContext.Role.MANAGER && identity.value().role()!=OperationContext.Role.ADMIN) return Result.rejected("FORBIDDEN","Role cannot import receiving attachments");
+        var wc=store.open(op); if(!wc.hasValue()) return wc.failure();
+        int count=(int)wc.value().records("ATTACHMENT").stream().filter(r -> r.data().path("receiptId").asText().equals(receiptId)).count();
+        return store.importAttachment(java.nio.file.Path.of(source),receiptId,count+additional);
+    }
+    @Override public OperationFeedback inspect(CuiActor actor,String category,String id) {
+        var op=new OperationContext(actor.session(),idClock.newRequestKey(),"QUERY",id);
+        var identity=store.authenticate(op); if(!identity.hasValue()) return OperationFeedback.fail(identity.code());
+        var open=store.open(op); if(!open.hasValue()) return OperationFeedback.fail(open.code());
+        var wc=open.value(); StringBuilder out=new StringBuilder();
+        if(category.equals("QUOTA")) {
+            var allowed=new nz.ac.aut.pdc.supermarket.app.AOperations(idClock,session -> store.authenticate(new OperationContext(session,op.requestKey(),"QUERY",id)),new nz.ac.aut.pdc.supermarket.stock.SharedStockAdapter()).readSaleLine(op,wc,id);
+            if(!allowed.hasValue())return OperationFeedback.fail(allowed.code());
+            var query=new nz.ac.aut.pdc.supermarket.query.QueryService(new SharedSaleReader(wc),new SharedQuotaLedgerReader(wc),new QuotaViewBuilder());
+            var result=query.quotaView(id);
+            return result instanceof nz.ac.aut.pdc.supermarket.query.QueryResult.Value<?> value?OperationFeedback.ok(value.value().toString()):OperationFeedback.fail(result.toString());
+        }
+        if(category.equals("PRODUCT")) for(var r:wc.records("PRODUCT")) out.append(r.json()).append("\n");
+        else if(category.equals("PROMOTION")) for(var r:wc.records("PROMOTION")) out.append(r.json()).append("\n");
+        else if(category.equals("LOSS")) for(var r:wc.records("LOSS_RECORD")) {var loss=r.as(nz.ac.aut.pdc.supermarket.stock.LossRecord.class);var source=wc.find("DOC_LINE",loss.sourceLineId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);var owner=wc.find("DOCUMENT",source.documentId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentHeader.class);if(identity.value().role()==OperationContext.Role.CLERK && !owner.createdBy().equals(identity.value().accountId())) continue;out.append(nz.ac.aut.pdc.supermarket.stock.LossWorkflow.effective(wc,r.id())).append("\n");}
+        else if(category.equals("STOCK")) out.append(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(wc).balances(wc.records("PRODUCT").stream().map(nz.ac.aut.pdc.shared.RecordData::id).toList()));
+        else for(var r:wc.records("DOCUMENT")) {
+            var h=r.as(nz.ac.aut.pdc.shared.DocumentHeader.class);
+            if(identity.value().role()==OperationContext.Role.CLERK && !h.createdBy().equals(identity.value().accountId())) continue;
+            if(id!=null && !id.isBlank() && !id.equals(r.id())) continue;
+            out.append(h.documentId()).append(" ").append(h.kind()).append(" ").append(h.status()).append(" ").append(h.createdAt()).append("\n");
+            for(var line:wc.records("DOC_LINE")) if(line.data().path("documentId").asText().equals(h.documentId())) {
+                out.append(line.json()).append("\n");wc.find("SALE_LINE",line.id()).ifPresent(snapshot -> out.append(snapshot.json()).append("\n"));
+            }
+            for(var money:wc.records("MONEY_ENTRY")) if(money.data().path("documentId").asText().equals(h.documentId()))out.append(money.json()).append("\n");
+            for(var event:wc.records("DOC_EVENT")) if(event.data().path("documentId").asText().equals(h.documentId()))out.append(event.json()).append("\n");
+        }
+        return OperationFeedback.ok(out.length()==0?"没有当前身份可见的记录":out.toString());
+    }
+
     @Override
     public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
-        String requestKey = idClock.newRequestKey();
-        String documentId = idClock.entityId(requestKey, "document");
-        OperationContext operation = new OperationContext(
-                actor.session(), requestKey,
-                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT, documentId);
-        Result<WorkingCopy> opened = store.open(operation);
-        if (!opened.hasValue()) {
-            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
-        }
-        WorkingCopy workingCopy = opened.value();
-        SharedIdGenerator ids = new SharedIdGenerator(idClock, requestKey);
-        StockService stock = new StockService(new SharedProductCatalog(workingCopy), ids, new StockValidator());
-        var result = new nz.ac.aut.pdc.supermarket.stock.ReplenishmentService(stock, ids)
-                .replenish(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(workingCopy),
-                        List.of(), barcode, quantity);
-        if (!(result instanceof nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Prepared prepared)) {
-            if (result instanceof nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Rejected rejected) {
-                return OperationFeedback.fail("补货被拒绝：" + rejected.code() + " " + rejected.message());
-            }
-            var failed = (nz.ac.aut.pdc.supermarket.stock.ReplenishmentResult.Failed) result;
-            return OperationFeedback.fail("补货失败：" + failed.code() + " " + failed.message());
-        }
-        String lineId = ids.nextId("LINE");
-        OperationContext.ActorContext sharedActor =
-                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
-        BusinessRequest request = BusinessRequest.of(Map.of("barcode", barcode, "quantity", quantity));
-        var changes = new nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler()
-                .assembleReplenishment(prepared, documentId, lineId, operation, sharedActor, request);
-        Result<SubmissionPort.CommitReceipt> submitted = store.submit(
-                operation, request, workingCopy, changes);
-        if (!submitted.hasValue()) {
-            return OperationFeedback.fail("补货未提交：" + submitted.code() + " " + submitted.detail());
-        }
-        return OperationFeedback.ok("补货已提交：" + submitted.value().requestKey());
+        String key=idClock.newRequestKey();return remember(actor,key,() -> replenishOnce(actor,barcode,quantity,key));
+    }
+    private OperationFeedback replenishOnce(CuiActor actor,String barcode,int quantity,String requestKey) {
+        var original=BusinessRequest.of(Map.of("barcode",barcode,"quantity",quantity));
+        var prior=store.lookupResult(new OperationContext(actor.session(),requestKey,nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT,idClock.entityId(requestKey,"document")),original);
+        if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
+        return stockOnce(actor,requestKey,nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.REPLENISHMENT,original);
+    }
+    @Override public OperationFeedback recordLoss(CuiActor actor,String barcode,Position position,int quantity) {return OperationFeedback.fail("报损必须填写原因");}
+    @Override public OperationFeedback recordLoss(CuiActor actor,String barcode,Position position,int quantity,String reason) {
+        if(reason==null || reason.isBlank())return OperationFeedback.fail("报损必须填写原因");
+        String key=idClock.newRequestKey();return remember(actor,key,() -> {
+            var request=BusinessRequest.of(Map.of("barcode",barcode,"quantity",quantity,"position",position.name(),"reason",reason));
+            return stockOnce(actor,key,nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS,request);
+        });
+    }
+    private OperationFeedback stockOnce(CuiActor actor,String key,String kind,BusinessRequest request) {
+        var context=new OperationContext(actor.session(),key,kind,idClock.entityId(key,"document"));
+        var prior=store.lookupResult(context,request);if(prior.status()!=Result.Status.NOT_FOUND)return feedback(prior);
+        var identity=store.authenticate(context);if(!identity.hasValue())return OperationFeedback.fail(identity.code());
+        var opened=store.open(context);if(!opened.hasValue())return OperationFeedback.fail(opened.code());
+        var candidate=nz.ac.aut.pdc.supermarket.stock.StockBusiness.prepare(context,identity.value(),request,opened.value(),idClock);
+        if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail());
+        return feedback(store.submit(context,request,opened.value(),candidate.value()));
     }
 
-    @Override
-    public OperationFeedback recordLoss(CuiActor actor, String barcode, Position position, int quantity) {
-        String requestKey = idClock.newRequestKey();
-        String documentId = idClock.entityId(requestKey, "document");
-        OperationContext operation = new OperationContext(
-                actor.session(), requestKey,
-                nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler.LOSS, documentId);
-        Result<WorkingCopy> opened = store.open(operation);
-        if (!opened.hasValue()) {
-            return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());
-        }
-        WorkingCopy workingCopy = opened.value();
-        SharedIdGenerator ids = new SharedIdGenerator(idClock, requestKey);
-        StockService stock = new StockService(new SharedProductCatalog(workingCopy), ids, new StockValidator());
-        var result = new nz.ac.aut.pdc.supermarket.stock.LossService(stock, ids)
-                .recordLoss(new nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView(workingCopy),
-                        List.of(), barcode, position, quantity);
-        if (!(result instanceof nz.ac.aut.pdc.supermarket.stock.LossResult.Prepared prepared)) {
-            if (result instanceof nz.ac.aut.pdc.supermarket.stock.LossResult.Rejected rejected) {
-                return OperationFeedback.fail("报损被拒绝：" + rejected.code() + " " + rejected.message());
-            }
-            var failed = (nz.ac.aut.pdc.supermarket.stock.LossResult.Failed) result;
-            return OperationFeedback.fail("报损失败：" + failed.code() + " " + failed.message());
-        }
-        String lineId = ids.nextId("LINE");
-        OperationContext.ActorContext sharedActor =
-                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
-        BusinessRequest request = BusinessRequest.of(Map.of(
-                "barcode", barcode, "position", position.name(), "quantity", quantity));
-        var changes = new nz.ac.aut.pdc.supermarket.stock.StockChangeSetAssembler()
-                .assembleLoss(prepared, documentId, lineId, operation, sharedActor, request);
-        Result<SubmissionPort.CommitReceipt> submitted = store.submit(
-                operation, request, workingCopy, changes);
-        if (!submitted.hasValue()) {
-            return OperationFeedback.fail("报损未提交：" + submitted.code() + " " + submitted.detail());
-        }
-        return OperationFeedback.ok("报损已提交：" + submitted.value().requestKey());
+    @Override public OperationFeedback aftersale(CuiActor actor,AftersaleRequest request) {
+        return aftersaleBatch(actor,List.of(request),request.requestKey());
     }
-
-    @Override
-    public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
-        Objects.requireNonNull(actor, "actor");
-        Objects.requireNonNull(request, "request");
-        String finalKey = request.requestKey() == null || request.requestKey().isBlank()
-                ? idClock.newRequestKey() : request.requestKey();
-        String draftKey = derivedKey(finalKey, "draft");
-        String readKey = derivedKey(finalKey, "read");
-        String aftersaleId = idClock.entityId(finalKey, "aftersale");
-        OperationContext.ActorContext sharedActor =
-                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role()));
-        AftersaleDraftService drafts = new AftersaleDraftService(store);
-        OperationContext operation = new OperationContext(
-                actor.session(), finalKey, AftersaleChangeSetAssembler.OPERATION, aftersaleId);
-        AftersaleCommand command = new AftersaleCommand(
-                finalKey,
-                null,
-                List.of(new AftersaleCommandLine(
-                        request.saleLineId(), request.kind(), request.quantity(),
-                        request.opened(), request.qualityProblem(), request.reasonKind(),
-                        request.reasonText(), request.replacementBarcode(),
-                        request.replacementQuantity(), false)));
+    @Override public OperationFeedback aftersaleBatch(CuiActor actor,List<AftersaleRequest> lines,String requestKey) {
+        String key=requestKey==null?idClock.newRequestKey():requestKey;
+        return remember(actor,key,() -> aftersaleOnce(actor,lines,key,true));
+    }
+    private OperationFeedback aftersaleOnce(CuiActor actor,List<AftersaleRequest> lines,String finalKey,boolean commit) {
+        Objects.requireNonNull(actor,"actor");
+        String aftersaleId=idClock.entityId(finalKey,"aftersale");
+        var identity=store.authenticate(new OperationContext(actor.session(),finalKey,"AFTERSALE",aftersaleId));
+        if(!identity.hasValue())return OperationFeedback.fail(identity.code());
+        var sharedActor=identity.value();
+        OperationContext operation=new OperationContext(actor.session(),finalKey,AftersaleChangeSetAssembler.OPERATION,aftersaleId);
+        AftersaleCommand command=new AftersaleCommand(finalKey,null,lines.stream().map(request -> new AftersaleCommandLine(
+            request.saleLineId(),request.kind(),request.quantity(),request.opened(),request.qualityProblem(),request.reasonKind(),request.reasonText(),request.replacementBarcode(),request.replacementQuantity(),false)).toList());
         BusinessRequest finalRequest = BusinessRequest.of(command);
         Result<SubmissionPort.CommitReceipt> prior = store.lookupResult(operation, finalRequest);
         if (prior.status() != Result.Status.NOT_FOUND) {
@@ -155,47 +225,36 @@ public final class SharedOperations implements Operations {
             return OperationFeedback.fail("售后未提交：" + prior.code() + " " + prior.detail());
         }
 
-        OperationContext createOp = new OperationContext(
-                actor.session(), draftKey, AftersaleDraftOperations.CREATE, aftersaleId);
-        Result<SubmissionPort.CommitReceipt> created = drafts.create(createOp, sharedActor);
-        if (!created.hasValue()) {
-            return OperationFeedback.fail("售后草稿创建失败：" + created.code() + " " + created.detail());
+        var quoted=quotes.get(finalKey);
+        if(commit && quoted!=null) {
+            if(!quoted.actor().equals(sharedActor.accountId()) || !quoted.request().equals(finalRequest))return OperationFeedback.fail("REQUEST_KEY_CONFLICT");
+            return feedback(store.submit(operation,finalRequest,quoted.wc(),quoted.delta()));
         }
-
-        OperationContext readOp = new OperationContext(
-                actor.session(), readKey, AftersaleDraftOperations.READ, aftersaleId);
-        Result<WorkingCopy> draftCopy = store.open(readOp);
-        if (!draftCopy.hasValue()) {
-            return OperationFeedback.fail("读取售后草稿失败：" + draftCopy.code() + " " + draftCopy.detail());
+        var originals=new java.util.ArrayList<nz.ac.aut.pdc.shared.SaleLineSnapshot>();
+        var access=new nz.ac.aut.pdc.supermarket.sales.OriginalSaleAccess(
+            session -> store.authenticate(new OperationContext(session,finalKey,"AUTH",aftersaleId)),idClock,
+            new nz.ac.aut.pdc.supermarket.aftersale.AftersaleDraftAccess());
+        for(String lineId:lines.stream().map(AftersaleRequest::saleLineId).distinct().sorted().toList()) {
+            String readKey=derivedKey(finalKey,"read:"+lineId);
+            var readOp=new OperationContext(actor.session(),readKey,nz.ac.aut.pdc.shared.AftersaleReadRequest.OPERATION,aftersaleId);
+            var traced=access.readForAftersale(store,readOp,new nz.ac.aut.pdc.shared.AftersaleReadRequest(lineId,aftersaleId,List.of(lineId)));
+            if(!traced.hasValue())return OperationFeedback.fail("IF-11 未返回原单："+traced.code()+"；原键 "+finalKey+"；目标 "+aftersaleId);
+            originals.addAll(traced.value().lines());
         }
-        OriginalSaleLine original = new SharedSaleReader(draftCopy.value())
-                .readLine(request.saleLineId()).orElse(null);
-        if (original == null) {
-            return OperationFeedback.fail("原销售行不存在：" + request.saleLineId());
-        }
-        Result<SubmissionPort.CommitReceipt> traced = drafts.recordRead(readOp, sharedActor, original);
-        if (!traced.hasValue()) {
-            return OperationFeedback.fail("IF-11 读取追溯保存失败：" + traced.code() + " " + traced.detail());
-        }
-
         Result<WorkingCopy> openResult = store.open(operation);
         if (!openResult.hasValue()) {
             return OperationFeedback.fail("打开工作副本失败：" + openResult.code() + " " + openResult.detail());
         }
         WorkingCopy workingCopy = openResult.value();
-        SharedIdGenerator ids = new SharedIdGenerator(idClock, finalKey);
-        AftersaleService aftersaleService = new AftersaleService(
-                new SharedSaleReader(workingCopy),
-                new SharedQuotaLedgerReader(workingCopy),
-                new SharedProductSnapshotReader(workingCopy),
-                new StockService(new SharedProductCatalog(workingCopy), ids, new StockValidator()),
-                new QuotaViewBuilder(),
-                new QuotaCalculator(),
-                new QualityPairValidator(),
-                new AftersaleAssembler(ids),
-                ids);
+        AftersaleService aftersaleService=nz.ac.aut.pdc.supermarket.aftersale.AftersaleEngine.create(workingCopy,idClock,finalKey);
         AftersaleSubmissionService submission = new AftersaleSubmissionService(
                 aftersaleService, new AftersaleChangeSetAssembler(), store);
+        if(!commit) {
+            var candidate=submission.prepare(command,workingCopy,operation,sharedActor);
+            if(!candidate.hasValue())return OperationFeedback.fail(candidate.code()+" "+candidate.detail()+"；已读取草稿 "+aftersaleId+" 可取消");
+            var prepared=candidate.value();quotes.put(finalKey,new Quoted(sharedActor.accountId(),workingCopy,finalRequest,prepared.changes()));
+            return OperationFeedback.ok("原销售最少字段："+originals+"；本次结算："+prepared.summary().settlements()+"；售后尚未完成，目标 "+aftersaleId+"，原键 "+finalKey);
+        }
         Result<SubmissionPort.CommitReceipt> result = submission.submit(
                 command, workingCopy, operation, sharedActor);
         if (!result.hasValue()) {
@@ -249,7 +308,13 @@ public final class SharedOperations implements Operations {
                 || reason == null || reason.isBlank()) {
             return OperationFeedback.fail("冲销目标单和原因不能为空");
         }
-        String requestKey = idClock.newRequestKey();
+        return reverseDocument(actor,targetDocumentId,reason,idClock.newRequestKey());
+    }
+
+    public OperationFeedback reverseDocument(CuiActor actor,String targetDocumentId,String reason,String requestKey) {
+        return remember(actor,requestKey,() -> reverseOnce(actor,targetDocumentId,reason,requestKey));
+    }
+    private OperationFeedback reverseOnce(CuiActor actor,String targetDocumentId,String reason,String requestKey) {
         String target = targetDocumentId.trim();
         var command = new nz.ac.aut.pdc.supermarket.reversal.DocumentReversalCommand(
                 target, reason.trim(), requestKey);
@@ -257,6 +322,8 @@ public final class SharedOperations implements Operations {
         OperationContext operation = new OperationContext(
                 actor.session(), requestKey,
                 nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler.OPERATION, target);
+        var prior=store.lookupResult(operation,request);
+        if(prior.status()!=Result.Status.NOT_FOUND) return feedback(prior);
         Result<WorkingCopy> opened = store.open(operation);
         if (!opened.hasValue()) {
             return OperationFeedback.fail("打开工作副本失败：" + opened.code() + " " + opened.detail());

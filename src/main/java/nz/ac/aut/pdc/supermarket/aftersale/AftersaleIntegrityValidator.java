@@ -58,5 +58,55 @@ public final class AftersaleIntegrityValidator implements JsonStore.IntegrityVal
                 throw new IOException("Invalid MONEY_ENTRY amount: " + record.id());
             }
         }
+        try {
+            Set<String> released=new HashSet<>(),qualityPairs=new HashSet<>();
+            for(var r:view.records("REDEMPTION")) {
+                var value=r.as(Redemption.class);
+                if(!r.id().equals(value.redemptionId()) || value.quantity()<1 || value.quantity()>9999) throw new IllegalArgumentException("Invalid redemption identity/quantity");
+                var source=view.find("DOC_LINE",value.sourceLineId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);
+                var original= nz.ac.aut.pdc.supermarket.sales.OriginalSaleAccess.originalLine(view,value.originalSaleLineId()).orElseThrow();
+                if(!source.barcode().equals(value.originalBarcode()) || !original.barcode().equals(value.originalBarcode()) || source.quantity()!=value.quantity()) throw new IllegalArgumentException("Redemption source mismatch");
+                if(value.effect()==Effect.CONSUME && !source.documentId().equals(value.aftersaleId())) throw new IllegalArgumentException("Consumed source belongs to another document");
+                if(value.effect()==Effect.RELEASE) {
+                    var consume=view.find("REDEMPTION",value.reverseOfId()).orElseThrow().as(Redemption.class);
+                    if(!released.add(consume.redemptionId()) || consume.effect()!=Effect.CONSUME || consume.quantity()!=value.quantity() || consume.amount().compareTo(value.amount())!=0 || !consume.originalSaleLineId().equals(value.originalSaleLineId()) || !consume.aftersaleId().equals(value.aftersaleId())) throw new IllegalArgumentException("Invalid redemption release");
+                }
+            }
+            for(var r:view.records("SALE_LINE")) {
+                var line=new SharedSaleReader(view).readLine(r.id()).orElseThrow();
+                new QuotaViewBuilder().build(line,new SharedQuotaLedgerReader(view).effectiveFor(r.id()));
+            }
+            for(var r:view.records("REPLACEMENT")) {
+                var replacement=r.as(Replacement.class);
+                var source=view.find("DOC_LINE",r.id()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);
+                var redemption=view.find("REDEMPTION",replacement.redemptionId()).orElseThrow().as(Redemption.class);
+                if(!source.documentId().equals(replacement.aftersaleId()) || !source.barcode().equals(replacement.barcode()) || source.quantity()!=replacement.quantity()
+                    || replacement.replacementAmount().compareTo(replacement.unitPriceSnapshot().multiply(java.math.BigDecimal.valueOf(replacement.quantity())))!=0)
+                    throw new IllegalArgumentException("Replacement snapshot mismatch");
+                if(replacement.qualityRedemptionId()!=null) {
+                    if(!qualityPairs.add(replacement.qualityRedemptionId()) || new QualityPairValidator().validate(new SharedSaleReader(view).readLine(redemption.originalSaleLineId()).orElseThrow(),redemption,replacement).isPresent())
+                        throw new IllegalArgumentException("Invalid quality pair");
+                }
+            }
+            for(var document:view.records("AFTERSALE")) {
+                var consumes=view.records("REDEMPTION").stream().map(r -> r.as(Redemption.class)).filter(r -> r.aftersaleId().equals(document.id()) && r.effect()==Effect.CONSUME).toList();
+                if(consumes.isEmpty()) continue;
+                java.math.BigDecimal expected=java.math.BigDecimal.ZERO;
+                for(var consume:consumes) {
+                    var replacement=view.records("REPLACEMENT").stream().map(r -> r.as(Replacement.class)).filter(r -> consume.redemptionId().equals(r.redemptionId())).findFirst().orElse(null);
+                    if((consume.kind()==RedemptionKind.EXCHANGE)!=(replacement!=null))throw new IllegalArgumentException("Missing/unrelated replacement");
+                    var settlement=new SettlementCalculator().calculate(consume,replacement);
+                    if(settlement.direction()!=SettlementDirection.NONE)expected=expected.add(settlement.direction()==SettlementDirection.REFUND?settlement.amount().negate():settlement.amount());
+                }
+                var money=view.records("MONEY_ENTRY").stream().map(r -> r.as(MoneyEntry.class)).filter(r -> r.documentId().equals(document.id()) && r.reverseOfId()==null).map(MoneyEntry::amountSigned).reduce(java.math.BigDecimal.ZERO,java.math.BigDecimal::add);
+                if(money.compareTo(expected)!=0)throw new IllegalArgumentException("Aftersale net money mismatch");
+            }
+            for(var r:view.records("LOSS_RECORD")) {
+                var loss=r.as(nz.ac.aut.pdc.supermarket.stock.LossRecord.class);
+                var source=view.find("DOC_LINE",loss.sourceLineId()).orElseThrow().as(nz.ac.aut.pdc.shared.DocumentLine.class);
+                if(!loss.lossId().equals(r.id()) || !source.barcode().equals(loss.barcode()) || source.quantity()!=loss.quantity()) throw new IllegalArgumentException("Loss source mismatch");
+            }
+        } catch(RuntimeException e) {throw new IOException("Aftersale/loss recovery integrity invalid",e);}
+
     }
 }

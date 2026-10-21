@@ -29,15 +29,15 @@ public final class QuotaViewBuilder {
             int quantity = direction * redemption.quantity();
             BigDecimal amount = redemption.amount().multiply(BigDecimal.valueOf(direction));
             if (redemption.kind() == RedemptionKind.RETURN) {
-                returnedQty += quantity;
+                returnedQty = Math.addExact(returnedQty,quantity);
                 returnedAmount = returnedAmount.add(amount);
             } else {
-                exchangedQty += quantity;
+                exchangedQty = Math.addExact(exchangedQty,quantity);
                 exchangedAmount = exchangedAmount.add(amount);
             }
         }
 
-        int remainingQty = line.quantity() - returnedQty - exchangedQty;
+        int remainingQty = Math.subtractExact(Math.subtractExact(line.quantity(),returnedQty),exchangedQty);
         BigDecimal remainingAmount = line.paidAmount().subtract(returnedAmount).subtract(exchangedAmount);
         if (returnedQty < 0 || exchangedQty < 0 || remainingQty < 0
                 || returnedAmount.signum() < 0 || exchangedAmount.signum() < 0

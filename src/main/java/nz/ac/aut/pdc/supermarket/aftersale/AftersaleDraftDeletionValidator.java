@@ -57,6 +57,7 @@ public final class AftersaleDraftDeletionValidator implements SubmissionPort.Com
             return Result.rejected("REFERENCE_INVALID", "Draft document not found");
         }
         DocumentHeader header = documentRecord.as(DocumentHeader.class);
+        if(!"AFTERSALE".equals(header.kind()) || baseline.find("AFTERSALE",target.documentId()).isEmpty()) return Result.rejected("REFERENCE_INVALID","Target is not an aftersale draft");
         if (!"DRAFT".equals(header.status())) {
             return Result.rejected("INVALID_INPUT", "Only draft documents can be deleted");
         }
