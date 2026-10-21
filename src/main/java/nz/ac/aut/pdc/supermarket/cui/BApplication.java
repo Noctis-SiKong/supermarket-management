@@ -79,6 +79,11 @@ public final class BApplication implements AutoCloseable {
         return store;
     }
 
+    /** CUI 真实操作端口；售后已接 A open/submit，补货/报损仍显式未接线。 */
+    public Operations operations() {
+        return new SharedOperations(store);
+    }
+
     @Override
     public void close() throws IOException {
         store.close();

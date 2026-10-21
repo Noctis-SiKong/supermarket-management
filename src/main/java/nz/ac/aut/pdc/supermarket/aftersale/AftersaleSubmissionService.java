@@ -48,9 +48,13 @@ public final class AftersaleSubmissionService {
         if (prior.status() != Result.Status.NOT_FOUND) {
             return prior;
         }
+        if (operation.targetId() == null || operation.targetId().isBlank()) {
+            return Result.rejected("INVALID_INPUT", "Aftersale target document id required");
+        }
 
         AftersaleResult result = aftersaleService.apply(
-                new SharedWorkingCopyView(workingCopy), command, toRole(actor.role()));
+                new SharedWorkingCopyView(workingCopy), command, toRole(actor.role()),
+                operation.targetId());
         if (result instanceof AftersaleResult.Rejected rejected) {
             return Result.rejected(rejected.code(), rejected.message());
         }
@@ -61,8 +65,7 @@ public final class AftersaleSubmissionService {
         if (prepared.redemptions().isEmpty()) {
             return Result.rejected("INVALID_INPUT", "Aftersale prepared no redemption");
         }
-        String aftersaleId = prepared.redemptions().get(0).aftersaleId();
-        ChangeSet changes = assembler.assemble(prepared, aftersaleId, operation, actor, request);
+        ChangeSet changes = assembler.assemble(prepared, operation.targetId(), operation, actor, request);
         return store.submit(operation, request, workingCopy, changes);
     }
 

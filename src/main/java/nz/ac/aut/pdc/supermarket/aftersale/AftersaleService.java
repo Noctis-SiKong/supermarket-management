@@ -83,12 +83,22 @@ public final class AftersaleService {
 
     public AftersaleResult apply(
             StockPorts.WorkingCopyView workingCopy, AftersaleCommand command, Role actorRole) {
+        return apply(workingCopy, command, actorRole, idGenerator.nextId("AF"));
+    }
+
+    public AftersaleResult apply(
+            StockPorts.WorkingCopyView workingCopy,
+            AftersaleCommand command,
+            Role actorRole,
+            String aftersaleId) {
         Objects.requireNonNull(workingCopy, "workingCopy");
         Objects.requireNonNull(command, "command");
         Objects.requireNonNull(actorRole, "actorRole");
+        if (aftersaleId == null || aftersaleId.isBlank()) {
+            return new AftersaleResult.Rejected("INVALID_INPUT", "aftersaleId", "售后单号不能为空");
+        }
         try {
             Instant now = idGenerator.now();
-            String aftersaleId = idGenerator.nextId("AF");
             List<Redemption> redemptions = new ArrayList<>();
             List<Replacement> replacements = new ArrayList<>();
             List<AftersaleResult.StockEntryView> stockViews = new ArrayList<>();

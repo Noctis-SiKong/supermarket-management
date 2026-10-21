@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.15，2026-10-21（含 §6–§21 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配与 BApplication）
+版本/日期：v0.16，2026-10-21（含 §6–§22 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication 与 CUI 真实操作）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -164,3 +164,12 @@
 - 新增 `BApplicationTest`：临时项目根、真实 JSON 写入：B 登录 → A `open`（AFTERSALE target）→ 售后 ChangeSet + PRODUCT → A `submit` → `lookupResult` replayed。
 - 测试：合并树累计 **144 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI 真实 `Operations` 与 `Main`/pom 尚未接入；A 的 `DraftDeletionGuard` 仍由 A 执行；B 售后提交仍以手工 Prepared 构造测试。
+
+## 22. 2026-10-21 Stage 3h：CUI 真实操作与售后提交链
+
+- `CuiActor` 增加 `SessionRef`；`CuiApp` 登录后把 B 会话传给 CUI 操作。
+- 新增 `SharedOperations`：售后执行 `A JsonStore.open` → `AftersaleService`（Shared readers）→ `AftersaleSubmissionService` → A `submit`；补货/报损明确返回“尚未接线”。
+- 新增 `SharedProductCatalog`、`SharedIdGenerator`；`BApplication.operations()` 暴露 CUI 操作端口。
+- `AftersaleService` 增加带 `aftersaleId` 的重载；`AftersaleSubmissionService` 使用 `op.targetId()`，使 A 的 open/submit 目标一致。
+- 测试：`SharedIdGeneratorTest`(1)、`SharedProductCatalogTest`(1)；合并树累计 **146 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：CUI 还没有 `Main`/pom 入口，尚未把 `BApplication.operations()` 接到实际菜单启动；补货/报损 ChangeSet 未接线；售后完整 CUI 路径缺少带种子数据的集成测试。

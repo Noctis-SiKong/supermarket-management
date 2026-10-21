@@ -70,7 +70,7 @@ public final class CuiApp {
     }
 
     private void runMainMenu(AuthResult.Success session) {
-        CuiActor actor = new CuiActor(session.accountId(), session.role());
+        CuiActor actor = new CuiActor(session.accountId(), session.role(), session.session());
         while (true) {
             output.println();
             output.println("1) 补货   2) 店内报损   3) 售后   0) 退出登录");
