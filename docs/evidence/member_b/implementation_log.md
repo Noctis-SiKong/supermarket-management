@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.9，2026-10-21（含 §6–§15 增补、合并 main、CR07-10 与 IF-07 适配）
+版本/日期：v0.10，2026-10-21（含 §6–§16 增补、合并 main、CR07-10、IF-07 与六参校验器）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -118,3 +118,10 @@
 - 新增 `SharedStockAdapter`：实现 A `AOperations.StockDependency` 的 `prepare/review/validateRecovered`；接受 A `shared.StockEntry` 组，用 B `StockValidator` 校验后返回仅新增 `STOCK_ENTRY` 的 `ChangeSet`，不合并 overlay/不提交。
 - 测试：`SharedStockAdapterTest` 5 项；合并树累计 **125 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：`Result` 仅做直接映射；`STOCK_ENTRY` 只支持 inserts；提交/CommitValidator/认证/CUI 真实适配未做。
+
+## 16. 2026-10-21 Stage 3b：六参 CommitValidator 与草稿删除
+
+- 新增 `AftersaleDraftDeletionValidator`：实现 A `SubmissionPort.CommitValidator` 六参签名；校验 `AFTERSALE_DRAFT_DELETE` 的目标/草稿状态/创建者权限/读取追溯/生效影响/删除组形状；A `DraftDeletionGuard` 继续负责结构红线。
+- 新增 `SharedStockCommitValidator`：六参包装 `SharedStockAdapter.review`，供 B 的库存相关操作注册。
+- 测试：`AftersaleDraftDeletionValidatorTest` 5 项；合并树累计 **130 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 边界：校验器尚未注册到最终 B 装配；B 售后/冲销仍未产出完整 ChangeSet；认证/CUI 真实适配未做。
