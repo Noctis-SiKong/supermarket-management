@@ -21,6 +21,7 @@
 | 5 | 设计-类图 V1 真实 AI 评审 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 以资深从业者视角评审 V1，重点业务逻辑合理性与落地可行性，逐条意见写入 `docs/evidence/member_b/design_review.md` | 29 条评审意见（8 项 P0、11 项 P1、8 项 P2、2 项 P3）+ 最小修复集 + AC 覆盖风险表 | B 于 2026-10-20 完成逐条审批：20 采纳、7 修改后采纳、2 拒绝（R-04 售后资格策略类、R-27 图面排版）；逐条理由见 `design_review.md` §7；V2 按决定修改 |
 | 6 | 设计-类图 V2 修订 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max） | 按已完成的审批决定修改 V2 类图，并记录 V1→V2 演进与裁决 | `class_v2.mmd`（约 50 类：BusinessTransaction 模板、AftersaleCommand/Assembler、QuotaLedgerReader/ViewBuilder、Effect/RedemptionKind、SubmissionRequest、cui/auth、DependencyResult 等）；`design_evolution.md`（27 项变化、裁决记录、待 A 输入） | A 已审核并合入 main（`7216724`→`04abd6a`）；R-04/R-29 仍待 B 正式记录 |
 | 7 | 交接-共享规范 v1.02 同步 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 拉取 A 审核后的最新分支，核对共享接口规范 v1.02 并同步项目最新进展 | 识别 main `04abd6a` 新增 `docs/Shared_Boundaries_and_Interface_Spec.md` v1.02 与 README；列出 B 需适配的契约差异（IF-01/04/05/07/11、SessionRef/WorkingCopy/ChangeSet/三态结果、R-04/R-29、编码门、代码位置）；给出 B 下一步 P0/P1 与时间风险 | 要求本步同步必须留痕并记入 AI 日志；确认前不开始编码（R-04/R-29 口径仍待确认） |
+| 8 | 设计-R-04 执行口径与 IF-07 v0.3 | DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=high） | 以 A 的共享规范思路执行 R-04，并修订 IF-07 契约 v0.3 | R-04 按 A 规范 §8 确认：系统默认资格校验 + CR07-09 例外留痕、不抽策略类；IF-07 v0.3 对齐 §5.3（取消 source_locations、balances/check、overlay 只合并一次、三态）；同步更新 design_review/design_evolution/design_notes | 以 A 的想法执行（R-04 维持不抽策略类；系统简单校验+例外留痕；IF-07 按 §5.3 对齐） |
 
 对应证据：
 - #1 `docs/evidence/member_b/framework_repro.md`（2026-10-20）
@@ -30,6 +31,7 @@
 - #5 `docs/evidence/member_b/design_review.md`（2026-10-20）
 - #6 `docs/design/member_b/class_v2.mmd`、`docs/evidence/member_b/design_evolution.md`（2026-10-20）
 - #7 `docs/Shared_Boundaries_and_Interface_Spec.md`（v1.02）、`docs/design/member_b/design_notes.md` §8（2026-10-20 同步）
+- #8 `docs/design/member_b/if07_contract.md`（v0.3）、`docs/evidence/member_b/design_evolution.md`（v1.2）、`docs/design/member_b/design_notes.md` §8（2026-10-21）
 
 ## 待补（按阶段追加，不预先填写）
 

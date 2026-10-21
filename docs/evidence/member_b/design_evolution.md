@@ -68,35 +68,39 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 3. **R-23 解读**：返回按位置的余额列表，同时保留 `totalsAfter` 合计字段（满足"要有总余额显示逻辑"）。
 4. **R-15/R-16/R-21/R-25**：涉及 A 的 common/IF 契约，V2 先用占位类型/方法建模，待 A 确认后对齐；不改变已批准业务规则。
 5. **CR07-09 与 R-04 的关系**：R-04 拒绝的是"复杂资格策略类"；CR07-09 要求系统做默认拒绝、店长授权例外并留痕，因此 V2 保留简单资格判定（30 天/开封/质量）与例外字段/授权校验，不抽策略类。R-04 原理由中"售后逻辑完全人工"与 CR07-09 冲突，**以基线 CR07-09 为准**。
+6. **R-04 最终执行口径（按 A 共享规范 §8，2026-10-21 确认）**：B 选择"不抽策略类"；`AftersaleService` 内部简单方法执行默认资格校验（30 天本地日历、开封/质量默认规则）；CR07-09 例外经 `Session` 校验店长/管理员，并在售后单记录授权人/原因/放宽规则；数量/金额/库存校验不受例外影响。该口径与 CR07-09、BR-22/26、AC-19/33/47 一致，不再标"待 B 确认"。
+7. **V2 对共享规范 v1.02 的局部适配（不重画整套）**：`SessionRef`/`OperationContext` 替代裸 `operatorId`；`WorkingCopy` 由 IF-04 `open(op)` 取得，替代全局 `current()`；`ChangeSet` 只带本次增量，禁止整快照；结果用 `SUCCESS/REJECTED/FAILED` 三态（V2 `OperationResult` 作为内部适配）；`CustomerReturnLossRecorder` 只组装候选、不得调用 submit；普通 `Replacement.redemptionId` 仅内部关联，不作为公共必填 FK。
 
-## 4. 风险提示（需 B 确认）
+## 4. 风险提示
 
-- **R-04 口径（CR07-09 后）**：基线现要求"默认拒绝 + 店长授权资格个案例外 + 记录授权人/原因/放宽规则"（FR-07/08、BR-22/26、AC-19/33/47），且只放宽资格、不改数量/金额/库存校验。V2 采用简单资格校验 + 例外字段/授权校验，不抽策略类；若 B 本意是"售后完全人工、系统不判定资格"，则与 CR07-09 冲突，需按 Spec §17 处理。
+- **R-04 已确认（按 A 规范 §8）**：维持不抽策略类；系统必须做默认资格校验与 CR07-09 例外留痕；若实现成"系统不校验资格"则违反 BR-22/26、CR07-09、AC-19/33/47，须暂停该模块按 Spec §17 处理。
 - **渲染图集**：8 张分图已按修正重渲染并入库 `docs/design/member_b/v2/rendered/`（00 总体图的 customer-return 指向 `CustomerReturnLossRecorder`；02 售后详情含 CR07-09 例外字段与 Session 授权校验）。
 - **V2 规模**：约 50 个类/接口/枚举，单图较宽；报告可横向整页或用分图集；图面可读性（R-27）已拒绝，不再改图。
+- **共享规范 v1.02 与代码**：IF-01/04/05/07/11 契约已定稿；A 的 `src/main/java/nz/ac/aut/pdc/shared/` 公共代码尚未交付，B 先用替身实现/自测，真实联调待 A 交付。
 
-## 5. 待 A 提供/确认的输入（不阻塞 V2 设计，阻塞编码）
+## 5. 共享规范 v1.02 的状态
 
-| 项 | 用途 | 当前状态 |
-|---|---|---|
-| IF-03 稳定 ID/时钟契约 | 实体 ID 生成、排序 | 未取得 |
-| IF-04 快照读取/恢复 | baseLast、CommittedState 读取 | 未取得 |
-| IF-05 统一提交契约 | SubmissionRequest/幂等/失败可见性 | 未取得 |
-| IF-06 商品只读快照 | 商品/条码查询 | 未取得 |
-| IF-11 原销售读取+追溯方案 | locateByReceipt/读取追溯/失败取消语义 | 未取得 |
-| IF-16 DATA_ROOT | 附件/启动恢复（B 间接） | 未取得 |
-| common 单据头/行类型 | DocumentHeader/DocumentLine | 未取得 |
-| MONEY_ENTRY 归属 | MoneyEntry 类型归属 | 未取得 |
+| 项 | 状态 |
+|---|---|
+| IF-01 认证/SessionRef | 契约已定（规范 §3.1）；B 可实现 |
+| IF-04 WorkingCopy | 契约已定（§5.1）；A 实现待交付 |
+| IF-05 提交/lookupResult | 契约已定（§5.2）；A 实现待交付 |
+| IF-07 balances/check | 契约已定（§5.3）；B 需出 v0.3 修正草案 |
+| IF-11 readForAftersale | 契约已定（§5.4）；追溯方案局部未决 |
+| common 类型/MoneyEntry | 归属/位置已定（§3.3/§8）；A 代码待交付 |
+| 代码位置 | A：`shared/`、`infrastructure/`；B：`auth/cui/stock/aftersale/query/reversal` |
 
 ## 6. 下一步
 
-1. 已完成：8 张分图按 CR07-09/R-06 修正并入库 `docs/design/member_b/v2/rendered/`。
-2. B 评审 A 新增的 P1 用例图（`docs/P1用例图.svg`，A 提交 `0f3a6fe`），记录评审意见。
-3. 已推送分支 `member-b/design-v1-v2`（rebase 至 `7216724`，含 CR07-09 同步）；待开 PR 并由 A 确认 IF-07 §10 与 §5 的 A 侧输入。
-4. V2 冻结后进入 G-06 模块实现（B 三包先纯计算，再接 CUI/认证）；按交接包 §8 交 A 集中审计。
-5. 报告 §3.5/§3.6 使用 V2 + 本演进表；报告正文建议用图集 00 总体图，模块详情放附录/支撑材料。
+1. 已完成：8 张分图按 CR07-09/R-06 修正并入库。
+2. 待办：B 评审 A 的 P1 用例图（`docs/P1用例图.svg`）。
+3. 设计分支 `member-b/design-v1-v2` 已合入 main。
+4. 当前：修订 IF-07 契约 v0.3（对齐 §5.3）；记录 R-04 执行口径；完成 V2 局部适配说明。
+5. 接着：从 main 开 `member-b/implementation`，先实现 auth/cui + stock（替身测试），再 aftersale/query/reversal。
+6. 报告 §3.5/§3.6 使用 V2 + 本演进表；正文建议用图集 00 总体图，模块详情放附录/支撑材料。
 
 ## 7. 变更记录
 
 - v1（2026-10-20）：初建；27 项 V1→V2 变化 + 裁决记录。
 - v1.1（2026-10-20）：A 推送 CR07-09 与 P1 用例图后 rebase 到 `7216724`；新增 §0 基线同步与第 28 项变化；更新 R-04 口径、渲染图集状态与下一步。
+- v1.2（2026-10-21）：按 A 共享规范 v1.02 与 R-04 执行口径（简单校验 + CR07-09 例外留痕）更新；明确 V2 局部适配项与编码门。

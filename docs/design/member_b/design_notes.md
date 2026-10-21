@@ -79,4 +79,7 @@
 - 2026-10-20 晚：B 拉取 A 审核后的最新 main（`04abd6a`）。A 已把 B 设计分支合入 main，并发布 **`docs/Shared_Boundaries_and_Interface_Spec.md` v1.02**（正式共享契约）与 README 入口。
 - 共享规范对 B 的主要约束：IF-01 返回不可伪造 `SessionRef`；IF-04 用 `open(op)` 取得不可变 `WorkingCopy`；IF-05 用 `businessRequest`+requestKey+指纹+四态结果，并提供 `lookupResult`；IF-07 改为 `balances(wc, overlay, barcodes)` / `check(wc, overlay, changes)`，**删除"收货行→可用数量"的来源可用量**；IF-11 用 `readForAftersale(op, wc, voucher, aftersaleRef)`；公共类型由 A 在 `src/main/java/nz/ac/aut/pdc/shared/` 维护，B 只适配不复制。
 - B 下一步（P0）：确认并记录 R-04/R-29 口径（系统默认资格校验 + CR07-09 例外 + 留痕；内部简单校验，不抽策略类）；修订 IF-07 契约 v0.3 对齐 §5.3；V2 局部适配（SessionRef/WorkingCopy/三态结果；不重画整套）；从 main 开 `member-b/implementation` 分支，先做 auth/cui + stock 骨架与替身测试。
-- 编码门：V2 不要求整体冻结；受 R-04/R-29 影响的售后资格/编排待 B 本人确认；IF-11 真实跨人读取待 A 方案；其余接口明确模块可开始实现/自测。
+- 编码门：V2 不要求整体冻结；受 R-04/R-29 影响的售后资格/编排已按 A 规范 §8 确认；IF-11 真实跨人读取待 A 方案；其余接口明确模块可开始实现/自测。
+- 2026-10-21：R-04 执行口径确认（按 A 共享规范 §8）：维持不抽策略类；`AftersaleService` 内部简单方法做默认资格校验（30 天本地日历、开封/质量默认规则）；CR07-09 例外经 `Session` 校验店长/管理员并记录授权人/原因/放宽规则；数量/金额/库存校验不受例外影响。
+- 2026-10-21：IF-07 契约升 **v0.3**，对齐共享规范 §5.3：取消"收货行→可用数量"的 `source_locations`，改为 `balances(wc, overlay, barcodes)` / `check(wc, overlay, changes)`；overlay 只合并一次；结果三态；不嵌套提交。v0.2 中冲突表述失效。
+- 2026-10-21：共享规范 v1.02 已定 IF-01/04/05/07/11 契约与公共代码位置；A 的 `shared/`/`infrastructure/` 代码未交付，B 先用替身实现/自测。
