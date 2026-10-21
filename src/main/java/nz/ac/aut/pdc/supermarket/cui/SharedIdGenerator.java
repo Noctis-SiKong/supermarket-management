@@ -8,8 +8,7 @@ import nz.ac.aut.pdc.shared.IdClock;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /** Adapt A IdClock stable entity IDs within one operation.
- *
- * 在一次 A 操作内由 A IdClock 生成稳定实体 ID 的适配器。 */
+  */
 public final class SharedIdGenerator implements StockPorts.IdGenerator {
 
     private final IdClock idClock;

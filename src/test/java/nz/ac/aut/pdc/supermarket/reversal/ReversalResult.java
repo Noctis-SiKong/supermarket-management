@@ -3,8 +3,7 @@ package nz.ac.aut.pdc.supermarket.reversal;
 import java.util.Objects;
 
 /** Uncommitted reversal candidate result.
- *
- * 冲销候选结果（尚未提交）。 */
+  */
 public sealed interface ReversalResult
         permits ReversalResult.Prepared, ReversalResult.Rejected, ReversalResult.Failed {
 

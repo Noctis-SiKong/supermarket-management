@@ -4,8 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /** Read-only original-sale presentation view, never a mutable entity.
- *
- * 原销售行的只读展示视图（不暴露可写实体）。 */
+  */
 public record SaleLineView(
         String saleLineId,
         String barcode,

@@ -10,8 +10,7 @@ import nz.ac.aut.pdc.shared.WorkingCopy;
 import nz.ac.aut.pdc.supermarket.sales.Pricing;
 
 /** Read-only B original-sale adapter over A WorkingCopy.
- *
- * A WorkingCopy 上的 B 原销售行读取适配器。 */
+  */
 public final class SharedSaleReader implements OriginalSaleReader {
 
     private final WorkingCopy workingCopy;

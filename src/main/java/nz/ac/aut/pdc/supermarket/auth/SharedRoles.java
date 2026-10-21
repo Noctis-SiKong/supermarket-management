@@ -3,8 +3,7 @@ package nz.ac.aut.pdc.supermarket.auth;
 import nz.ac.aut.pdc.shared.OperationContext;
 
 /** Single mapping between B roles and shared role enums.
- *
- * B 角色与 A 共享角色枚举的唯一映射点。 */
+  */
 public final class SharedRoles {
 
     private SharedRoles() {

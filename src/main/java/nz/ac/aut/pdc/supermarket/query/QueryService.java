@@ -12,8 +12,7 @@ import nz.ac.aut.pdc.supermarket.aftersale.Redemption;
 import nz.ac.aut.pdc.supermarket.stock.LossRecord;
 
 /** Read-only original-line, quota, redemption-history and loss-record queries without submission.
- *
- * 查询骨架实现：原行、额度、核销历史、损耗记录。只读，不提交。 */
+  */
 public final class QueryService implements QueryOperations {
 
     private final OriginalSaleReader originalSaleReader;
@@ -33,8 +32,7 @@ public final class QueryService implements QueryOperations {
     }
 
     /** Compatibility constructor without loss-record reading.
- *
- * 兼容旧调用：无损耗记录读取能力。 */
+  */
     public QueryService(
             OriginalSaleReader originalSaleReader,
             QuotaLedgerReader quotaLedgerReader,

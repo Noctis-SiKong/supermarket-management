@@ -4,12 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 /** WP-03 candidate replenishment: paired W-minus-q/S-plus-q movements checked through IF-07. No submission; coordinator combines shared document facts and submits through IF-05.
- *
- *
- * 补货用例服务（WP-03）：组装 W−q / S+q 双腿变动，调用 IF-07 核对，返回候选。
- *
- * <p>本骨架不提交：真实 ChangeSet 还包含单据头/行等 A 公共类型；待 A 的
- * `shared/` 交付后由协调者统一经 IF-05 提交。</p>
  */
 public final class ReplenishmentService {
 

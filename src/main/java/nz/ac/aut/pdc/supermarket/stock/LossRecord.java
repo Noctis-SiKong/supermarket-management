@@ -3,12 +3,6 @@ package nz.ac.aut.pdc.supermarket.stock;
 import java.util.Objects;
 
 /** ERD loss facts: store loss deducts source stock once; customer returns create no stock movements here. Disposition/correction facts append later.
- *
- *
- * 损耗事实（店内报损骨架）。
- *
- * <p>门店报损会伴随一次来源位置扣减；顾客交回品不在此记录器内产生库存流水。
- * 字段与 ERD LOSS_RECORD 对齐，处置/修正后续追加。</p>
  */
 public record LossRecord(
         String lossId,
@@ -37,8 +31,7 @@ public record LossRecord(
     }
 
     /** Record disposition and switch to DISPOSED without saving/submitting.
- *
- * 记录处置结果，状态转为 DISPOSED；不保存、不提交。 */
+  */
     public LossRecord dispose(String disposition) {
         if (disposition == null || disposition.isBlank()) {
             throw new IllegalArgumentException("disposition must not be blank");

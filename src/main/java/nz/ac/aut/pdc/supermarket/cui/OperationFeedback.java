@@ -3,8 +3,7 @@ package nz.ac.aut.pdc.supermarket.cui;
 import java.util.Objects;
 
 /** Uniform menu feedback: outcome and presentation rendered in the current language.
- *
- * 菜单操作给用户的统一反馈（成功/失败 + 可读消息）。 */
+  */
 public record OperationFeedback(boolean success, String message, nz.ac.aut.pdc.supermarket.i18n.Texts.Display display) {
 
     public OperationFeedback(boolean success, String message) { this(success, message, null); }

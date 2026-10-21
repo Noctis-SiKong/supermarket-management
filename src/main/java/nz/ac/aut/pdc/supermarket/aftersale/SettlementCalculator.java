@@ -4,12 +4,6 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /** Pure settlement calculation: refund returns, refund/charge exchange differences, NONE for quality zero-difference. Produces candidates only; coordinator creates money facts and submits.
- *
- *
- * 售后结算纯计算：比较核销抵扣金额与替换品金额。
- *
- * <p>纯退货退核销金额；换货按差额退款/补收；质量同款零差为 NONE。
- * 不直接创建款项记录，只产生结算候选供协调者接入 A 的款项/提交边界。</p>
  */
 public final class SettlementCalculator {
 

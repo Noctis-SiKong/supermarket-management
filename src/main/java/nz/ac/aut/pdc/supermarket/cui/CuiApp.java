@@ -13,19 +13,12 @@ import nz.ac.aut.pdc.supermarket.auth.AuthService;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /** Complete P1 CUI for role-based business, quotation, history and original-key retry. Calls Operations only; authorized projections/feedback never expose WorkingCopy. Errors/exits follow FR-11.
- *
- *
- * 完整 P1 CUI：角色业务、报价确认、历史和原键重试。
- *
- * <p>菜单只调用 {@link Operations} 接口；统一运行适配器只返回授权投影和提交反馈，不暴露全量工作副本。交互错误反馈
- * 与退出路径遵循 FR-11。</p>
  */
 public final class CuiApp {
 
     private static final String EXIT_COMMAND = "exit";
     /** Menu text is independent of permissions; backend validation authorizes operations.
- *
- * 菜单文本与权限分离：只列出当前装配实际提供的能力，权限仍由后台校验。 */
+  */
     private final nz.ac.aut.pdc.supermarket.i18n.Texts texts;
     private final AuthService authService;
     private final Operations operations;
@@ -53,8 +46,7 @@ public final class CuiApp {
     }
 
     /** Login loop; exit leaves the program.
- *
- * 登录循环；输入 exit 退出程序。 */
+  */
     public void run() {
         output.println(texts.text("cui.003"));
         while (true) {
@@ -65,7 +57,6 @@ public final class CuiApp {
             }
             if (username.trim().equalsIgnoreCase("language")) { switchLanguage(); continue; }
             // Literal login keeps accounts named after navigation commands reachable.
-            // 原样登录入口保证与导航命令同名的既有账号仍可登录。
             if (username.trim().equalsIgnoreCase("login")) {
                 username = prompt(texts.text("language.literalUsername"));
                 if (username == null) return;

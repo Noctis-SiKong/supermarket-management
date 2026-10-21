@@ -6,11 +6,6 @@ import java.util.Objects;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /** Assemble validated aftersale redemption/replacement candidates and IDs; AftersaleService validates eligibility, quotas and stock.
- *
- *
- * 售后单据组装器：把已校验的输入组装为核销/替换品候选。
- *
- * <p>只做组装与 ID 申请；资格、额度、库存校验由 AftersaleService 调用对应组件完成。</p>
  */
 public final class AftersaleAssembler {
 

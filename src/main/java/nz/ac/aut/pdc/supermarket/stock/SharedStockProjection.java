@@ -12,12 +12,6 @@ import nz.ac.aut.pdc.shared.StockEntry;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
 /** Read-only stock projection: sourceLineId resolves through DOC_LINE to barcode; aggregate all stock facts without changing WorkingCopy or submitting.
- *
- *
- * A WorkingCopy → B 库存视图的只读投影。
- *
- * <p>A 的 STOCK_ENTRY 以 sourceLineId 关联 DOC_LINE，barcode 从 DOC_LINE 取得；
- * 余额由全部流水聚合。该类不写 WorkingCopy、不提交。</p>
  */
 final class SharedStockProjection {
 

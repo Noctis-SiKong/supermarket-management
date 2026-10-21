@@ -5,13 +5,6 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /** Pure quota calculation: HALF_UP(P * q / Q, 2) capped by remaining money; final settlement uses all remaining quantity/money (AC-46/79/80). No cross-line reallocation or uncommitted inputs.
- *
- *
- * 售后额度计算（纯函数）。
- *
- * <p>未结清：{@code HALF_UP(P × q ÷ Q, 2)}，并受剩余金额上限约束；
- * 结清：本次数量必须等于剩余数量，直接使用全部剩余金额（AC-46/79/80）。
- * 不跨原销售行重分摊，不读取当前未提交明细。</p>
  */
 public final class QuotaCalculator {
 

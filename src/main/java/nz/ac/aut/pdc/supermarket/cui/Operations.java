@@ -3,11 +3,6 @@ package nz.ac.aut.pdc.supermarket.cui;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /** CUI operation port implemented by SharedOperations with real shared IF-04/05; never exposes WorkingCopy to the CUI.
- *
- *
- * CUI 业务菜单的操作端口。
- *
- * <p>CUI 只依赖该接口，不直接依赖具体服务；由 SharedOperations 接真实 shared/IF-04/05；不把 WorkingCopy 暴露给 CUI。</p>
  */
 public interface Operations {
 

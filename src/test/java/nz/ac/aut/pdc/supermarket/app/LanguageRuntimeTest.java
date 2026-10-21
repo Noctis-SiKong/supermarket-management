@@ -18,7 +18,7 @@ import nz.ac.aut.pdc.supermarket.cui.*;
 import nz.ac.aut.pdc.supermarket.i18n.Texts;
 
 /** Real services and isolated files; the before-replace hook alone injects failure.
- * 真实服务与隔离文件，仅替换前故障钩子用于注入保存失败。 */
+  */
 public class LanguageRuntimeTest {
     @Rule public TemporaryFolder temp=new TemporaryFolder();
     private Application app; private RepositoryBIntegration integration; private SharedOperations ops;
@@ -147,7 +147,6 @@ public class LanguageRuntimeTest {
         for(String lang:List.of("en","zh")) {
             String text=feedback.render(new Texts(lang));assertFalse(text,text.contains(Texts.UNAVAILABLE));
             assertFalse(text,text.contains("{\""));assertFalse(text,text.contains("Quote["));
-            // Stored historical disposition text is data, not a UI resource. 历史处置原文不是界面词条。
             if(lang.equals("en"))assertFalse(text,Pattern.compile("[\\p{IsHan}]").matcher(text.replace("顾客交回待处置（不回库）","")).find());
         }
     }

@@ -19,14 +19,6 @@ import nz.ac.aut.pdc.supermarket.stock.StockOperations;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /** CR07-10 candidate orchestration: strict eligibility, quotas, redemptions/replacements, IF-07 stock and settlement; never saves. Reject over-30-day and opened non-quality items; reasons do not relax rules.
- *
- *
- * 售后编排（CR07-10）：资格严格判定 -> 额度/金额 -> 核销/替换候选
- * -> 替换品 IF-07 库存核对 -> 结算候选。不保存、不提交。
- *
- * <p>不设店长资格例外：超 30 天一律拒绝；已开封非质量一律拒绝；
- * 质量原因仅允许 qualityProblem=true；其他原因必须填写 reasonText。原因文本
- * 不改变 30 天、开封/质量、数量/金额/库存校验。</p>
  */
 public final class AftersaleService {
 
@@ -68,8 +60,7 @@ public final class AftersaleService {
     }
 
     /** Compatibility constructor using the default settlement calculator.
- *
- * 兼容旧调用：默认结算计算器。 */
+  */
     public AftersaleService(
             OriginalSaleReader originalSaleReader,
             QuotaLedgerReader quotaLedgerReader,

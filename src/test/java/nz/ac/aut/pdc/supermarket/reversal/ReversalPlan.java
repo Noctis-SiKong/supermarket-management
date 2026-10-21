@@ -7,11 +7,6 @@ import nz.ac.aut.pdc.supermarket.aftersale.Redemption;
 import nz.ac.aut.pdc.supermarket.stock.StockEntry;
 
 /** Uncommitted reversal plan: RELEASE facts plus reverse stock candidates; generated only after D1 validation.
- *
- *
- * 冲销计划：释放原核销的 RELEASE 事实 + 反向库存候选流水。
- *
- * <p>仅计划，未提交；D1 依赖检查通过后才允许生成。</p>
  */
 public record ReversalPlan(
         String originalRedemptionId,

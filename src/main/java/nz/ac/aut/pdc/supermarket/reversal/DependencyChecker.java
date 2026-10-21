@@ -9,12 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 
 /** Pure D1 traversal from a redemption: reachable downstream references block direct reversal; cycles indicate invalid data. No reads/commits; used by the historical ReversalService and tests.
- *
- *
- * D1 依赖图分析（纯函数）：从原核销出发找出所有后续引用，并检测环。
- *
- * <p>只要存在可达的后续引用，就应阻断直接冲销；环提示数据/引用关系异常。
- * 本类不读取数据、不提交，供 ReversalService 与测试使用。</p>
  */
 public final class DependencyChecker {
 
@@ -75,8 +69,7 @@ public final class DependencyChecker {
     }
 
     /** Dependency outcome; blockingIds identifies affected downstream records when direct reversal is blocked.
- *
- * 依赖分析结果；blockingIds 为不可直接冲销时会受影响的后续记录。 */
+  */
     public record DependencyDecision(
             boolean blocked, List<String> blockingIds, boolean cycleDetected) {
         public DependencyDecision {

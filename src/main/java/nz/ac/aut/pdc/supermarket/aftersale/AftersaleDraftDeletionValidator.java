@@ -16,12 +16,6 @@ import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
 /** B validates permissions, business deletability, read traces and candidate shape; A guards versions, complete deletion groups and reference closure. Six arguments follow v1.0.4.
- *
- *
- * B 主责的售后草稿整组删除校验器（AFTERSALE_DRAFT_DELETE）。
- *
- * <p>A 的 DraftDeletionGuard 负责 DRAFT/版本/闭合组/引用红线；本类补 B 侧
- * 角色、草稿可删性、读取追溯与变更组形状检查。六参签名必须与 v1.0.4 一致。</p>
  */
 public final class AftersaleDraftDeletionValidator implements SubmissionPort.CommitValidator {
 

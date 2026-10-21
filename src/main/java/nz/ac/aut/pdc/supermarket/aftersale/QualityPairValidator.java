@@ -4,13 +4,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 /** CR07-01/AC-58/82 quality pairing requires qualityProblem, EXCHANGE consumption, current redemption reference, identical barcode/quantity and zero replacement-versus-credit difference.
- *
- *
- * 质量同款同数量零差换货的配对校验（CR07-01/AC-58/82）。
- *
- * <p>校验通过的必要条件：qualityProblem=true、同业务类型换货占用、
- * qualityRedemptionId 指向本次核销、原/替换品条码相同、数量相同、
- * 替换品金额与原商品抵扣金额差额为 0。</p>
  */
 public final class QualityPairValidator {
 

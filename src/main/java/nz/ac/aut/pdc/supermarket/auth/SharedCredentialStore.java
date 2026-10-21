@@ -9,8 +9,7 @@ import nz.ac.aut.pdc.infrastructure.JsonStore;
 import nz.ac.aut.pdc.shared.OperationContext;
 
 /** Read-only adapter from A authentication credentials view to B CredentialStore.
- *
- * A 认证专用 credentials 视图 → B CredentialStore 的只读适配器。 */
+  */
 public final class SharedCredentialStore implements CredentialStore {
 
     private final Supplier<List<JsonStore.Credential>> authenticationView;

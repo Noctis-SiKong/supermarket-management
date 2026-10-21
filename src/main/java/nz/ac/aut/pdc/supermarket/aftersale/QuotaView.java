@@ -3,12 +3,6 @@ package nz.ac.aut.pdc.supermarket.aftersale;
 import java.math.BigDecimal;
 
 /** Derived quota: returned Qr/Mr and exchanged Qx/Mx consume original quotas. Rebuild from facts; never maintain independent refundable balances.
- *
- *
- * 原销售行的额度视图（派生自原行快照 + 已提交有效核销）。
- *
- * <p>Qr/Mr = 退货占用；Qx/Mx = 换货占用；剩余额度 = 初始额度 − 已占用。
- * QUOTA_VIEW 必须能由事实重建，不允许各模块维护独立"可退金额"。</p>
  */
 public record QuotaView(
         String saleLineId,

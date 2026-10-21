@@ -6,8 +6,7 @@ import java.util.Objects;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
 /** Read-only B redemption-history adapter over A WorkingCopy.
- *
- * A WorkingCopy 上的 B 核销历史读取适配器。 */
+  */
 public final class SharedQuotaLedgerReader implements QuotaLedgerReader {
 
     private final WorkingCopy workingCopy;

@@ -4,12 +4,6 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /** Immutable ERD redemption: CR07-10 reasons per line without manager exceptions; RELEASE links to its original through reverseOfId.
- *
- *
- * 原销售行的一次核销明细（ERD REDEMPTION 的 B 侧不可变模型）。
- *
- * <p>CR07-10：不保存店长资格例外字段；质量/其他原因按明细记录，其他原因文本存
- * reasonText。RELEASE 必须通过 reverseOfId 指向被释放的原核销。</p>
  */
 public record Redemption(
         String redemptionId,
@@ -52,8 +46,7 @@ public record Redemption(
     }
 
     /** Compatibility constructor without reason text.
- *
- * 兼容旧调用：无原因文本。 */
+  */
     public Redemption(
             String redemptionId,
             String sourceLineId,

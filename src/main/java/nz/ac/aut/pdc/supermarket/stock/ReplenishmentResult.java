@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /** Uncommitted replenishment outcome; never allocates commitOrdinal.
- *
- * 补货用例的候选结果（尚未提交；不分配 commitOrdinal）。 */
+  */
 public sealed interface ReplenishmentResult
         permits ReplenishmentResult.Prepared, ReplenishmentResult.Rejected, ReplenishmentResult.Failed {
 

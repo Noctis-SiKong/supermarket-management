@@ -11,8 +11,7 @@ import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 
 /** B six-argument CommitValidator rechecks complete stock candidates under A's lock.
- *
- * B 的六参 CommitValidator：在 A 的锁内复核完整候选中的 STOCK_ENTRY。 */
+  */
 public final class SharedStockCommitValidator implements SubmissionPort.CommitValidator {
 
     private final SharedStockAdapter stockAdapter;

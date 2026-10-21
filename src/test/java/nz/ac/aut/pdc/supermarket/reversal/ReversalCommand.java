@@ -3,8 +3,7 @@ package nz.ac.aut.pdc.supermarket.reversal;
 import java.util.Objects;
 
 /** Historical reversal command: target redemption, reason and original request key.
- *
- * 冲销命令（骨架）：目标核销 + 原因 + 请求键。 */
+  */
 public record ReversalCommand(String requestKey, String redemptionId, String reason) {
 
     public ReversalCommand {

@@ -17,10 +17,7 @@ import nz.ac.aut.pdc.shared.WorkingCopy;
 /** Assemble validated candidates into the shared tables without saving; stable IDs are supplied here and IF-05 assigns commitOrdinal from zero.
  *
  *
- * 把已校验的售后候选组装为 A 的统一 ChangeSet。
  *
- * <p>只组装，不保存/不提交；ID 由 B 侧稳定生成，commitOrdinal=0 由 IF-05 赋。
- * 表名/字段按 A handoff 与共享规范：DOCUMENT/AFTERSALE/DOC_LINE/DOC_EVENT/
  * REDEMPTION/REPLACEMENT/STOCK_ENTRY/MONEY_ENTRY。</p>
  */
 public final class AftersaleChangeSetAssembler {
@@ -53,8 +50,7 @@ public final class AftersaleChangeSetAssembler {
     }
 
     /** For existing DRAFT, patch DOCUMENT and append facts without duplicate headers/extensions.
- *
- * 对已存在 DRAFT 的售后：补丁 DOCUMENT + 追加业务事实，不重复插入 DOCUMENT/AFTERSALE。 */
+  */
     public ChangeSet assembleForDraft(
             AftersaleResult.Prepared prepared,
             String aftersaleId,

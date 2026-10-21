@@ -13,8 +13,7 @@ import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
 
 /** Assemble replenishment/loss candidates into the shared ChangeSet without submission.
- *
- * B 补货/报损候选 → A 统一 ChangeSet；只组装，不提交。 */
+  */
 public final class StockChangeSetAssembler {
 
     public static final String REPLENISHMENT = "REPLENISHMENT";

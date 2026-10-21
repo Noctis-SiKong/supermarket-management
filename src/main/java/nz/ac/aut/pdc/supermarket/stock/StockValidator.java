@@ -7,12 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Pure IF-07 rules: quantity, positions, paired-transfer conservation and nonnegative source balances; supplied balances only, no external reads/saving.
- *
- *
- * IF-07 的纯规则校验器：数量边界、位置、补货双腿守恒、来源位置非负。
- *
- * <p>只做规则判断，不读外部数据、不保存；工作副本余额由调用方传入，
- * 便于用虚构夹具做边界单测。</p>
  */
 public final class StockValidator {
 
@@ -20,11 +14,6 @@ public final class StockValidator {
     public static final int MAX_QUANTITY = 9999;
 
     /** Check complete movements against product/position balances (missing=zero); first rejection or empty.
- *
- *
-     * @param changes        本次完整变动组
-     * @param balancesBefore 调用前各（商品, 位置）余额；缺失按 0 处理
-     * @return 第一条拒绝原因；全部通过返回 empty
      */
     public Optional<StockRejection> validate(
             List<StockChangeLine> changes, Map<BalanceKey, Integer> balancesBefore) {
@@ -100,8 +89,7 @@ public final class StockValidator {
     }
 
     /** Product/position validation key.
- *
- * 校验器使用的（商品, 位置）键。 */
+  */
     public record BalanceKey(String barcode, Position position) {
         public BalanceKey {
             if (barcode == null || barcode.isBlank()) {
@@ -114,8 +102,7 @@ public final class StockValidator {
     }
 
     /** Rejection with a stable shared section 4 error code.
- *
- * 校验拒绝原因；code 使用共享规范 §4 的稳定错误码。 */
+  */
     public record StockRejection(String code, String field, String message) {
     }
 }

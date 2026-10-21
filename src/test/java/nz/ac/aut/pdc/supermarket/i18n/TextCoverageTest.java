@@ -19,7 +19,6 @@ import org.junit.Test;
 /**
  * Guards the display vocabulary: every value the CUI can print as a label and every
  * projected field name must resolve in both languages.
- * 守护展示词汇：CUI 可能打印的每个标签值与投影字段名，在两种语言下都必须可解析。
  */
 public class TextCoverageTest {
     private static final List<String> STATUSES = List.of(

@@ -12,11 +12,6 @@ import nz.ac.aut.pdc.supermarket.auth.SharedRoles;
 import nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView;
 
 /** Query the idempotent result first, prepare B candidates/shared ChangeSet and submit through IF-05; no file writes or nested submit.
- *
- *
- * 售后提交入口：B 业务候选 → A 统一 ChangeSet → IF-05 提交。
- *
- * <p>先做 lookupResult 幂等查询再组装，符合 IF-05 单写者约定；不写文件、不嵌套 submit。</p>
  */
 public final class AftersaleSubmissionService {
 

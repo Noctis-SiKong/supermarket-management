@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import nz.ac.aut.pdc.shared.JsonCodec;
 
 /** Process-local presentation state only; never passed to business requests.
- * 仅保存当前进程的展示状态，不传入业务请求。 */
+  */
 public final class Texts {
     public static final String UNAVAILABLE = "TEXT_UNAVAILABLE Text unavailable.";
     private final Map<String,String> english;
@@ -16,7 +16,7 @@ public final class Texts {
 
     public Texts(String language) { this(language, load("en"), load("zh")); }
     /** Explicit resource injection supports observable missing-text tests.
-     * 显式注入资源用于验证可观察的缺词行为。 */
+      */
     public Texts(String language, Map<String,String> english, Map<String,String> chinese) {
         this.english = Map.copyOf(english); this.chinese = Map.copyOf(chinese); select(language);
     }
@@ -40,7 +40,6 @@ public final class Texts {
     }
     public String inputError(String message) {
         // Match known system validation strings only, never business/user data.
-        // 仅匹配已知校验文本，绝不拿用户或历史数据查词典。
         for (String key : english.keySet()) if (key.startsWith("validation.") &&
                 (Objects.equals(message, chinese.get(key)) || Objects.equals(message, english.get(key)))) return text(key);
         if (message != null && message.matches("[A-Z][A-Z0-9_]*")) return error(message);
@@ -52,7 +51,7 @@ public final class Texts {
         Object[] copy = args.clone(); return texts -> texts.text(key, copy);
     }
     /** Freeze an authorised projection and render labelled fields, not JSON/toString.
-     * 固定已授权投影，以字段标签展示，不输出 JSON 或对象 toString。 */
+      */
     public static Display data(Object value) {
         JsonNode frozen = JsonCodec.tree(JsonCodec.write(value));
         return texts -> texts.fields(frozen, "", "");

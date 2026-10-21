@@ -6,8 +6,7 @@ import java.util.Objects;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /** Uncommitted aftersale candidate result.
- *
- * 售后编排的候选结果（尚未提交）。 */
+  */
 public sealed interface AftersaleResult
         permits AftersaleResult.Prepared, AftersaleResult.Rejected, AftersaleResult.Failed {
 
@@ -39,8 +38,7 @@ public sealed interface AftersaleResult
     }
 
     /** Use minimal read-only stock projections instead of exposing stock entities across the aftersale boundary.
- *
- * 为避免 aftersale 直接暴露 stock 实体，用最小只读视图承载候选流水。 */
+  */
     record StockEntryView(
             String id,
             String barcode,

@@ -36,10 +36,6 @@ import nz.ac.aut.pdc.supermarket.stock.StockService;
 import nz.ac.aut.pdc.supermarket.stock.StockValidator;
 
 /** Unified real CUI adapter: all commits through JsonStore; quotes, authorized projections, original-key retry and business operations use real services.
- *
- *
- * 完整 CUI 的统一业务适配器：所有提交只走 JsonStore。
- * 报价、受限投影、原键重试与所有业务入口使用真实服务。
  */
 public final class SharedOperations implements MaintenanceOperations {
 

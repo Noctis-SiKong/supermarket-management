@@ -4,11 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 /** WP-03 store loss deducts source stock once and prepares loss/stock facts. Customer returns have no stock position or current-stock deduction here; no submission.
- *
- *
- * 店内报损用例服务（WP-03）：按来源位置扣减一次，生成 LossRecord 与候选流水。
- *
- * <p>顾客交回品不在此处理（无库存位置、不得扣减现货）。本骨架不提交。</p>
  */
 public final class LossService {
 

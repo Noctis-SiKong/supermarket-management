@@ -22,8 +22,7 @@ import nz.ac.aut.pdc.shared.WorkingCopy;
 import static org.junit.Assert.assertEquals;
 
 /** AC-52/83 block dependent warehouse deductions; AC-84 does not block unrelated later positive receipts.
- *
- * AC-52/AC-83 的 W− 依赖阻断与 AC-84 的后续正收货不阻断。 */
+  */
 public class ReversalReceiptDependencyTest {
 
     private final IdClock ids = new IdClock(

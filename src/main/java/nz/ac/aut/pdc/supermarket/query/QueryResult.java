@@ -3,8 +3,7 @@ package nz.ac.aut.pdc.supermarket.query;
 import java.util.Objects;
 
 /** Read-only query outcomes: VALUE, REJECTED or FAILED.
- *
- * 只读查询结果三态：VALUE / REJECTED / FAILED。 */
+  */
 public sealed interface QueryResult<T>
         permits QueryResult.Value, QueryResult.Rejected, QueryResult.Failed {
 

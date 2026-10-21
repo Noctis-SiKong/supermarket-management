@@ -13,14 +13,12 @@ public final class Main {
     private Main() {}
     public static void main(String[] args) {
         // Windows console encoding can override file.encoding; keep the CUI streams explicitly UTF-8.
-        // Windows 控制台编码可能覆盖 file.encoding，故显式使用 UTF-8 展示流。
         System.exit(run(args,new PrintStream(System.out,true,StandardCharsets.UTF_8),new PrintStream(System.err,true,StandardCharsets.UTF_8)));
     }
     public static int run(String[] args,PrintStream out,PrintStream err) {
         Texts texts = new Texts("en");
         try {
             // Language applies to help too; do not reinterpret values of existing options.
-            // 语言也作用于帮助，但不把既有参数的值重新解释成选项。
             for (int i=0;i<args.length;i++) {
                 if (args[i].equals("--lang")) {
                     if (++i==args.length || (!args[i].equals("en") && !args[i].equals("zh"))) {

@@ -15,13 +15,6 @@ import nz.ac.aut.pdc.supermarket.stock.StockOperations;
 import nz.ac.aut.pdc.supermarket.stock.StockPorts;
 
 /** Historical WP-06 prototype: authorize, check D1 dependencies/repeated reversals, then prepare RELEASE and reverse stock facts. No persistence or automatic cascading; DEPENDENCY_BLOCKED/REVERSAL_FAILED require shared-code registration.
- *
- *
- * 冲销编排骨架（WP-06）：高权限校验 → D1 依赖/重复冲销检查 → 生成 RELEASE
- * 核销与反向库存候选。不保存、不提交。
- *
- * <p>D1：若存在引用原核销的后续记录，则拒绝直接冲销；本骨架只做只读检查，
- * 不自动级联重建。B 新增业务码 `DEPENDENCY_BLOCKED`/`REVERSAL_FAILED` 需通知 A 登记。</p>
  */
 /** Historical candidate-plan fixture only; real whole-document reversal is tested through FullRuntimeTest. */
 public final class ReversalService {

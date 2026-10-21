@@ -6,12 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
 /** Existing SHA-256 retained under v3; reuse the algorithm/PasswordHasher contract with the unified credential view.
- *
- *
- * 现有 SHA-256 本地密码哈希实现（v3 要求保留）。
- *
- * <p>本次复用原有算法，接统一存储凭证视图；未重写认证，
- * 保持 {@link PasswordHasher} 契约。</p>
  */
 public final class Sha256PasswordHasher implements PasswordHasher {
 
