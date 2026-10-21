@@ -1,0 +1,230 @@
+package nz.ac.aut.pdc.supermarket.aftersale;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import nz.ac.aut.pdc.supermarket.auth.Role;
+import nz.ac.aut.pdc.supermarket.fixture.FakeIdGenerator;
+import nz.ac.aut.pdc.supermarket.fixture.FakeProductCatalog;
+import nz.ac.aut.pdc.supermarket.fixture.FakeWorkingCopy;
+import nz.ac.aut.pdc.supermarket.stock.Position;
+import nz.ac.aut.pdc.supermarket.stock.StockBalance;
+import nz.ac.aut.pdc.supermarket.stock.StockOperations;
+import nz.ac.aut.pdc.supermarket.stock.StockService;
+import nz.ac.aut.pdc.supermarket.stock.StockValidator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+public class AftersaleServiceTest {
+
+    private static final String SALE_LINE = "SL-1";
+    private static final String BARCODE = "A";
+    private static final Instant NOW = Instant.parse("2026-10-21T04:00:00Z");
+
+    private InMemoryOriginalSaleReader originalSaleReader;
+    private InMemoryQuotaLedgerReader quotaLedgerReader;
+    private InMemoryProductSnapshotReader productReader;
+    private AftersaleService service;
+    private FakeWorkingCopy workingCopy;
+
+    @Before
+    public void setUp() {
+        FakeIdGenerator ids = new FakeIdGenerator(NOW);
+        originalSaleReader = new InMemoryOriginalSaleReader();
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        quotaLedgerReader = new InMemoryQuotaLedgerReader();
+        productReader = new InMemoryProductSnapshotReader();
+        productReader.put(BARCODE, new ProductSnapshot("虚构商品", new BigDecimal("8.00")));
+
+        StockOperations stockOperations = new StockService(
+                new FakeProductCatalog(Set.of(BARCODE)),
+                new FakeIdGenerator(NOW),
+                new StockValidator());
+        service = new AftersaleService(
+                originalSaleReader,
+                quotaLedgerReader,
+                productReader,
+                stockOperations,
+                new QuotaViewBuilder(),
+                new QuotaCalculator(),
+                new QualityPairValidator(),
+                new AftersaleAssembler(ids),
+                ids);
+        workingCopy = new FakeWorkingCopy(1, List.of(new StockBalance(BARCODE, Position.S, 5)));
+    }
+
+    @Test
+    public void partialReturnCalculatesQuotaAmount() {
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Prepared);
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) result;
+        assertEquals(1, prepared.redemptions().size());
+        assertEquals(new BigDecimal("3.33"), prepared.redemptions().get(0).amount());
+        assertTrue(prepared.replacements().isEmpty());
+        assertTrue(prepared.stockEntries().isEmpty());
+    }
+
+    @Test
+    public void qualityExchangeCreatesReplacementAndDeductsStock() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 1, new BigDecimal("8.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        AftersaleCommand command = command(line(
+                RedemptionKind.EXCHANGE, 1, false, true, BARCODE, 1, true));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Prepared);
+        AftersaleResult.Prepared prepared = (AftersaleResult.Prepared) result;
+        assertEquals(new BigDecimal("8.00"), prepared.redemptions().get(0).amount());
+        Replacement replacement = prepared.replacements().get(0);
+        assertEquals(prepared.redemptions().get(0).redemptionId(), replacement.qualityRedemptionId());
+        assertEquals(1, prepared.stockEntries().size());
+        assertEquals(-1, prepared.stockEntries().get(0).delta());
+    }
+
+    @Test
+    public void openedNonQualityRequiresException() {
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, true, false, null, 0, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) result).code());
+    }
+
+    @Test
+    public void managerExceptionAllowsOpenedNonQuality() {
+        AftersaleCommand command = new AftersaleCommand(
+                "REQ-EX", "V-1", "acc-manager", "顾客坚持", "已开封非质量",
+                List.of(line(RedemptionKind.RETURN, 1, true, false, null, 0, false)));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.MANAGER);
+
+        assertTrue(result instanceof AftersaleResult.Prepared);
+    }
+
+    @Test
+    public void outOfWindowSaleRequiresException() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 3, new BigDecimal("10.00"),
+                Instant.parse("2026-09-01T00:00:00Z")));
+        AftersaleCommand command = command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("FORBIDDEN", ((AftersaleResult.Rejected) result).code());
+    }
+
+    @Test
+    public void unknownSaleLineIsRejected() {
+        AftersaleCommand command = command(new AftersaleCommandLine(
+                "missing", RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("REFERENCE_INVALID", ((AftersaleResult.Rejected) result).code());
+    }
+
+    @Test
+    public void insufficientReplacementStockIsRejected() {
+        originalSaleReader.put(new OriginalSaleLine(
+                SALE_LINE, BARCODE, 2, new BigDecimal("16.00"),
+                Instant.parse("2026-10-01T00:00:00Z")));
+        workingCopy = new FakeWorkingCopy(1, List.of(new StockBalance(BARCODE, Position.S, 1)));
+        AftersaleCommand command = command(line(
+                RedemptionKind.EXCHANGE, 2, false, false, BARCODE, 2, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("INSUFFICIENT_STOCK", ((AftersaleResult.Rejected) result).code());
+    }
+
+    @Test
+    public void duplicateSaleLineIsRejected() {
+        AftersaleCommand command = command(
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false),
+                line(RedemptionKind.RETURN, 1, false, false, null, 0, false));
+
+        AftersaleResult result = service.apply(workingCopy, command, Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Rejected);
+        assertEquals("INVALID_INPUT", ((AftersaleResult.Rejected) result).code());
+    }
+
+    @Test
+    public void resultCarriesGeneratedIds() {
+        AftersaleResult result = service.apply(
+                workingCopy, command(line(RedemptionKind.RETURN, 1, false, false, null, 0, false)), Role.CLERK);
+
+        assertTrue(result instanceof AftersaleResult.Prepared);
+        Redemption redemption = ((AftersaleResult.Prepared) result).redemptions().get(0);
+        assertNotNull(redemption.redemptionId());
+        assertEquals("REQ-1", redemption.requestKey());
+    }
+
+    private AftersaleCommand command(AftersaleCommandLine... lines) {
+        return new AftersaleCommand("REQ-1", "V-1", null, null, null, List.of(lines));
+    }
+
+    private AftersaleCommandLine line(
+            RedemptionKind kind, int quantity, boolean opened, boolean qualityProblem,
+            String replacementBarcode, int replacementQty, boolean qualityPair) {
+        return new AftersaleCommandLine(
+                SALE_LINE, kind, quantity, opened, qualityProblem,
+                replacementBarcode, replacementQty, qualityPair);
+    }
+
+    private static final class InMemoryOriginalSaleReader implements OriginalSaleReader {
+        private final Map<String, OriginalSaleLine> lines = new HashMap<>();
+
+        void put(OriginalSaleLine line) {
+            lines.put(line.saleLineId(), line);
+        }
+
+        @Override
+        public Optional<OriginalSaleLine> readLine(String saleLineId) {
+            return Optional.ofNullable(lines.get(saleLineId));
+        }
+    }
+
+    private static final class InMemoryQuotaLedgerReader implements QuotaLedgerReader {
+        private final Map<String, List<Redemption>> history = new HashMap<>();
+
+        @Override
+        public List<Redemption> effectiveFor(String saleLineId) {
+            return history.getOrDefault(saleLineId, List.of());
+        }
+    }
+
+    private static final class InMemoryProductSnapshotReader implements ProductSnapshotReader {
+        private final Map<String, ProductSnapshot> products = new HashMap<>();
+
+        void put(String barcode, ProductSnapshot product) {
+            products.put(barcode, product);
+        }
+
+        @Override
+        public Optional<ProductSnapshot> find(String barcode) {
+            return Optional.ofNullable(products.get(barcode));
+        }
+    }
+}

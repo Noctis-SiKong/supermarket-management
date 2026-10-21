@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.2，2026-10-21（含 §6/§7/§8 增补与独立审查修复记录）
+版本/日期：v0.3，2026-10-21（含 §6–§9 增补与独立审查修复记录）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -65,3 +65,10 @@
 - 已修复（本快照）：`StockChangeLine`/`StockEntry` 增加 `eventKey`（可稳定传入）与 `receiptReviewId`；`StockService` 使用调用方 eventKey、传递 receiptReviewId；内部异常码改为 B 登记码 `STOCK_CHECK_FAILED`；`changes==null` 返回 `INVALID_INPUT`；IF-07 §4/§5 加 v0.3 覆盖提示、§14.5 登记 `STOCK_CHECK_FAILED`、证据补 #8；`design_review.md` 补 R-04 覆盖说明；`design_evolution.md` §3.1 关闭"待确认"。
 - 修复后 `clean verify`：**43 项测试全部通过**（新增 stable eventKey/receiptReviewId 测试）。
 - 仍未处理（需决策/协作）：可运行 CUI 主类与 pom exec（A 的 Maven 框架/A 侧 shared 未交付）；售后编排/查询/冲销服务；V2 与实现同步；`baseLast` 过期检测；权限/经办字段；README 状态行（A 维护）。
+
+## 9. 2026-10-21 增补：售后编排骨架
+
+- 新增：`AftersaleCommand`、`AftersaleCommandLine`、`AftersaleResult`、`AftersaleAssembler`、`AftersaleService`；端口 `OriginalSaleReader`、`QuotaLedgerReader`、`ProductSnapshot`、`ProductSnapshotReader`。
+- 流程：验证重复原行 → 读原行（IF-11 替身）→ 简化资格（30 天 / 已开封非质量；CR07-09 店长例外）→ QuotaView/QuotaCalculator → Redemption/Replacement → 替换品 IF-07 核对；不保存/不提交。
+- 测试：`AftersaleServiceTest`(9)；累计 **52 项测试全部通过**（BUILD SUCCESS）。
+- 边界：同一原行一次命令限一条明细；30 天按 Asia/Shanghai 日历日；`AFTERSALE_FAILED` 为 B 暂用码待通知 A 登记；未记录款项/顾客交回损耗；未执行 AC。
