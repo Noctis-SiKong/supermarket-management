@@ -20,7 +20,7 @@ import java.time.*;
 import java.util.*;
 import static org.junit.Assert.*;
 
-/** Fictional users/goods, REAL storage, auth, stock, quota, draft/read/cancel, CUI and reversal. No dependency doubles. */
+/** Fictional users/goods, REAL storage, auth, stock, quota, draft/read/cancel, CUI and reversal. Main chains use no dependency doubles; fault injections and the historical writer fixture are explicitly marked. */
 public class FullRuntimeTest {
     @Rule public TemporaryFolder temp=new TemporaryFolder();
     Path project; DataRoot root; Application app; RepositoryBIntegration b;
@@ -119,7 +119,7 @@ public class FullRuntimeTest {
         assertEquals(1,LossWorkflow.effective(state(),loss).quantity());assertEquals(1,state().records("LOSS_CORRECTION").size());
     }
     @Test public void reversalRejectsMissingEffectsSmugglingAndClerkAndSupportsOtherProcessWriterLock() throws Exception {
-        product();execute(manager,"OPENING",new AOperations.Opening(new AOperations.Item("00123456",10),StockEntry.Position.S,"虚构期初"));String sale=sale();
+        product();execute(manager,"OPENING",new AOperations.Opening(new AOperations.Item("00123456",10),StockEntry.Position.S,"虚构期初"));String unrelatedSale=sale();String sale=sale();
         var op=op(manager,"REVERSAL",sale);var request=BusinessRequest.of(new nz.ac.aut.pdc.supermarket.reversal.DocumentReversalCommand(sale,"虚构整单冲销",op.requestKey()));
         var wc=app.submissions().open(op).value();var actor=new ActorContext(manager.accountId(),OperationContext.Role.MANAGER);
         var correct=new nz.ac.aut.pdc.supermarket.reversal.ReversalChangeSetAssembler().assemble(wc,sale,op,actor,request,app.ids());
@@ -128,6 +128,16 @@ public class FullRuntimeTest {
             var incomplete=new ChangeSet(correct.inserts().stream().filter(r -> !r.table().equals(omitted)).toList(),correct.patches());
             assertEquals(Result.Status.REJECTED,app.submissions().submit(op,request,wc,incomplete).status());
             assertArrayEquals(before,Files.readAllBytes(root.resolve("snapshot.json")));
+        }
+        String foreignStock=wc.records("STOCK_ENTRY").stream().map(r -> r.as(StockEntry.class)).filter(r -> wc.find("DOC_LINE",r.sourceLineId()).orElseThrow().data().path("documentId").asText().equals(unrelatedSale)).findFirst().orElseThrow().stockEntryId();
+        String foreignMoney=wc.records("MONEY_ENTRY").stream().map(r -> r.as(MoneyEntry.class)).filter(r -> r.documentId().equals(unrelatedSale)).findFirst().orElseThrow().moneyEntryId();
+        for(String kind:List.of("STOCK_ENTRY","MONEY_ENTRY")) {
+            var changed=new ChangeSet(correct.inserts().stream().map(r -> {
+                if(r.table().equals("STOCK_ENTRY") && kind.equals("STOCK_ENTRY")) {var x=r.as(StockEntry.class);return RecordData.of(r.table(),r.id(),new StockEntry(x.stockEntryId(),x.sourceLineId(),x.position(),x.quantityDelta(),x.eventKey(),x.receiptReviewId(),foreignStock,x.transferKey(),0));}
+                if(r.table().equals("MONEY_ENTRY") && kind.equals("MONEY_ENTRY")) {var x=r.as(MoneyEntry.class);return RecordData.of(r.table(),r.id(),new MoneyEntry(x.moneyEntryId(),x.documentId(),x.amountSigned(),x.requestKey(),foreignMoney));}
+                return r;
+            }).toList(),correct.patches());
+            assertEquals(Result.Status.REJECTED,app.submissions().submit(op,request,wc,changed).status());assertArrayEquals(before,Files.readAllBytes(root.resolve("snapshot.json")));
         }
         var smuggled=new ChangeSet.Builder().merge(correct).patch(new ChangeSet.Patch("PRODUCT","00123456",1,"{\"name\":\"smuggled\"}")).build();
         assertEquals(Result.Status.REJECTED,app.submissions().submit(op,request,wc,smuggled).status());
