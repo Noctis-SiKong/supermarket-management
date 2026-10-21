@@ -27,16 +27,15 @@ public final class Main {
             if (project==null) project=locateProject();
             if(initialize && (accountsFile!=null || Files.exists(project.resolve("data/snapshot.json"))))
                 throw new IllegalArgumentException("Initialize only a new store; existing credentials are never overwritten");
-            var providers=ServiceLoader.load(BIntegration.class).iterator();
             var accounts=initialize ? initializeAccounts() : accountsFile==null ? List.<nz.ac.aut.pdc.infrastructure.JsonStore.Credential>of() : loadAccounts(accountsFile);
-            BIntegration b=providers.hasNext() ? providers.next() : new RepositoryBIntegration(accounts);
-            if (providers.hasNext()) throw new IllegalArgumentException("Exactly one BIntegration provider required");
+            // Single production assembly; BIntegration remains the constructor seam for tests.
+            BIntegration b=new RepositoryBIntegration(accounts);
             try (Application app=new Application(DataRoot.forProject(project),b,Clock.systemUTC())) {
                 if (check) out.println("Storage recovery and registered domain validation passed; no business operation submitted.");
                 else b.run(app);
             }
             return 0;
-        } catch (Exception | ServiceConfigurationError e) {
+        } catch (Exception e) {
             err.println("STARTUP_BLOCKED: " + e.getClass().getSimpleName() + ": " + e.getMessage()); return 1;
         }
     }

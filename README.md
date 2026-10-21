@@ -2,6 +2,20 @@
 
 单店离线 Java CUI 课程项目。现有单体已装配真实 JSON 存储、认证、商品、收货、促销、销售、库存、售后与整单冲销；运行与本次验证状态见 [统一实现日志](./docs/P1_Implementation_Log.md)。自动化验证不代替用户验收、课程报告、视频或本人签署。
 
+## 快速开始（Quick Start）
+
+适用于 Windows + JDK 17；完整说明见下文[构建与运行](#构建与运行)。
+
+1. 确认 `JAVA_HOME` 指向 JDK 17（Enforcer 会拒绝 Java 8 等其他主版本；PATH 里的 `java` 未必是 17）。
+2. 构建：`.\mvnw.cmd -B --no-transfer-progress clean package`
+3. 首次初始化账号（**需要真实终端**，交互输入，无默认账号）：
+   `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --init-accounts`
+   按提示为 ADMIN/MANAGER/CLERK 各设用户名和密码；创建完成后**直接进入 CUI**，可立即登录。
+4. 以后启动：`& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`
+5. 只检查存储恢复与注册校验、不进入业务：在启动命令后追加 `--check`；查看参数：追加 `--help`。
+
+说明：`--init-accounts` 只初始化空存储，已有快照时拒绝执行，不会覆盖已有账号；密码不回显，只保存 SHA-256 哈希。IDE 或重定向环境没有控制台，请改用 `--accounts <本地凭证JSON>` 预置账号。带依赖的 JAR 才能单独启动，不要使用普通 JAR。
+
 ## 阅读顺序
 
 1. [Spec：需求和业务规则基线](./docs/Project_Spec.md)（v0.7，已冻结为需求基线）。

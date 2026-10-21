@@ -41,7 +41,8 @@ public final class RepositoryBIntegration implements BIntegration {
     public Operations cuiOperations(Application app) { return new SharedOperations(app.storage(),app.ids()); }
     @Override public void run(Application app) {
         if (credentialView.get().isEmpty()) {
-            System.out.println("未配置预置账号，登录暂不可用；首次启动用 --accounts 指定本地凭证 JSON（只含哈希，不上传）。"); return;
+            System.out.println("未配置预置账号，登录暂不可用。首次启动可用 --init-accounts 交互创建 ADMIN/MANAGER/CLERK 账号（无默认密码）；"
+                    + "或用 --accounts <本地凭证JSON> 提供已有哈希。已有数据不会被覆盖。"); return;
         }
 
         new CuiApp(auth(),cuiOperations(app),new InputValidator(),new BufferedReader(new InputStreamReader(System.in,StandardCharsets.UTF_8)),System.out).run();

@@ -8,8 +8,9 @@ import nz.ac.aut.pdc.shared.OperationContext.IdentityResolver;
 import nz.ac.aut.pdc.shared.SubmissionPort.CommitValidator;
 import nz.ac.aut.pdc.supermarket.sales.OriginalSaleAccess;
 
-/** Assembly SPI implemented by B, not a second definition of B's domain contracts.
- * Register one provider in META-INF/services/nz.ac.aut.pdc.supermarket.app.BIntegration.
+/** Assembly boundary implemented by the repository assembly, not a second definition of B's domain contracts.
+ * Production composes {@code RepositoryBIntegration} directly in {@code Main}; the interface remains the
+ * constructor seam for tests and alternate assemblies. No service-provider file is used.
  * Credential supplier belongs exclusively to the authentication backend, never CUI.
  */
 public interface BIntegration {

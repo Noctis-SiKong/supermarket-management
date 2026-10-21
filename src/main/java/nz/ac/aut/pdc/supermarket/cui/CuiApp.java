@@ -21,6 +21,12 @@ import nz.ac.aut.pdc.supermarket.stock.Position;
 public final class CuiApp {
 
     private static final String EXIT_COMMAND = "exit";
+    /** 菜单文本与权限分离：只列出当前装配实际提供的能力，权限仍由后台校验。 */
+    private static final String MENU_BUSINESS =
+            "  1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   5) 删除未读取草稿   6) 整单冲销   0) 退出登录";
+    private static final String MENU_MAINTENANCE =
+            "  7) 商品维护   8) 期初登记   9) 收货登记  10) 收货审核  11) 收货补正  12) 促销\n"
+            + " 13) 销售  14) 查询  15) 按原请求键重试  16) 损耗处置  17) 管理员报损修正  18) 多行／混合售后";
 
     private final AuthService authService;
     private final Operations operations;
@@ -72,8 +78,12 @@ public final class CuiApp {
         CuiActor actor = new CuiActor(session.accountId(), session.role(), session.session());
         while (true) {
             output.println();
-            output.println("1) 补货   2) 店内报损   3) 售后   4) 取消售后草稿   5) 删除未读取草稿   6) 整单冲销   0) 退出登录");
-            if(operations instanceof MaintenanceOperations) output.println("7) 商品维护  8) 期初登记  9) 收货登记  10) 收货审核  11) 收货补正  12) 促销  13) 销售  14) 查询  15) 按原请求键重试  16) 损耗处置  17) 管理员报损修正  18) 多行／混合售后");
+            output.println("业务操作：");
+            output.println(MENU_BUSINESS);
+            if (operations instanceof MaintenanceOperations) {
+                output.println("维护与查询：");
+                output.println(MENU_MAINTENANCE);
+            }
             String choice = prompt("请选择：");
             if (choice == null || EXIT_COMMAND.equalsIgnoreCase(choice.trim())) {
                 return;
