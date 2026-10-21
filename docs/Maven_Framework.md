@@ -1,6 +1,6 @@
 # P1 Maven 框架与运行
 
-当前更新：2026-10-21。单一 Maven 工程已有真实业务及 Main/assembly；运行命令见 README，验证见 P1_Implementation_Log.md。下文 2026-10-20 的空工程/冒烟数字保留为历史记录，不代表当前实现状态；Spec/PRD/ERD 未修改。
+当前更新：2026-10-22。单一 Maven 工程已有真实业务及 Main/assembly；运行命令见 README，验证见 P1_Implementation_Log.md。下文 2026-10-20 的空工程/冒烟数字保留为历史记录，不代表当前实现状态；Spec/PRD/ERD 未修改。
 
 ## 2026-10-20 历史底座：范围与文件
 

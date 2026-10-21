@@ -98,8 +98,8 @@ PowerShell 首次未给 -Dfile.encoding=UTF-8 加引号导致 Java 参数解析�
 
 汇总来自本轮生成的 Surefire XML 和脚本回执；测试内预期的拒绝启动信息不等于脚本失败。旧口径独立保留：A 单分支36项见 `evidence/member_a/implementation_validation.md`；B 时点176项、1跳过见 `evidence/member_b/ac_execution_b_2026-10-21.md`；v3开工在途184项及最终200项见第4节。不能以184代替最终200，也不能把各分支数字相加作为当前总数。
 
-旧 WIP 逐文件比对结果：5个字节一致（pom.xml、SaleLineSnapshot、AftersaleReadAccess、BIntegration、OriginalSaleAccessTest）；其余6个不同（JsonStore、AftersaleReadRequest、Application、Main、OriginalSaleAccess、ApplicationTest），按可能独有内容保留，不混入交付。仓库外新建时间戳备份的 manifest 包含源分支／HEAD、暂存及未暂存补丁、11个 WIP 文件、376个 ignored 构建文件及 SHA-256，已逐项重读核验；没有删除 ignored 内容或使用 git clean。完整清单及逐文件比较在该外部备份，不在仓库记录其绝对路径。
+旧 WIP 逐文件比对结果：5个字节一致（pom.xml、SaleLineSnapshot、AftersaleReadAccess、BIntegration、OriginalSaleAccessTest）；其余6个不同（JsonStore、AftersaleReadRequest、Application、Main、OriginalSaleAccess、ApplicationTest），按可能独有内容保留，不混入交付。仓库外新建时间戳备份的 manifest 包含源分支／HEAD、暂存及未暂存补丁、11个 WIP 文件、376个 ignored 构建文件及 SHA-256，已逐项重读核验；切换前未清除 ignored 文件，也未使用 git clean；最终验证按既有脚本重建 target，旧构建内容已完整备份。完整清单及逐文件比较在该外部备份，不在仓库记录其绝对路径。
 
 原 WIP 保存于 stash `f33c6b7c3e4e1d302323988682d135d1ae255bd4`，已核验11个文件集合、原6408320基线和空 index，Git 换行正规化以外内容一致；原始字节另由备份保留。另有误在完成版创建、随后已 apply 恢复的本轮工程改动 stash `87fbbd99ebe36ea82cb9e7e8479811f12268cffd`，同样保留，不代表原 WIP。未删除分支、工作树、stash 或备份。
 
-指定根使用新本地 `member-a/p1-release` 分支承接本轮完成版实际 HEAD；具体提交以 Git 回执为准，不抢占完成版工作树的分支。仅本地交付，无推送、main合并或远端配置修改。课程正式验收、报告、视频、ZIP及本人签署仍需人工完成；测试替身／真实链范围沿用第4节，没有增加业务能力或扩大验收结论。
+指定根使用新本地 `member-a/p1-release` 分支承接本轮完成版实际 HEAD；具体提交以 Git 回执为准，不抢占完成版工作树的分支。指定 Project1 根已再次实际执行上述 PS5.1 完整命令，退出0，200项零失败／错误／跳过、真实 CUI 退出0；由此确认指定根已运行修订后的完整交付代码。仅本地交付，无推送、main合并或远端配置修改。课程正式验收、报告、视频、ZIP及本人签署仍需人工完成；测试替身／真实链范围沿用第4节，没有增加业务能力或扩大验收结论。
