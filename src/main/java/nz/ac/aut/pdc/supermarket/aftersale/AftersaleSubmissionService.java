@@ -8,7 +8,7 @@ import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.Result;
 import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
-import nz.ac.aut.pdc.supermarket.auth.Role;
+import nz.ac.aut.pdc.supermarket.auth.SharedRoles;
 import nz.ac.aut.pdc.supermarket.stock.SharedWorkingCopyView;
 
 /**
@@ -53,7 +53,7 @@ public final class AftersaleSubmissionService {
         }
 
         AftersaleResult result = aftersaleService.apply(
-                new SharedWorkingCopyView(workingCopy), command, toRole(actor.role()),
+                new SharedWorkingCopyView(workingCopy), command, SharedRoles.toLocal(actor.role()),
                 operation.targetId());
         if (result instanceof AftersaleResult.Rejected rejected) {
             return Result.rejected(rejected.code(), rejected.message());
@@ -67,13 +67,5 @@ public final class AftersaleSubmissionService {
         }
         ChangeSet changes = assembler.assemble(prepared, operation.targetId(), operation, actor, request);
         return store.submit(operation, request, workingCopy, changes);
-    }
-
-    private Role toRole(OperationContext.Role role) {
-        return switch (role) {
-            case ADMIN -> Role.ADMIN;
-            case MANAGER -> Role.MANAGER;
-            case CLERK -> Role.CLERK;
-        };
     }
 }

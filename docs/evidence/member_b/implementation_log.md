@@ -1,6 +1,6 @@
 # B 骨架实现记录（auth / cui / stock）
 
-版本/日期：v0.17，2026-10-21（含 §6–§23 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作与售后完整链）
+版本/日期：v0.18，2026-10-21（含 §6–§24 增补、合并 main、CR07-10、IF-07、校验器、售后 ChangeSet、AFTERSALE 校验、认证、读取适配、BApplication、CUI 真实操作、售后完整链与 review 修复）
 分支：`member-b/implementation`（基于 main `04abd6a`）
 性质：模块骨架 + 测试替身；**非真实持久化、非联调、非 AC 验收**。仅证明接口边界、纯规则与单元测试可跑通。
 
@@ -180,3 +180,13 @@
 - 修正 `SharedStockAdapter.review`：先把同一 ChangeSet 的非库存插入叠加到基线，再解析 `STOCK_ENTRY.sourceLineId`；解决“DOC_LINE expected”问题（A 的 OPENING/SALE 先插入 DOC_LINE）。
 - 测试：`SharedOperationsIntegrationTest`(1)；合并树累计 **147 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
 - 边界：CUI `Main`/pom 启动入口仍由 A 的 Maven 框架决定；补货/报损真实 ChangeSet 未接；冲销/query 未接。
+
+## 24. 2026-10-21 代码审查修复（第一轮）
+
+- **换货 CUI**：新增 `AftersaleRequest` 收拢售后输入；CUI 在 EXCHANGE 时必填替换品条码/数量；`Operations.aftersale` 改传完整请求；CUI 对操作异常有兜底提示，不再让 `AftersaleCommandLine` 异常冒泡。
+- **款项方向**：`AftersaleChangeSetAssembler` 改为 REFUND 负、CHARGE 正；测试断言 `MONEY_ENTRY.amountSigned == -3.33`。
+- **校验器意图/时间**：`AftersaleCommitValidator` 使用原始 `BusinessRequest` 校验 requestKey、原销售行与数量；用 `acceptedAt` 按 Asia/Shanghai 校验 30 天窗口（基线有原单时）。
+- **核销行**：`AftersaleAssembler` 的 `sourceLineId` 改为本次核销行 ID，不再重复原销售行。
+- **装配**：`BApplication` 注入 `IdClock` 并传给 `SharedOperations`；角色映射统一到 `SharedRoles`。
+- 测试：合并树累计 **147 tests / 0 failed / 0 error / 1 skipped**（BUILD SUCCESS）。
+- 未修：IF-11 读取追溯/CR07-11 草稿取消、幂等重试通道、恢复校验覆盖、ERD 数据形状、死代码清理。

@@ -34,10 +34,17 @@ public final class BApplication implements AutoCloseable {
 
     private final JsonStore store;
     private final AuthService authService;
+    private final IdClock idClock;
 
     public BApplication(Path projectRoot, List<JsonStore.Credential> credentials) throws IOException {
+        this(projectRoot, credentials, new IdClock(Clock.system(IdClock.BUSINESS_ZONE)));
+    }
+
+    public BApplication(
+            Path projectRoot, List<JsonStore.Credential> credentials, IdClock idClock) throws IOException {
         Objects.requireNonNull(projectRoot, "projectRoot");
         Objects.requireNonNull(credentials, "credentials");
+        this.idClock = Objects.requireNonNull(idClock, "idClock");
 
         DataRoot dataRoot = DataRoot.forProject(projectRoot);
         AtomicReference<AuthService> authRef = new AtomicReference<>();
@@ -50,8 +57,7 @@ public final class BApplication implements AutoCloseable {
         };
 
         SharedStockAdapter stockAdapter = new SharedStockAdapter();
-        AOperations aOperations = new AOperations(
-                new IdClock(Clock.system(IdClock.BUSINESS_ZONE)), identityResolver, stockAdapter);
+        AOperations aOperations = new AOperations(idClock, identityResolver, stockAdapter);
         Map<String, SubmissionPort.CommitValidator> validators = new HashMap<>(aOperations.validators());
         validators.putAll(BCommitValidators.create(stockAdapter));
 
@@ -81,7 +87,7 @@ public final class BApplication implements AutoCloseable {
 
     /** CUI 真实操作端口；售后已接 A open/submit，补货/报损仍显式未接线。 */
     public Operations operations() {
-        return new SharedOperations(store);
+        return new SharedOperations(store, idClock);
     }
 
     @Override

@@ -88,7 +88,7 @@ public class CuiAppTest {
     public void exchangeAftersaleDispatchesQualityFact() {
         RecordingOperations operations = new RecordingOperations();
 
-        String output = run("alice\nsecret\n3\nSL-1\nEXCHANGE\n1\nn\ny\n0\nexit\n", operations);
+        String output = run("alice\nsecret\n3\nSL-1\nEXCHANGE\n1\nn\ny\nREP-1\n2\n0\nexit\n", operations);
 
         assertTrue(output.contains("登录成功"));
         assertEquals(RedemptionKind.EXCHANGE, operations.kind);
@@ -96,6 +96,8 @@ public class CuiAppTest {
         assertEquals(Boolean.TRUE, operations.qualityProblem);
         assertEquals(AftersaleReasonKind.QUALITY, operations.reasonKind);
         assertEquals(null, operations.reasonText);
+        assertEquals("REP-1", operations.replacementBarcode);
+        assertEquals(2, operations.replacementQuantity);
     }
 
     private String run(String input, RecordingOperations operations) {
@@ -131,6 +133,8 @@ public class CuiAppTest {
         private Boolean qualityProblem;
         private AftersaleReasonKind reasonKind;
         private String reasonText;
+        private String replacementBarcode;
+        private int replacementQuantity;
 
         @Override
         public OperationFeedback replenish(CuiActor actor, String barcode, int quantity) {
@@ -151,18 +155,17 @@ public class CuiAppTest {
         }
 
         @Override
-        public OperationFeedback aftersale(
-                CuiActor actor, String saleLineId, RedemptionKind kind,
-                int quantity, boolean opened, boolean qualityProblem,
-                AftersaleReasonKind reasonKind, String reasonText) {
+        public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
             lastActor = actor;
-            this.saleLineId = saleLineId;
-            this.kind = kind;
-            this.aftersaleQuantity = quantity;
-            this.opened = opened;
-            this.qualityProblem = qualityProblem;
-            this.reasonKind = reasonKind;
-            this.reasonText = reasonText;
+            this.saleLineId = request.saleLineId();
+            this.kind = request.kind();
+            this.aftersaleQuantity = request.quantity();
+            this.opened = request.opened();
+            this.qualityProblem = request.qualityProblem();
+            this.reasonKind = request.reasonKind();
+            this.reasonText = request.reasonText();
+            this.replacementBarcode = request.replacementBarcode();
+            this.replacementQuantity = request.replacementQuantity();
             return OperationFeedback.ok("售后候选已受理（测试替身，未提交）");
         }
     }

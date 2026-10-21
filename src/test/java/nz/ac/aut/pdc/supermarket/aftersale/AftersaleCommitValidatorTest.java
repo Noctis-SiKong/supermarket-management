@@ -10,6 +10,7 @@ import org.junit.Test;
 import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.DocumentHeader;
 import nz.ac.aut.pdc.shared.DraftDeletion;
+import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
 import nz.ac.aut.pdc.shared.Result;
@@ -33,7 +34,7 @@ public class AftersaleCommitValidatorTest {
     @Test
     public void validAftersalePasses() {
         Result<Void> result = validator.validate(
-                op, actor, null, baseline, changes(true), acceptedAt);
+                op, actor, request(), baseline, changes(true), acceptedAt);
 
         assertEquals(Result.Status.VALUE, result.status());
     }
@@ -41,7 +42,7 @@ public class AftersaleCommitValidatorTest {
     @Test
     public void missingRedemptionIsRejected() {
         Result<Void> result = validator.validate(
-                op, actor, null, baseline, changes(false), acceptedAt);
+                op, actor, request(), baseline, changes(false), acceptedAt);
 
         assertEquals(Result.Status.REJECTED, result.status());
         assertEquals("INVALID_INPUT", result.code());
@@ -54,7 +55,7 @@ public class AftersaleCommitValidatorTest {
                 .add(RecordData.of("REDEMPTION", "R-1", redemption(" ")))
                 .build();
 
-        Result<Void> result = validator.validate(op, actor, null, baseline, changes, acceptedAt);
+        Result<Void> result = validator.validate(op, actor, request(), baseline, changes, acceptedAt);
 
         assertEquals(Result.Status.REJECTED, result.status());
         assertEquals("INVALID_INPUT", result.code());
@@ -66,6 +67,13 @@ public class AftersaleCommitValidatorTest {
 
         assertTrue(validators.containsKey(AftersaleChangeSetAssembler.OPERATION));
         assertTrue(validators.containsKey(DraftDeletion.OPERATION));
+    }
+
+    private BusinessRequest request() {
+        return BusinessRequest.of(new AftersaleCommand(
+                "REQ-1", null, List.of(new AftersaleCommandLine(
+                        "SL-1", RedemptionKind.RETURN, 1, false, false,
+                        AftersaleReasonKind.OTHER, "其他原因", null, 0, false))));
     }
 
     private ChangeSet changes(boolean withRedemption) {

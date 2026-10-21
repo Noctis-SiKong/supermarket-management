@@ -51,6 +51,10 @@ public class AftersaleChangeSetAssemblerTest {
         assertEquals(StockEntry.Position.S, entry.position());
         assertEquals(-1, entry.quantityDelta());
         assertEquals(0, entry.commitOrdinal());
+
+        var money = changes.inserts().stream()
+                .filter(r -> r.table().equals("MONEY_ENTRY")).findFirst().orElseThrow();
+        assertEquals(new BigDecimal("-3.33"), money.as(nz.ac.aut.pdc.shared.MoneyEntry.class).amountSigned());
     }
 
     private Redemption redemption() {

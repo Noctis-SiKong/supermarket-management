@@ -32,16 +32,8 @@ public final class SharedCredentialStore implements CredentialStore {
                 .map(credential -> new StoredCredential(
                         credential.accountId(),
                         credential.username(),
-                        toRole(credential.role()),
+                        SharedRoles.toLocal(credential.role()),
                         credential.passwordHash()));
-    }
-
-    private Role toRole(OperationContext.Role role) {
-        return switch (role) {
-            case ADMIN -> Role.ADMIN;
-            case MANAGER -> Role.MANAGER;
-            case CLERK -> Role.CLERK;
-        };
     }
 }
 

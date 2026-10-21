@@ -74,8 +74,9 @@ public class SharedOperationsIntegrationTest {
             SharedOperations operations = new SharedOperations(app.store(), ids);
             CuiActor actor = new CuiActor(clerk.accountId(), Role.CLERK, clerk.session());
             OperationFeedback feedback = operations.aftersale(
-                    actor, saleLineId, RedemptionKind.RETURN, 1, false, false,
-                    AftersaleReasonKind.OTHER, "顾客原因");
+                    actor, new AftersaleRequest(
+                            saleLineId, RedemptionKind.RETURN, 1, false, false,
+                            AftersaleReasonKind.OTHER, "顾客原因", null, 0));
 
             assertTrue(feedback.message(), feedback.success());
             assertEquals(1, app.store().open(new OperationContext(

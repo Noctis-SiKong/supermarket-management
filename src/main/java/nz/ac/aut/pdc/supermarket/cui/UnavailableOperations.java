@@ -1,7 +1,5 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
-import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
-import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /**
@@ -26,10 +24,7 @@ public final class UnavailableOperations implements Operations {
     }
 
     @Override
-    public OperationFeedback aftersale(
-            CuiActor actor, String saleLineId, RedemptionKind kind,
-            int quantity, boolean opened, boolean qualityProblem,
-            AftersaleReasonKind reasonKind, String reasonText) {
+    public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
         return OperationFeedback.fail(MESSAGE);
     }
 }

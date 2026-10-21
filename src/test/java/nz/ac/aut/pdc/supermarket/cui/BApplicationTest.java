@@ -19,6 +19,9 @@ import nz.ac.aut.pdc.shared.Result;
 import nz.ac.aut.pdc.shared.SubmissionPort;
 import nz.ac.aut.pdc.shared.WorkingCopy;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleChangeSetAssembler;
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleCommand;
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleCommandLine;
+import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleResult;
 import nz.ac.aut.pdc.supermarket.aftersale.Effect;
 import nz.ac.aut.pdc.supermarket.aftersale.Redemption;
@@ -56,7 +59,11 @@ public class BApplicationTest {
 
             AftersaleResult.Prepared prepared = new AftersaleResult.Prepared(
                     List.of(redemption()), List.of(), List.of(), List.of());
-            BusinessRequest request = BusinessRequest.of(Map.of("operation", "aftersale"));
+            BusinessRequest request = BusinessRequest.of(new AftersaleCommand(
+                    "11111111-1111-1111-1111-111111111111", null,
+                    List.of(new AftersaleCommandLine(
+                            "SL-1", RedemptionKind.RETURN, 1, false, false,
+                            AftersaleReasonKind.OTHER, "其他原因", null, 0, false))));
             ChangeSet changes = new AftersaleChangeSetAssembler().assemble(
                     prepared, "AF-1", submitOp,
                     new OperationContext.ActorContext("acc-1", OperationContext.Role.CLERK), request);

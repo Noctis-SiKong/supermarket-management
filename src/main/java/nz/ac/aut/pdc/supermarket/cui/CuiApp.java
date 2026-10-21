@@ -161,9 +161,29 @@ public final class CuiApp {
             }
             reasonText = reasonText.trim();
         }
-        print(operations.aftersale(
-                actor, saleLineId.trim(), kind, quantity, opened, qualityProblem,
-                reasonKind, reasonText));
+        String replacementBarcode = null;
+        int replacementQuantity = 0;
+        if (kind == RedemptionKind.EXCHANGE) {
+            replacementBarcode = prompt("替换品条码：");
+            if (replacementBarcode == null || replacementBarcode.isBlank()) {
+                output.println("输入错误：换货必须填写替换品条码");
+                return;
+            }
+            replacementBarcode = replacementBarcode.trim();
+            Integer parsedReplacementQuantity = readQuantity("替换数量（1-9999）：");
+            if (parsedReplacementQuantity == null) {
+                return;
+            }
+            replacementQuantity = parsedReplacementQuantity;
+        }
+        AftersaleRequest request = new AftersaleRequest(
+                saleLineId.trim(), kind, quantity, opened, qualityProblem,
+                reasonKind, reasonText, replacementBarcode, replacementQuantity);
+        try {
+            print(operations.aftersale(actor, request));
+        } catch (RuntimeException ex) {
+            output.println("操作失败：" + ex.getMessage());
+        }
     }
 
     private Integer readQuantity(String message) {

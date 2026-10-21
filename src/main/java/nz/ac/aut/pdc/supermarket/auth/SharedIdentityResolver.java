@@ -22,20 +22,12 @@ public final class SharedIdentityResolver implements OperationContext.IdentityRe
         AuthResult result = authService.resolve(session);
         if (result instanceof AuthResult.Success success) {
             return Result.value(new OperationContext.ActorContext(
-                    success.accountId(), toSharedRole(success.role())));
+                    success.accountId(), SharedRoles.toShared(success.role())));
         }
         if (result instanceof AuthResult.Rejected rejected) {
             return Result.rejected(rejected.code(), rejected.message());
         }
         AuthResult.Failed failed = (AuthResult.Failed) result;
         return Result.failed(failed.code(), failed.message());
-    }
-
-    private OperationContext.Role toSharedRole(Role role) {
-        return switch (role) {
-            case ADMIN -> OperationContext.Role.ADMIN;
-            case MANAGER -> OperationContext.Role.MANAGER;
-            case CLERK -> OperationContext.Role.CLERK;
-        };
     }
 }

@@ -1,12 +1,18 @@
 package nz.ac.aut.pdc.supermarket.aftersale;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import nz.ac.aut.pdc.shared.ChangeSet;
 import nz.ac.aut.pdc.shared.DocumentHeader;
+import nz.ac.aut.pdc.shared.DocumentLine;
 import nz.ac.aut.pdc.shared.JsonCodec.BusinessRequest;
 import nz.ac.aut.pdc.shared.OperationContext;
 import nz.ac.aut.pdc.shared.RecordData;
@@ -61,6 +67,22 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         if (!actor.accountId().equals(header.confirmedBy())) {
             return Result.rejected("FORBIDDEN", "ConfirmedBy must be the authenticated actor");
         }
+        if (request == null || acceptedAt == null) {
+            return Result.rejected("INVALID_INPUT", "Original request and acceptedAt required");
+        }
+        final AftersaleCommand command;
+        try {
+            command = request.as(AftersaleCommand.class);
+        } catch (RuntimeException ex) {
+            return Result.rejected("INVALID_INPUT", "Invalid original aftersale request");
+        }
+        if (!command.requestKey().equals(op.requestKey())) {
+            return Result.rejected("REQUEST_KEY_CONFLICT", "Original request key mismatch");
+        }
+        Map<String, AftersaleCommandLine> requestedLines = new HashMap<>();
+        for (AftersaleCommandLine line : command.lines()) {
+            requestedLines.put(line.saleLineId(), line);
+        }
 
         List<Redemption> redemptions = new ArrayList<>();
         for (RecordData record : inserts(changes, "REDEMPTION")) {
@@ -73,6 +95,10 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
             if (!header.documentId().equals(redemption.aftersaleId())) {
                 return Result.rejected("REFERENCE_INVALID", "Redemption aftersaleId mismatch");
             }
+            AftersaleCommandLine requestedLine = requestedLines.get(redemption.originalSaleLineId());
+            if (requestedLine == null || requestedLine.quantity() != redemption.quantity()) {
+                return Result.rejected("REFERENCE_INVALID", "Redemption does not implement original request");
+            }
             if (redemption.amount().signum() < 0 || redemption.quantity() < 0) {
                 return Result.rejected("INVALID_INPUT", "Redemption amount/quantity invalid");
             }
@@ -84,6 +110,10 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         }
         if (redemptions.isEmpty()) {
             return Result.rejected("INVALID_INPUT", "AfterSale requires at least one redemption");
+        }
+        Result<Void> windowCheck = validateAftersaleWindow(baseline, redemptions, acceptedAt);
+        if (!windowCheck.hasValue()) {
+            return windowCheck;
         }
         for (RecordData record : inserts(changes, "REPLACEMENT")) {
             Replacement replacement = record.as(Replacement.class);
@@ -98,6 +128,32 @@ public final class AftersaleCommitValidator implements SubmissionPort.CommitVali
         Result<Void> stockCheck = stockAdapter.review(baseline, request, changes);
         if (!stockCheck.hasValue()) {
             return stockCheck;
+        }
+        return Result.value(null);
+    }
+
+    private Result<Void> validateAftersaleWindow(
+            WorkingCopy baseline, List<Redemption> redemptions, Instant acceptedAt) {
+        ZoneId zone = ZoneId.of("Asia/Shanghai");
+        LocalDate acceptedDate = acceptedAt.atZone(zone).toLocalDate();
+        for (Redemption redemption : redemptions) {
+            var saleLine = baseline.find("DOC_LINE", redemption.originalSaleLineId()).orElse(null);
+            if (saleLine == null) {
+                continue;
+            }
+            DocumentLine line = saleLine.as(DocumentLine.class);
+            var document = baseline.find("DOCUMENT", line.documentId()).orElse(null);
+            if (document == null) {
+                return Result.rejected("REFERENCE_INVALID", "Original sale document missing");
+            }
+            DocumentHeader saleHeader = document.as(DocumentHeader.class);
+            if (saleHeader.confirmedAt() == null) {
+                return Result.rejected("REFERENCE_INVALID", "Original sale has no confirmed time");
+            }
+            LocalDate saleDate = Instant.parse(saleHeader.confirmedAt()).atZone(zone).toLocalDate();
+            if (ChronoUnit.DAYS.between(saleDate, acceptedDate) > 30) {
+                return Result.rejected("AFTERSALE_WINDOW_EXPIRED", "Outside 30-day aftersale window");
+            }
         }
         return Result.value(null);
     }

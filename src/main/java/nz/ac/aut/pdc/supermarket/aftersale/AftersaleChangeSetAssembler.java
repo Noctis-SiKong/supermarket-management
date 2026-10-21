@@ -71,7 +71,7 @@ public final class AftersaleChangeSetAssembler {
                 continue;
             }
             java.math.BigDecimal signed = settlement.direction() == SettlementDirection.REFUND
-                    ? settlement.amount() : settlement.amount().negate();
+                    ? settlement.amount().negate() : settlement.amount();
             String moneyId = settlement.redemptionId() + "-MONEY";
             out.add(RecordData.of("MONEY_ENTRY", moneyId, new MoneyEntry(
                     moneyId, aftersaleId, signed, operation.requestKey(), null)));

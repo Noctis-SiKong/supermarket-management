@@ -1,6 +1,5 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,17 +13,16 @@ import nz.ac.aut.pdc.supermarket.aftersale.AftersaleAssembler;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleChangeSetAssembler;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleCommand;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleCommandLine;
-import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleService;
 import nz.ac.aut.pdc.supermarket.aftersale.AftersaleSubmissionService;
 import nz.ac.aut.pdc.supermarket.aftersale.QualityPairValidator;
 import nz.ac.aut.pdc.supermarket.aftersale.QuotaCalculator;
 import nz.ac.aut.pdc.supermarket.aftersale.QuotaViewBuilder;
-import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.aftersale.SharedProductSnapshotReader;
 import nz.ac.aut.pdc.supermarket.aftersale.SharedQuotaLedgerReader;
 import nz.ac.aut.pdc.supermarket.aftersale.SharedSaleReader;
 import nz.ac.aut.pdc.supermarket.auth.Role;
+import nz.ac.aut.pdc.supermarket.auth.SharedRoles;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 import nz.ac.aut.pdc.supermarket.stock.StockService;
 import nz.ac.aut.pdc.supermarket.stock.StockValidator;
@@ -37,10 +35,6 @@ public final class SharedOperations implements Operations {
 
     private final JsonStore store;
     private final IdClock idClock;
-
-    public SharedOperations(JsonStore store) {
-        this(store, new IdClock(Clock.system(IdClock.BUSINESS_ZONE)));
-    }
 
     public SharedOperations(JsonStore store, IdClock idClock) {
         this.store = Objects.requireNonNull(store, "store");
@@ -58,15 +52,9 @@ public final class SharedOperations implements Operations {
     }
 
     @Override
-    public OperationFeedback aftersale(
-            CuiActor actor,
-            String saleLineId,
-            RedemptionKind kind,
-            int quantity,
-            boolean opened,
-            boolean qualityProblem,
-            AftersaleReasonKind reasonKind,
-            String reasonText) {
+    public OperationFeedback aftersale(CuiActor actor, AftersaleRequest request) {
+        Objects.requireNonNull(actor, "actor");
+        Objects.requireNonNull(request, "request");
         String requestKey = idClock.newRequestKey();
         String aftersaleId = idClock.entityId(requestKey, "aftersale");
         OperationContext operation = new OperationContext(
@@ -91,25 +79,18 @@ public final class SharedOperations implements Operations {
                 requestKey,
                 null,
                 List.of(new AftersaleCommandLine(
-                        saleLineId, kind, quantity, opened, qualityProblem,
-                        reasonKind, reasonText, null, 0, false)));
+                        request.saleLineId(), request.kind(), request.quantity(),
+                        request.opened(), request.qualityProblem(), request.reasonKind(),
+                        request.reasonText(), request.replacementBarcode(),
+                        request.replacementQuantity(), false)));
         AftersaleSubmissionService submission = new AftersaleSubmissionService(
                 aftersaleService, new AftersaleChangeSetAssembler(), store);
         Result<SubmissionPort.CommitReceipt> result = submission.submit(
                 command, workingCopy, operation,
-                new OperationContext.ActorContext(actor.accountId(), toSharedRole(actor.role())));
+                new OperationContext.ActorContext(actor.accountId(), SharedRoles.toShared(actor.role())));
         if (!result.hasValue()) {
             return OperationFeedback.fail("售后未提交：" + result.code() + " " + result.detail());
         }
         return OperationFeedback.ok("售后已提交：" + result.value().requestKey());
     }
-
-    private OperationContext.Role toSharedRole(Role role) {
-        return switch (role) {
-            case ADMIN -> OperationContext.Role.ADMIN;
-            case MANAGER -> OperationContext.Role.MANAGER;
-            case CLERK -> OperationContext.Role.CLERK;
-        };
-    }
 }
-

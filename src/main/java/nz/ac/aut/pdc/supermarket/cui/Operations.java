@@ -1,7 +1,5 @@
 package nz.ac.aut.pdc.supermarket.cui;
 
-import nz.ac.aut.pdc.supermarket.aftersale.AftersaleReasonKind;
-import nz.ac.aut.pdc.supermarket.aftersale.RedemptionKind;
 import nz.ac.aut.pdc.supermarket.stock.Position;
 
 /**
@@ -16,13 +14,5 @@ public interface Operations {
 
     OperationFeedback recordLoss(CuiActor actor, String barcode, Position position, int quantity);
 
-    OperationFeedback aftersale(
-            CuiActor actor,
-            String saleLineId,
-            RedemptionKind kind,
-            int quantity,
-            boolean opened,
-            boolean qualityProblem,
-            AftersaleReasonKind reasonKind,
-            String reasonText);
+    OperationFeedback aftersale(CuiActor actor, AftersaleRequest request);
 }
