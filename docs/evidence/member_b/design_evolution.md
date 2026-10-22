@@ -4,8 +4,8 @@
 > **CR07-10（2026-10-20）**：CR07-09的店长资格个案例外已撤销；本文涉及CR07-09、exception字段、店长授权例外的内容仅保留历史记录，不是现行实现依据。V2应删除AFTERSALE.exception_*，在REDEMPTION使用reason_text，按质量/30天/开封规则判定资格。
 
 版本/日期：v1，2026-10-20（Asia/Shanghai）
-依据：`docs/evidence/member_b/design_review.md` §7 的 B 本人逐条决定（29 条）、V1 类图 `docs/design/member_b/class_v1.mmd`
-产物：`docs/design/member_b/class_v2.mmd`（V2 源文件）；报告用分图由 B 渲染（8 张，`aftersale` 详情与总体图需按 CR07-09 / R-06 修正后重渲染）
+依据：`docs/evidence/member_b/design_review.md` §7 的 B 本人逐条决定（29 条）、V1 类图 `docs/archive/design_member_b/class_v1.mmd`
+产物：`docs/archive/design_member_b/class_v2.mmd`（V2 源文件）；报告用分图由 B 渲染（8 张，`aftersale` 详情与总体图需按 CR07-09 / R-06 修正后重渲染）
 性质：记录 V1→V2 的实质变化、决定依据与未决项；不代替代码实现或 AC 结果。
 
 ## 0. 基线同步（A 侧新提交，2026-10-20）
@@ -14,7 +14,7 @@ A 在 B 设计期间向 `main` 推送了两个提交，B 已 `git rebase` 到最
 
 | 提交 | 内容 | 对 B 的影响 |
 |---|---|---|
-| `0f3a6fe` | 新增 `docs/P1用例图.svg`（已批准 P1 用例图） | B 按 G-02 需评审该用例图；见 §6 待办 |
+| `0f3a6fe` | 新增 `docs/design/use_cases/use_case_v1.svg`（已批准 P1 用例图） | B 按 G-02 需评审该用例图；见 §6 待办 |
 | `7216724` | **CR07-09**：店长可对默认资格不符的退货/换货授权个案例外（含超期、已开封非质量等），记录授权人、原因及所放宽规则；**只放宽资格，数量/金额/库存校验不变**；同步修改 FR-07/08、BR-22/26、AC-19/33/47、ERD AFTERSALE.exception_* | B 的售后设计必须支持：默认拒绝 → 店长授权例外 → 留痕；不新增实体/字段（复用 `AFTERSALE.exception_authorized_by/exception_reason`） |
 
 V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReason / relaxedRule` 字段；`AftersaleService` 依赖 `Session` 做授权校验；资格判定仍为简单校验（延续 R-04 不抽策略类），但**默认拒绝与例外记录必须有**。
@@ -77,7 +77,7 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 ## 4. 风险提示
 
 - **R-04 已确认（按 A 规范 §8）**：维持不抽策略类；系统必须做默认资格校验与 CR07-09 例外留痕；若实现成"系统不校验资格"则违反 BR-22/26、CR07-09、AC-19/33/47，须暂停该模块按 Spec §17 处理。
-- **渲染图集**：8 张分图已按修正重渲染并入库 `docs/design/member_b/v2/rendered/`（00 总体图的 customer-return 指向 `CustomerReturnLossRecorder`；02 售后详情含 CR07-09 例外字段与 Session 授权校验）。
+- **渲染图集**：8 张分图已按修正重渲染并入库 `docs/archive/design_member_b/v2/rendered/`（00 总体图的 customer-return 指向 `CustomerReturnLossRecorder`；02 售后详情含 CR07-09 例外字段与 Session 授权校验）。
 - **V2 规模**：约 50 个类/接口/枚举，单图较宽；报告可横向整页或用分图集；图面可读性（R-27）已拒绝，不再改图。
 - **共享规范与代码（2026-10-21 合并后）**：A 的 `src/main/java/nz/ac/aut/pdc/{shared,infrastructure}/` 已合入 main `a109135`；B 已合并 main（G2），真实端口适配（G3）进行中。
 
@@ -96,7 +96,7 @@ V2 据此增加：`AftersaleCommand` 的 `exceptionAuthorizedBy / exceptionReaso
 ## 6. 下一步
 
 1. 已完成：8 张分图按 CR07-09/R-06 修正并入库。
-2. 待办：B 评审 A 的 P1 用例图（`docs/P1用例图.svg`）。
+2. 待办：B 评审 A 的 P1 用例图（`docs/design/use_cases/use_case_v1.svg`）。
 3. 设计分支 `member-b/design-v1-v2` 已合入 main。
 4. 当前：修订 IF-07 契约 v0.3（对齐 §5.3）；记录 R-04 执行口径；完成 V2 局部适配说明。
 5. 接着：从 main 开 `member-b/implementation`，先实现 auth/cui + stock（替身测试），再 aftersale/query/reversal。

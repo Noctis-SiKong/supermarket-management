@@ -1,0 +1,40 @@
+classDiagram
+direction TB
+
+class AOperations
+class Product
+class OriginalSaleAccess
+class StockEntry
+class MoneyEntry
+class SubmissionPort
+class JsonStore
+
+class Promotion {
+    +String promotionId
+    +Kind kind
+    +BigDecimal payPercent
+    +BigDecimal threshold
+    +boolean active(Instant now)
+}
+
+class Pricing {
+    +Quote quote(lines, promotions, now)
+}
+
+class SaleLineSnapshot {
+    +String lineId
+    +String productNameSnapshot
+    +BigDecimal unitPriceSnapshot
+    +int quantity
+}
+
+
+AOperations ..> Pricing : quote
+Pricing ..> Promotion
+Pricing ..> Product
+AOperations ..> OriginalSaleAccess : original sale
+OriginalSaleAccess ..> SaleLineSnapshot
+AOperations ..> StockEntry
+AOperations ..> MoneyEntry
+AOperations ..> SubmissionPort : prepare / submit
+SubmissionPort <|.. JsonStore

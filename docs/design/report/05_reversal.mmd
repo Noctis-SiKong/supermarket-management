@@ -1,0 +1,22 @@
+classDiagram
+direction TB
+
+class DocumentReversalCommand {
+    +String requestKey
+    +String targetDocumentId
+    +String reason
+}
+class ReversalChangeSetAssembler {
+    +assemble(...) ChangeSet
+}
+class ReversalCommitValidator {
+    #reconstruct(...) Result
+}
+class DependencyChecker
+class EffectiveDependencies
+class ChangeSet
+
+DocumentReversalCommand ..> ReversalChangeSetAssembler
+ReversalChangeSetAssembler ..> ChangeSet
+ReversalCommitValidator ..> DependencyChecker
+DependencyChecker ..> EffectiveDependencies

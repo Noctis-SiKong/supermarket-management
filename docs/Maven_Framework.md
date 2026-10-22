@@ -6,7 +6,7 @@
 
 - `pom.xml`：单一Maven项目、Java release 17、构建/报告UTF-8、JUnit 4.13.2、Jackson databind 2.21.2；编译器、资源、测试和JAR插件固定版本。Enforcer拒绝非JDK17构建。
 - `mvnw`、`mvnw.cmd`、`.mvn/wrapper/maven-wrapper.properties`：官方Maven Wrapper 3.3.4，Maven 3.9.11，分发文件SHA-256校验；无需系统安装Maven。脚本来自官方only-script分发，不包含Wrapper JAR。
-- `src/main/java/`：标准业务源码位置，当时只用`.gitkeep`保留空目录；包所有权见[交接包§2.2](./Handoff_Package_For_B.md#22-代码包与公共类型边界)，领域类与接口待设计，不在底座阶段批量创建空类/空接口。
+- `src/main/java/`：标准业务源码位置，当时只用`.gitkeep`保留空目录；包所有权见[交接包§2.2](./process/Handoff_Package_For_B.md#22-代码包与公共类型边界)，领域类与接口待设计，不在底座阶段批量创建空类/空接口。
 - `src/test/java/nz/ac/aut/pdc/build/FrameworkSmokeTest.java`：仅验证JDK17执行、JUnit发现和Jackson中文UTF-8往返；不实现存储、认证或库存等业务。
 - `target/`：构建输出，已有忽略规则，不提交；没有创建data/或业务JSON。
 

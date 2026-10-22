@@ -75,14 +75,14 @@
 
 ## 10. 2026-10-21 增补：V2.1 同步 + CUI 菜单
 
-- V2.1：新增 `docs/design/member_b/v2_1/class_v2_1.mmd`（当前实现快照，不是目标全图）与 `README.md`（V2 目标→实现差异表、AC-06 报告口径）；PNG 待 B 用 mermaid.live 渲染。
+- V2.1：新增 `docs/archive/design_member_b/v2_1/class_v2_1.mmd`（当前实现快照，不是目标全图）与 `README.md`（V2 目标→实现差异表、AC-06 报告口径）；PNG 待 B 用 mermaid.live 渲染。
 - CUI：`CuiApp` 重构为登录 + 角色菜单（补货/报损/售后/退出），只依赖 `Operations` 接口；新增 `CuiActor`、`OperationFeedback`、`Operations`、`UnavailableOperations`。未接真实 A 适配时 `UnavailableOperations` 明确返回"依赖未交付"，不伪造库存/提交结果。
 - 测试：`CuiAppTest`(4)；累计 **56 项测试全部通过**（BUILD SUCCESS）。
 - 边界：仍无 `main`/pom exec（A 的 Maven 框架）；A shared 已合 main；CUI 真实业务适配器与 IF-04/05 适配进行中；V2.1 图尚未渲染；未执行 AC。
 
 ## 11. 2026-10-21 增补：V2.1 分图源文件
 
-- 新增 `docs/design/member_b/v2_1/split/`：`00_overview.mmd`（总览）、`01_auth_cui.mmd`、`02_stock.mmd`、`03_aftersale.mmd`。
+- 新增 `docs/archive/design_member_b/v2_1/split/`：`00_overview.mmd`（总览）、`01_auth_cui.mmd`、`02_stock.mmd`、`03_aftersale.mmd`。
 - `02_stock.mmd` 已补 `LossOrigin`/`LossState` 的 `<<enumeration>>` 记号；四张图均只显示类/接口/依赖，不含字段/方法。
 - `v2_1/README.md` §5 登记图 A–D、PNG 命名（`A_overview.png` 等）、渲染后核对 `RedemptionKind` 裁切与 auth/cui 空白裁切。
 - 边界：PNG 仍由 B 渲染，未入库；未执行 AC；图注必须注明"结构快照"。

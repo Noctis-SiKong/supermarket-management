@@ -1,0 +1,36 @@
+classDiagram
+direction TB
+
+class AOperations
+class AttachmentStore
+class SubmissionPort
+class JsonStore
+
+class Product {
+    +String barcode
+    +String name
+    +String unit
+    +BigDecimal sellingPrice
+}
+
+class DocumentHeader {
+    +String documentId
+    +String kind
+    +String status
+    +String confirmedBy
+    +Instant confirmedAt
+}
+
+class DocumentLine {
+    +String lineId
+    +String documentId
+    +String barcode
+    +int quantity
+}
+
+AOperations ..> Product : price
+AOperations ..> AttachmentStore : verify
+AOperations ..> DocumentHeader
+AOperations ..> DocumentLine
+AOperations ..> SubmissionPort : prepare / submit
+SubmissionPort <|.. JsonStore

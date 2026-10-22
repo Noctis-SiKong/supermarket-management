@@ -1,0 +1,41 @@
+classDiagram
+direction TB
+
+class SubmissionPort {
+    +open(ctx) WorkingCopy
+    +submit(op, request, wc, changes) CommitReceipt
+    +lookupResult(op, request) CommitReceipt
+}
+class AbstractReconstructingCommitValidator {
+    +validate(op, actor, request, wc, changes, acceptedAt) Result
+    #reconstruct(...) Result
+    #mismatch() Result
+}
+class JsonStore
+class WorkingCopy {
+    +baseLast() long
+    +records(table) List
+    +find(table, id) Optional
+    +overlay(changes) WorkingCopy
+}
+class ChangeSet {
+    +inserts() List
+    +patches() List
+    +removals() List
+}
+class RecordData
+class SubmissionTime {
+    +assign(baseline, changes, acceptedAt) ChangeSet
+}
+class AttachmentStore
+class DraftDeletionGuard
+
+SubmissionPort <|.. JsonStore
+JsonStore ..> WorkingCopy
+WorkingCopy ..> ChangeSet
+ChangeSet ..> RecordData
+JsonStore ..> SubmissionTime
+SubmissionTime ..> ChangeSet
+AbstractReconstructingCommitValidator ..> SubmissionTime
+JsonStore ..> AttachmentStore
+JsonStore ..> DraftDeletionGuard

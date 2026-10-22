@@ -51,13 +51,13 @@ B 的适配输入：
 2. **库存**：B 保持 IF-07 唯一所有者。A 的 `AOperations.StockDependency` 是 A 消费端适配要求，不是重写 B 的接口。prepare(wc,overlay,completeGroup) 接收调用前非库存 overlay 和尚未合并的完整组，返回仅本次新增的 STOCK_ENTRY delta；A 校对影响并合并一次。review(wc,original,completeChanges) 在 IF-05 锁内检查完整候选，不生成/合并/保存。validateRecovered(state) 调用 B 自有库存恢复校验。稳定流水 ID/eventKey/来源行由 A 请求提供，候选 commitOrdinal=0，提交后全组赋同一正值。
 3. **B 写业务**：向 JsonStore 构造器的 operation→CommitValidator 注册自身主责复核器（含权限、原始意图/effects、引用/不变量）；未注册返回 FAILED/VALIDATOR_UNAVAILABLE。校验器不再次 submit、生成变更或写文件。B 恢复校验须与 A.validateRecovered 组合；A 不验证/复制 B 的双额度和 D1 算法。注册表在构造时冻结，最后集成时装配。
 4. **类型适配**：采用正式 `shared/` 公共类型；早期交接包的 supermarket.common/persistence 占位路径由正式共享规范 §8 覆盖。A 业务仍在 supermarket.catalog/promotion/sales/app；没有创建或修改 B 的 stock/auth/aftersale/query/reversal/cui 包。B 自有单据可映射到共享 DocumentHeader/Line，不重复定义共享款项类型。
-5. **IF-11**：共享最少字段形态已交付，真实专用读取尚不提供。[方案](./design/IF11_Proposal_A.md)列出了字段、步骤及失败/崩溃语义；本次用户已明确批准两项规则并按Spec CR07-11同步，共享文档升级v1.0.3。真实专用读取仍待A实现、B集中审计及联调后接入；不新增全局开工门。
+5. **IF-11**：共享最少字段形态已交付，真实专用读取尚不提供。[方案](../design/IF11_Proposal_A.md)列出了字段、步骤及失败/崩溃语义；本次用户已明确批准两项规则并按Spec CR07-11同步，共享文档升级v1.0.3。真实专用读取仍待A实现、B集中审计及联调后接入；不新增全局开工门。
 
 DATA_ROOT 技术布局：装配方传入明确项目根 `DataRoot.forProject(Path)`；验证 README/pom/docs 标志后只使用根下 data/，不依 CWD/JAR 位置猜测。不增加必须手工编辑绝对路径的启动配置；B CUI 交付后由 A 最终装配工程根发现/启动入口。当前内部库需要明确根参数，独立发布 JAR 的自动定位和可运行入口尚未交付。
 
 data/ 下：snapshot.json（当前）、previous.json（完整上版）、snapshot.next.json/previous.next.json/recovery.next.json（未提交临时文件）、writer.lock、attachments/。临时文件不加载。替换不支持或失败就拒绝保存；原子替换后不再执行可能返回失败的文件操作。恢复用显式 RecoveryMode.PREVIOUS，验证所选完整快照及其引用附件后原子安装；不自动回退损坏当前库、不拼接另一个版本的计数/记录。附件文件不可变保存，上版引用的文件原地保留；不自动清理未关联副本、不静默删除失效历史关联。文件复制失败无成功引用；独立命名碰撞用 CREATE_NEW 失败，不覆盖，可重新导入获取新 ID。源路径从不进入附件记录。
 
-验证命令、实际结果及限制见[本轮验证记录](./evidence/member_a/implementation_validation.md)。本文件交付实现及适配说明，不冒称 B 已收到/已审计、真实联调、正式 AC 通过或全链离线运行通过。课程原件/模板未纳入本次阅读输入；仅阅读仓库已有引用，不能声称重读原件。
+验证命令、实际结果及限制见[本轮验证记录](../evidence/member_a/implementation_validation.md)。本文件交付实现及适配说明，不冒称 B 已收到/已审计、真实联调、正式 AC 通过或全链离线运行通过。课程原件/模板未纳入本次阅读输入；仅阅读仓库已有引用，不能声称重读原件。
 
 IF-11批准更新（2026-10-20）：两项业务裁决已关闭，现行规则按Spec CR07-11及共享规范v1.0.3（2026-10-21已升v1.0.4，技术补充见共享规范§5.2.1及下方补记）。已有Java交付仍对应v1.0.2且未实现真实专用读取；不要将此前代码26项模块测试当作新增AC-88–90通过。B负责已读取未完成售后草稿CANCELLED取消编排，不适用于已完成售后。
 

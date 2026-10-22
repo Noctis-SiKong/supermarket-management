@@ -108,7 +108,7 @@
 
 | # | 结论（事实） | 证据 | 严重度 | 建议（供作者决定） |
 |---|---|---|---|---|
-| D-01 | IF-07 v0.3 **同一文件自相矛盾**：§4 输出表仍列 `source_locations`（"来源入库定位…可用数量"），§14.1 与共享规范 §5.3 已明文删除该语义 | `docs/design/member_b/if07_contract.md:82` vs `:191`；`Shared_Boundaries_and_Interface_Spec.md:134` | P1 | 在 §4 就地删除/标注失效，或用"§14 覆盖 §4"的显式修订标记；否则 A 审计时会读到两套输出契约 |
+| D-01 | IF-07 v0.3 **同一文件自相矛盾**：§4 输出表仍列 `source_locations`（"来源入库定位…可用数量"），§14.1 与共享规范 §5.3 已明文删除该语义 | `docs/archive/design_member_b/if07_contract.md:82` vs `:191`；`Shared_Boundaries_and_Interface_Spec.md:134` | P1 | 在 §4 就地删除/标注失效，或用"§14 覆盖 §4"的显式修订标记；否则 A 审计时会读到两套输出契约 |
 | D-02 | IF-07 v0.3 §5 错误码表（`SOURCE_INSUFFICIENT`/`INVALID_QUANTITY`/`DUPLICATE_EVENT`/`UNKNOWN_REFERENCE`/`OUT_OF_SCOPE`）与 §14.5"沿用规范 §4 稳定码、本接口不新增细分码"矛盾；**代码实际采用 §14 口径** | `if07_contract.md:93-99` vs `:198`；`StockValidator.java:29,38,63,95`；`StockService.java:86` | P1 | 二选一并同步 §5/§14 与代码；当前状态是"文档两套、代码按其中一套" |
 | D-03 | IF-07 v0.3 声明签名 `balances(wc, overlay, barcodes)`，代码实现为 `balances(WorkingCopyView, Collection)`（**无 overlay**） | `if07_contract.md:193`；`Shared…:132`；`StockOperations.java:15`；`StockService.java:34-42` | P1 | 由 B 决定：补 overlay 入参，或在契约中登记"B 侧当前不含 overlay"的差异与理由（规范 §10 要求变更通知） |
 | D-04 | IF-07 v0.3 声明 `check(wc, overlay: OverlayView, changes)`，代码以 `List<StockEntry>` 充当 overlay；无 `OverlayView` 类型 | `if07_contract.md:194`；`StockOperations.java:24-27` | P2 | 在契约 §14.8 补"以 `List<StockEntry>` 逻辑等价表达 overlay"的说明，避免 A 按类型名对接失败 |
@@ -120,7 +120,7 @@
 | D-10 | V2 与实现差异：V2 56 类中 `shared`(6 类)、`aftersale`(15)、`query`(3)、`reversal`(6)、`external`(5) 均无实现；实现新增 V2 未有的 `StockOperations` 接口与 `StockPorts` 聚合类型 | `class_v2.mmd:267-329`；`StockOperations.java:12`；`StockPorts.java:14-39` | P1（AC-06） | 实现期同步 V2（`v2/README.md:28` 已自设此要求），或出 V2.1 并记录差异 |
 | D-11 | 包根路径与共享规范约定不一致：规范写 B 位置为 `src/main/java/nz/ac/aut/pdc/{auth,cui,stock…}`，代码为 `nz/ac/aut/pdc/**supermarket**/...`；A 的 `shared/`、`infrastructure/` 同规范无 `supermarket` 段 | `Shared…:185,193`；`design_notes.md:59`；`src/main/java/nz/ac/aut/pdc/supermarket/` | P2 | A/B 对齐后择一（B 侧文档与代码自洽，但与规范文本不一致），并在代码位置记录中登记 |
 | D-12 | V2 规模陈述"约 50 个类"，实测 **56** 个类框 | `v2/README.md:4`；`design_evolution.md:78`；审查者统计 `class_v2.mmd` | P3 | 改为"56 个"或"约 56" |
-| D-13 | `v2/README.md:5` 称 PNG 由 B 在 mermaid.live 渲染导出；仓库仅存 PNG，无法核验渲染来源与 `class_v2.mmd` 的逐图一致性 | `v2/README.md:5,22`；`docs/design/member_b/v2/rendered/*.png`（8 个） | P3 | 报告中如实写"图由 B 渲染"，或在 evidence 记录渲染时间/版本 |
+| D-13 | `v2/README.md:5` 称 PNG 由 B 在 mermaid.live 渲染导出；仓库仅存 PNG，无法核验渲染来源与 `class_v2.mmd` 的逐图一致性 | `v2/README.md:5,22`；`docs/archive/design_member_b/v2/rendered/*.png`（8 个） | P3 | 报告中如实写"图由 B 渲染"，或在 evidence 记录渲染时间/版本 |
 
 ### 3.2 已闭合项（避免误判，均为事实）
 
@@ -302,10 +302,10 @@
 - `docs/Shared_Boundaries_and_Interface_Spec.md:94-102`（三态与稳定错误码）、`:130-140`（IF-07 §5.3）、`:185,193`（A/B 代码位置）、`:191,202,207`（R-04/R-29 与违规解释）。
 
 **B 设计/契约**
-- `docs/design/member_b/if07_contract.md:3,8,66,82,93-99,113-118,126,184,191-201`。
-- `docs/design/member_b/class_v2.mmd:51-62,105-112,267-329,331-336,418`。
-- `docs/design/member_b/design_notes.md:14,22,30-33,59,83,85`。
-- `docs/design/member_b/v2/README.md:4,5,7-18,28`。
+- `docs/archive/design_member_b/if07_contract.md:3,8,66,82,93-99,113-118,126,184,191-201`。
+- `docs/archive/design_member_b/class_v2.mmd:51-62,105-112,267-329,331-336,418`。
+- `docs/archive/design_member_b/design_notes.md:14,22,30-33,59,83,85`。
+- `docs/archive/design_member_b/v2/README.md:4,5,7-18,28`。
 
 **B 证据**
 - `docs/evidence/member_b/design_review.md:4,23,32,45,47,48,52,53,62,71,87-97,99-133,108,137-140`。

@@ -1,6 +1,6 @@
 # Final production design evidence — 2026-10-22
 
-This is the current implementation view for Spec CR-07, TC-02/03 and AC-06. It supplements, and does not rewrite, the genuine [B V1](../member_b/class_v1.mmd), [V2](../member_b/class_v2.mmd), reviews and subsequent V2.1 snapshots. Those snapshots describe their historical scope; they are not the complete current system diagram. This update introduces no requirement CR or data-model change. Human design/AC-06 review remains pending.
+This is the current implementation view for Spec CR-07, TC-02/03 and AC-06. It supplements, and does not rewrite, the genuine [B V1](../../archive/design_member_b/class_v1.mmd), [V2](../../archive/design_member_b/class_v2.mmd), reviews and subsequent V2.1 snapshots. Those snapshots describe their historical scope; they are not the complete current system diagram. This update introduces no requirement CR or data-model change. Human design/AC-06 review remains pending.
 
 ## Complete system diagram
 

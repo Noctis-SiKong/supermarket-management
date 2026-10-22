@@ -1,0 +1,44 @@
+classDiagram
+direction TB
+
+class StockBusiness {
+    +prepare(...) Result
+}
+class StockOperationValidator {
+    #reconstruct(...) Result
+}
+class StockChangeSetAssembler {
+    +assembleReplenishment(...)
+    +assembleLoss(...)
+}
+class StockService {
+    +balances(...) List
+    +check(...) StockCheckResult
+}
+class LossWorkflow {
+    +prepare(...) ChangeSet
+    +validate(...) Result
+}
+class StockBalance {
+    +String barcode
+    +Position position
+    +int quantity
+}
+class LossRecord {
+    +String lossId
+    +String sourceLineId
+    +int quantity
+}
+class Position {
+    <<enumeration>>
+    S
+    W
+}
+
+StockBusiness ..> StockOperationValidator
+StockBusiness ..> StockChangeSetAssembler
+StockBusiness ..> LossWorkflow
+StockBusiness ..> StockService
+StockService ..> StockBalance
+StockBalance ..> Position
+LossWorkflow ..> LossRecord

@@ -1,0 +1,48 @@
+classDiagram
+direction TB
+
+class AftersaleEngine
+
+class OriginalSaleAccess {
+    +readForAftersale(...) Result
+}
+class AftersaleCommitValidator {
+    +validate(...) Result
+}
+class AftersaleIntegrityValidator
+class AftersaleChangeSetAssembler {
+    +assemble(...) ChangeSet
+}
+class AftersaleDraftService {
+    +create(...) Result
+    +recordRead(...) Result
+    +cancel(...) Result
+    +delete(...) Result
+}
+class QuotaView
+class Redemption {
+    +String redemptionId
+    +String sourceLineId
+    +Effect effect
+    +int quantity
+}
+class Replacement {
+    +String lineId
+    +String barcode
+    +int quantity
+}
+class Effect {
+    <<enumeration>>
+    CONSUME
+    RELEASE
+}
+
+AftersaleEngine ..> OriginalSaleAccess
+AftersaleEngine ..> AftersaleCommitValidator
+AftersaleEngine ..> AftersaleChangeSetAssembler
+AftersaleEngine ..> AftersaleDraftService
+AftersaleCommitValidator ..> AftersaleIntegrityValidator
+AftersaleChangeSetAssembler ..> Redemption
+AftersaleChangeSetAssembler ..> Replacement
+AftersaleChangeSetAssembler ..> QuotaView
+Redemption ..> Effect

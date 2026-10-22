@@ -1,7 +1,7 @@
 # B 范围类图 V1 · 真实 AI 评审记录
 
 版本/日期：v1，2026-10-20（Asia/Shanghai）
-评审对象：`docs/design/member_b/class_v1.mmd`（v1，2026-10-20，32 个类/接口/枚举）＋渲染图 `class_v1.png`（2196×1909）
+评审对象：`docs/archive/design_member_b/class_v1.mmd`（v1，2026-10-20，32 个类/接口/枚举）＋渲染图 `class_v1.png`（2196×1909）
 评审依据：Spec v0.7（§4–§11、§17）、PRD v0.7（§5/§7）、ERD v0.7（§4–§6.2）、IF-07 基础契约 v0.2、交接包 v0.4（§3/§4/§5/§6/§9）
 评审方式：AI 以"资深行业从业者/设计评审者"视角，逐项阅读已保存的 V1 源文件与渲染图，按业务逻辑合理性、落地可行性、数据/接口一致性给出意见。
 评审者/工具：DeepSeek Harness 0.2.1-rc.2 / deepseek-flash 1017（thinking=max）；非人类评审。

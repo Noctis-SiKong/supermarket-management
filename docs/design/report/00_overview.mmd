@@ -1,0 +1,48 @@
+classDiagram
+direction TB
+
+namespace entry {
+    class Main
+    class Application
+    class RepositoryBIntegration
+    class CuiApp
+}
+
+namespace application {
+    class SharedOperations
+    class MaintenanceOperations
+    class AOperations
+}
+
+namespace domain {
+    class StockBusiness
+    class AftersaleEngine
+    class AftersaleDraftService
+    class QueryService
+}
+
+namespace contracts {
+    class SubmissionPort
+    class AbstractReconstructingCommitValidator
+}
+
+namespace infrastructure {
+    class JsonStore
+    class AttachmentStore
+}
+
+Main --> Application
+Application --> CuiApp
+Application --> RepositoryBIntegration
+CuiApp --> SharedOperations
+SharedOperations --> AOperations
+SharedOperations --> MaintenanceOperations
+MaintenanceOperations ..> StockBusiness
+SharedOperations ..> AftersaleEngine
+SharedOperations ..> AftersaleDraftService
+SharedOperations ..> QueryService
+AftersaleEngine ..> SubmissionPort
+StockBusiness ..> SubmissionPort
+AOperations ..> SubmissionPort
+SubmissionPort <|.. JsonStore
+JsonStore ..> AttachmentStore

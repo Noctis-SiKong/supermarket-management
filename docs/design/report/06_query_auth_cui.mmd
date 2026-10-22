@@ -1,0 +1,45 @@
+classDiagram
+direction TB
+
+class CuiApp
+class InputValidator
+class Texts
+class QueryOperations
+class QueryService
+
+class SaleLineView {
+    +String saleLineId
+    +String barcode
+    +int quantity
+    +BigDecimal paidAmount
+}
+class LossRecordView {
+    +String lossId
+    +String sourceLineId
+    +int quantity
+}
+class LocalAuthService {
+    +login(username, password) AuthResult
+    +resolve(session) AuthResult
+}
+class SharedCredentialStore
+class Sha256PasswordHasher
+class SharedIdentityResolver
+class Role {
+    <<enumeration>>
+    ADMIN
+    MANAGER
+    CLERK
+}
+
+CuiApp ..> QueryOperations
+CuiApp ..> LocalAuthService
+CuiApp ..> InputValidator
+CuiApp ..> Texts
+QueryOperations ..> QueryService
+QueryService ..> SaleLineView
+QueryService ..> LossRecordView
+LocalAuthService ..> SharedCredentialStore
+LocalAuthService ..> Sha256PasswordHasher
+SharedIdentityResolver ..> SharedCredentialStore
+SharedCredentialStore ..> Role

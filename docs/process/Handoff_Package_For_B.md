@@ -4,9 +4,9 @@
 
 ## 1. 目的、依据与仓库版本
 
-供成员B及其AI先完成设计，再在条件满足后开发自己负责、规则明确的部分。需求基线为Spec/PRD/ERD **v0.7**；分工清单为 **v0.3**，两者不是同一版本体系。批准/待决状态以[Spec §17](./Project_Spec.md#17-v07-change-control-and-single-pending-decision-register)为来源，SYNC详情见[§17.4](./Project_Spec.md#174-explicitly-authorized-targeted-synchronization-v07-unchanged)，D1/D2保持批准关闭。不得以本交接包修改冻结需求。
+供成员B及其AI先完成设计，再在条件满足后开发自己负责、规则明确的部分。需求基线为Spec/PRD/ERD **v0.7**；分工清单为 **v0.3**，两者不是同一版本体系。批准/待决状态以[Spec §17](../Project_Spec.md#17-v07-change-control-and-single-pending-decision-register)为来源，SYNC详情见[§17.4](../Project_Spec.md#174-explicitly-authorized-targeted-synchronization-v07-unchanged)，D1/D2保持批准关闭。不得以本交接包修改冻结需求。
 
-开始前完整读取[README](../README.md)、[Spec](./Project_Spec.md)、[PRD](./Project_PRD.md)、[ERD](./Project_ERD.md)、[分工与接口清单](./P1_Preliminary_Work_Distribution_and_Interface_List.md)，再按实际文件处理，不以本包摘要替代规则。
+开始前完整读取[README](../../README.md)、[Spec](../Project_Spec.md)、[PRD](../Project_PRD.md)、[ERD](../Project_ERD.md)、[分工与接口清单](../P1_Preliminary_Work_Distribution_and_Interface_List.md)，再按实际文件处理，不以本包摘要替代规则。
 
 本轮实际核验：
 
@@ -35,7 +35,7 @@ B在自己的工作副本运行`git status --short --branch`、`git rev-parse HE
 
 B同时主责既定共享资产CUI壳、认证、测试夹具（SA-01/03/07），以及IF-01/02/07/12/13/14/15逻辑职责；16项IF不等于16个Java接口。A唯一维护JSON持久化/统一保存、ID与时钟、DATA_ROOT及附件（SA-02/04/05/06），并提供IF-03/04/05/06/08/09/10/11/16。B不得复制保存器、绕开统一提交或直接改A内部实现。
 
-路径均为**仓库相对路径**。B可新增`docs/design/member_b/`保存本范围设计、`docs/evidence/member_b/`保存真实评审/自测材料；这些目前是计划路径，按产物实际创建。类图可用可编辑Mermaid。代码/测试的包名及目录按§2.2的目录所有权执行；B只在B包内创建实现及镜像测试，不抢建第二套项目骨架，不预建空类。确需更改公共接口时先通知使用方，记录差异与适配动作。Spec/PRD/ERD/README和A业务内部不属B自由修改范围，差异先登记。
+路径均为**仓库相对路径**。B可新增`docs/archive/design_member_b/`保存本范围设计、`docs/evidence/member_b/`保存真实评审/自测材料；这些目前是计划路径，按产物实际创建。类图可用可编辑Mermaid。代码/测试的包名及目录按§2.2的目录所有权执行；B只在B包内创建实现及镜像测试，不抢建第二套项目骨架，不预建空类。确需更改公共接口时先通知使用方，记录差异与适配动作。Spec/PRD/ERD/README和A业务内部不属B自由修改范围，差异先登记。
 
 P1为Java CUI、JDK17、集合及JSON文件持久化，ERD不是SQL或数据库实现要求。不做P2实现、连锁/商城、商品生产日期/到期/批次/过期功能。保留必要审计时间。DATA_ROOT已决定为仓库根`data/`；技术根解析与子布局由A交方案。附件独立ID、上限5,000,000字节，仅技术有效性检查/保存，人工判断内容，无OCR/自动验票。B只调用相关接口，不自行另定布局。
 
@@ -101,13 +101,13 @@ P1为Java CUI、JDK17、集合及JSON文件持久化，ERD不是SQL或数据库�
 
 ## 4. 设计及真实评审交付
 
-建议实际产物：`docs/design/member_b/class_v1.mmd`、`class_v2.mmd`、`design_notes.md`；`docs/evidence/member_b/design_review.md`保存评审提示、实际输出、日期/工具、逐条决定及V1→V2差异。当前均尚未生成，不用空内容冒充证据。必要用例设计与项目用例图对齐，不覆盖A范围。
+建议实际产物：`docs/archive/design_member_b/class_v1.mmd`、`class_v2.mmd`、`design_notes.md`；`docs/evidence/member_b/design_review.md`保存评审提示、实际输出、日期/工具、逐条决定及V1→V2差异。当前均尚未生成，不用空内容冒充证据。必要用例设计与项目用例图对齐，不覆盖A范围。
 
 每个设计元素列实际FR/BR/AC、ERD实体/字段约束、IF提供方/使用方；未决定的DTO、方法签名、错误码属于技术设计，不重新报批业务规则。真实AI评审应针对已保存的V1实际读取相关规则，无需额外强制使用另一会话；作者自查不等于独立AI评审。B本人理解并作出采纳/拒绝决定，评审者不得代替人的判断。评审应，明确发现的问题；建议若改权限、金额、库存、持久化或有效AC，先登记并暂停该点，不因AI建议自动改基线。报告按模板§3.3/3.4/3.5/3.6和附录A映射真实材料，不代写个人反思。
 
 ### 4.1 唯一Maven框架：A负责，已进入交付提交，待B复现
 
-成员A通过开发agent已建立`pom.xml`、官方Maven Wrapper、`src/main/java`和`src/test/java`，在线及缓存后离线`clean verify`成功，2项框架测试通过；详细文件、版本和实际命令见[框架说明](./Maven_Framework.md)。框架已随本次交付提交进入仓库；B拉取该提交即可取得并须自行复现。尚未联系B或由B复现。没有业务主类或业务实现，底座可构建不代表设计完成或系统已实现。
+成员A通过开发agent已建立`pom.xml`、官方Maven Wrapper、`src/main/java`和`src/test/java`，在线及缓存后离线`clean verify`成功，2项框架测试通过；详细文件、版本和实际命令见[框架说明](../Maven_Framework.md)。框架已随本次交付提交进入仓库；B拉取该提交即可取得并须自行复现。尚未联系B或由B复现。没有业务主类或业务实现，底座可构建不代表设计完成或系统已实现。
 
 A交付目标仅为单一Maven项目、标准`src/main/java`和`src/test/java`、JDK 17、JUnit 4.13.2、Jackson及UTF-8配置，附必要构建说明和实际验证的命令/结果（选型依据Spec §10 TC-07、PRD-10）。不在底座阶段提前确定领域类、服务、接口签名或持久化实现，不批量生成16个空接口，不加GUI，不代替类图设计。
 
@@ -198,13 +198,13 @@ A下线期间，B按依赖表局部推进并集中记录待交接内容；不要
 
 ### 9.1 用户上传/提供与B接收核对
 
-B从本交付提交取得本交接包`docs/Handoff_Package_For_B.md`（v0.4）、框架说明`docs/Maven_Framework.md`、`pom.xml`、`mvnw`、`mvnw.cmd`、`.mvn/wrapper/maven-wrapper.properties`及`src/`，以及本次修订后的README、Spec、PRD、ERD、v0.3分工清单和`docs/erd/`四份图源。以上均随本次交付提交进入仓库，B拉取同一提交即可取得；不能只告诉B拉取旧HEAD，也不再把当前README误列为“旧HEAD已含”。两份课程译本另由开发者本机提供，不放进仓库；原课程材料需要核对时另行提供，不假设AI天然可访问。
+B从本交付提交取得本交接包`docs/process/Handoff_Package_For_B.md`（v0.4）、框架说明`docs/Maven_Framework.md`、`pom.xml`、`mvnw`、`mvnw.cmd`、`.mvn/wrapper/maven-wrapper.properties`及`src/`，以及本次修订后的README、Spec、PRD、ERD、v0.3分工清单和`docs/erd/`四份图源。以上均随本次交付提交进入仓库，B拉取同一提交即可取得；不能只告诉B拉取旧HEAD，也不再把当前README误列为“旧HEAD已含”。两份课程译本另由开发者本机提供，不放进仓库；原课程材料需要核对时另行提供，不假设AI天然可访问。
 
 B收到后核对：仓库HEAD/实际差异、v0.7需求基线、v0.3分工文件、本包v0.4；是否拿到课程材料、IF-03/04/05/06必要契约、A的IF-11方案，以及Maven框架提交。缺哪些就登记哪些，已明确不依赖项先做。后续HEAD若变化，先检查范围/契约差异，不能盲套本包记录的版本。
 
 ## 10. 可直接复制给AI的B工作指令
 
-> 你协助成员B工作。先完整读取本仓库README、docs/Project_Spec.md、docs/Project_PRD.md、docs/Project_ERD.md、docs/P1_Preliminary_Work_Distribution_and_Interface_List.md及docs/Handoff_Package_For_B.md，并实际检查Git分支、HEAD、状态、文件及远端；保护已有改动。批准/待决依Spec §17，SYNC详情见§17.4，需求基线v0.7、分工稿v0.3，不自行改冻结规则。先从本包阶段1登记WP-03/05/06范围、FR/BR/AC、依赖和可写目录开始；不能直接大规模编码。
+> 你协助成员B工作。先完整读取本仓库README、docs/Project_Spec.md、docs/Project_PRD.md、docs/Project_ERD.md、docs/P1_Preliminary_Work_Distribution_and_Interface_List.md及docs/process/Handoff_Package_For_B.md，并实际检查Git分支、HEAD、状态、文件及远端；保护已有改动。批准/待决依Spec §17，SYNC详情见§17.4，需求基线v0.7、分工稿v0.3，不自行改冻结规则。先从本包阶段1登记WP-03/05/06范围、FR/BR/AC、依赖和可写目录开始；不能直接大规模编码。
 >
 > B主责WP-03/05/06及既有CUI/认证/夹具资产，A主责JSON统一保存、ID时钟、DATA_ROOT、附件及WP-01/02/04。项目负责人已确认现有分工并给出条件式授权，具体见§2.1。严格按依赖登记→IF-07基础契约→B范围类图V1→针对V1真实AI评审→B本人理解并逐项记录采纳/拒绝理由→V2的顺序进行，不跳步。无需强制另一会话，但作者自查不能冒充独立AI评审。只表达B范围及必要外部接口；项目整体用例图/两份类图按分工清单§5追踪，不将全部图表工作转给B。设计符合冻结基线、必要接口明确且A交付的唯一Maven框架在B取得提交中实际可用后，才在该框架开发本人独立模块并自测；A离线不阻止已授权明确任务，框架未交付则继续设计，绝不另建项目、pom或构建配置。
 >

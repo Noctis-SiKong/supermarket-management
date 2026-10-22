@@ -18,7 +18,7 @@
 
 2026-10-20，正式规范v1.0及README入口发布于main提交`0af6d6ed312e5ff23173cc67d483814124c58adf`（`docs: finalize shared interface specification v1.0`）。该提交包含B设计HEAD `1deaf4814eff4501d97c67c567e72375a32a5a79`。本轮执行普通`git push origin main`成功，随后`git ls-remote origin refs/heads/main`返回同一`0af6d6e…`；因此双方可从现有origin/main取得正式规范和已审计设计材料。未强推、未改远端/可见性/分支策略。本回执是发布后的文档记录，其自身提交可由本文件Git历史定位，不将内容发布号冒称为永久最新HEAD。B拉取后核对HEAD包含上述发布提交；未来更新以实际Git状态为准。
 
-本轮读取V1/V2源文件、[真实AI评审](./evidence/member_b/design_review.md)§7、[演进记录](./evidence/member_b/design_evolution.md)§0/3/4/5和[IF-07草案v0.2](./design/member_b/if07_contract.md)。原渲染图仍保留，不重新绘制B整套类图。
+本轮读取V1/V2源文件、[真实AI评审](./evidence/member_b/design_review.md)§7、[演进记录](./evidence/member_b/design_evolution.md)§0/3/4/5和[IF-07草案v0.2](./archive/design_member_b/if07_contract.md)。原渲染图仍保留，不重新绘制B整套类图。
 
 课程资料仅本机参考、不随仓库分发：草稿阶段已核读`Projects1and2_中文翻译.pdf`阅读器/印刷p2目录、p3引言/重要日期（两人实质参与、日期以Canvas为准；本轮未访问Canvas）；`Assignment1_报告模板_CJLU2026_中文.docx`正文/13表，§3.3–3.6真实V1/AI评审/人的决定/V2/演进及附录A对应接口设计证据。未据此补造新的业务要求。
 
