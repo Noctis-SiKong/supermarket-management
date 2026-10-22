@@ -165,3 +165,15 @@ The five new tests exercise both real validators through CommitValidator, strict
 [Final design evidence](./design/final/README.md) includes the complete system Mermaid source/SVG, source-hashed inventory (128 production files / 206 named types), a supplementary template diagram, rationale and exact video impact. Types are counted by reflection including all nested named types; this is not a replacement for earlier statistics made under different scopes. V1/review/V2 and the finished video are preserved. Actual video frames and matching SRT identify the final-structure segment and the historical 214-test card/voice requiring a limited update if used as current evidence. No video was edited or re-recorded.
 
 Spec AC-06 now links implementation/automatic evidence and explicitly leaves human acceptance pending; PRD links the same evidence. Requirements and ERD remain unchanged. Repository documents are English and corresponding Chinese evidence is retained outside the repository under the established user convention. This supplies factual report material, not reflection/signature or course acceptance. The commit was subsequently pushed to `origin/main` as `78def58`; local `main` was fast-forwarded to the same commit and the temporary branch was removed.
+
+## 9. Java 21 verification (2026-10-22)
+
+The runtime installed on this host is a Java 21 launcher (`java-runtime-delta`, feature version 21) and the same host also holds a full Temurin JDK. Verification was repeated with `JAVA_HOME` pointing at Temurin 21.0.12.1+1:
+
+| Command | Result |
+|---|---|
+| `.\mvnw.cmd -B -o clean verify` (JDK 21.0.12.1+1) | Build success; 219 tests, zero failures/errors/skips |
+| `java -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --check` (Java 21 launcher) | Exit 0; `P1 JDK 21 JSON schemaVersion=1`; recovery/domain validation passed |
+| Piped login with `clerk01` on the same launcher | Login successful; 18-item business plus maintenance/query menus rendered |
+
+One test failed on the first Java 21 run: `FrameworkSmokeTest.runsOnJdk17` asserted `Runtime.version().feature() == 17`. It now asserts `>= 17`, which matches the documented requirement; no production code and no other test changed. The `java-runtime-delta` image is a linked runtime without `lib/ct.sym`, so it cannot compile with `--release`; full builds still require a full JDK (17 or 21), while the packaged jar runs on both.

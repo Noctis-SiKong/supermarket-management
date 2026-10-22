@@ -12,8 +12,9 @@ import static org.junit.Assert.assertTrue;
 /** Build infrastructure only: no inventory or other business behavior. */
 public class FrameworkSmokeTest {
     @Test
-    public void runsOnJdk17() {
-        assertEquals(17, Runtime.version().feature());
+    public void runsOnJdk17OrNewer() {
+        assertTrue("JDK 17 or newer is required",
+                Runtime.version().feature() >= 17);
     }
 
     @Test
