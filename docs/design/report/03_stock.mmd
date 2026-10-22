@@ -35,7 +35,7 @@ class Position {
     W
 }
 
-StockBusiness ..> StockOperationValidator
+StockOperationValidator ..> StockBusiness : prepare
 StockBusiness ..> StockChangeSetAssembler
 StockBusiness ..> LossWorkflow
 StockBusiness ..> StockService

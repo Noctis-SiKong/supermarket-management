@@ -5,6 +5,24 @@ class AOperations
 class Pricing {
     +Quote quote(lines, promotions, now)
 }
+class PricingSaleLineSnapshot {
+    +String lineId
+    +String productNameSnapshot
+    +BigDecimal unitPriceSnapshot
+    +BigDecimal grossAmount
+    +BigDecimal discountAmount
+    +BigDecimal paidAmount
+}
+class SharedSaleLineSnapshot {
+    +String saleId
+    +String lineId
+    +String barcode
+    +String productName
+    +BigDecimal unitPrice
+    +int originalQuantity
+    +BigDecimal paidAmount
+    +String soldAt
+}
 class Promotion {
     +String promotionId
     +Kind kind
@@ -15,28 +33,15 @@ class Promotion {
 class Product
 class StockEntry
 class MoneyEntry
-class OriginalSaleAccess {
-    +readForAftersale(store, op, request) Result
-}
-class SaleLineSnapshot {
-    +String saleId
-    +String lineId
-    +String barcode
-    +String productName
-    +BigDecimal unitPrice
-    +int originalQuantity
-    +BigDecimal paidAmount
-}
 class SubmissionPort
 class JsonStore
 
 AOperations ..> Pricing : quote
+AOperations ..> SharedSaleLineSnapshot : SALE_LINE facts
 AOperations ..> StockEntry
 AOperations ..> MoneyEntry
-AOperations ..> OriginalSaleAccess : original sale
 AOperations ..> SubmissionPort : prepare / submit
-Pricing ..> Product
+Pricing ..> PricingSaleLineSnapshot : quote lines
 Pricing ..> Promotion
-Pricing ..> SaleLineSnapshot
-OriginalSaleAccess ..> SaleLineSnapshot
+Pricing ..> Product
 SubmissionPort <|.. JsonStore

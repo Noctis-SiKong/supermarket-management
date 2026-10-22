@@ -15,9 +15,9 @@ foreach ($taskJdk in $taskJdkCandidates) {
     $taskProcess = [Diagnostics.Process]::Start($taskProbe)
     try { $taskVersion = $taskProcess.StandardError.ReadToEnd() + $taskProcess.StandardOutput.ReadToEnd(); $taskProcess.WaitForExit() }
     finally { $taskProcess.Dispose() }
-    if ($taskVersion -match 'version "17\.') { $env:JAVA_HOME = $taskJdk; $taskJava = Join-Path $taskJdk 'bin/java.exe'; break }
+    if ($taskVersion -match 'version "(1[7-9]|[2-9][0-9]|[0-9]{3,})') { $env:JAVA_HOME = $taskJdk; $taskJava = Join-Path $taskJdk 'bin/java.exe'; break }
 }
-if (-not $taskJava) { throw 'Set JAVA_HOME to an installed JDK 17.' }
+if (-not $taskJava) { throw 'Set JAVA_HOME to an installed JDK 17 or newer.' }
 Push-Location $taskProject
 $taskFixture = $null
 try {

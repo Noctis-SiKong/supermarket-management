@@ -18,6 +18,7 @@ For Chinese terminal input, configure UTF-8 input/output as shown in the languag
 2. One command to start with the bundled demo data:
    `run.cmd`
    It seeds `data\snapshot.json` from `demo\preset_snapshot_20261022.json` when no snapshot exists, builds the executable jar if needed, and launches the CUI. Log in with `manager01`, `clerk01` or `admin01`; password `demo1234`.
+   `run.cmd` is Windows-only and requires `JAVA_HOME`; it does not fall back to the `java` on `PATH`. There is no `run.sh`: on macOS/Linux run `./mvnw -B --no-transfer-progress clean package` and start the jar with `java -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
 3. To build without launching: `.\mvnw.cmd -B --no-transfer-progress clean package`.
    The template's `mvn clean javafx:run` belongs to Project 2 (GUI); this P1 is a CUI. `mvn clean compile exec:java` also works here because the pom declares the exec plugin and main class.
 

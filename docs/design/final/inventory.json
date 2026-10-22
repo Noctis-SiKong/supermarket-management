@@ -10053,7 +10053,7 @@
     "src/main/java/nz/ac/aut/pdc/supermarket/app/AOperations.java": "8850bde98369ba549dfe2a0eb0d9e193936ce654f9699b4134c5b5ef7e148fae",
     "src/main/java/nz/ac/aut/pdc/supermarket/app/Application.java": "28010741e6393e2d52ed6d137a94ca94c7d7e5c3d96df9de8a93d929c82608ca",
     "src/main/java/nz/ac/aut/pdc/supermarket/app/BIntegration.java": "f7790888974865798ab678b8613f66683dedfdda2fb40701c7c0066f84e58062",
-    "src/main/java/nz/ac/aut/pdc/supermarket/app/Main.java": "10c965dedcab76375684a40a06b0e2f84a2c18ce4661224768633db9c18aea2f",
+    "src/main/java/nz/ac/aut/pdc/supermarket/app/Main.java": "ea07e7325c6a01bee18746f3d4ec11ced7726603fef27fcea88714ebf20ba31a",
     "src/main/java/nz/ac/aut/pdc/supermarket/app/RepositoryBIntegration.java": "7fae08953f77f518ed7e70e8b4a4ee0d75c70ecb7c76fe654ea2e9bd00ccfbbf",
     "src/main/java/nz/ac/aut/pdc/supermarket/auth/AuthResult.java": "42e06906cc45ced05e41ef5932c2b1b2dd5b6d05d560baee1e8b6fe0bf4af323",
     "src/main/java/nz/ac/aut/pdc/supermarket/auth/AuthService.java": "35a236e3fe74094260b6446b0388d857a3154de339c44647aac0366ef151b367",

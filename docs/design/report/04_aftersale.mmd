@@ -2,6 +2,7 @@ classDiagram
 direction TB
 
 class SharedOperations
+class RepositoryBIntegration
 class AftersaleEngine {
     +create(wc, clock, key) AftersaleService
 }
@@ -19,6 +20,7 @@ class AftersaleCommitValidator {
     +validate(...) Result
 }
 class AftersaleIntegrityValidator
+class SharedStockAdapter
 class AftersaleDraftService {
     +create(...) Result
     +recordRead(...) Result
@@ -45,7 +47,8 @@ SharedOperations ..> AftersaleSubmissionService : submit
 AftersaleEngine ..> AftersaleService : creates
 AftersaleSubmissionService ..> AftersaleService : apply
 AftersaleSubmissionService ..> AftersaleChangeSetAssembler : assemble
-AftersaleCommitValidator ..> AftersaleIntegrityValidator : review
+AftersaleCommitValidator ..> SharedStockAdapter : review
+RepositoryBIntegration ..> AftersaleIntegrityValidator : registers
 AftersaleService ..> OriginalSaleReader
 AftersaleService ..> Redemption
 AftersaleService ..> Replacement

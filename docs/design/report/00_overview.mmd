@@ -41,8 +41,7 @@ MaintenanceOperations ..> StockBusiness
 SharedOperations ..> AftersaleEngine
 SharedOperations ..> AftersaleDraftService
 SharedOperations ..> QueryService
-AftersaleEngine ..> SubmissionPort
-StockBusiness ..> SubmissionPort
-AOperations ..> SubmissionPort
+Application ..> SubmissionPort : submit
+SharedOperations ..> SubmissionPort : submit
 SubmissionPort <|.. JsonStore
 JsonStore ..> AttachmentStore
