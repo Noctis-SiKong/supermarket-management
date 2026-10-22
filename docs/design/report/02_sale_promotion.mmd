@@ -2,13 +2,9 @@ classDiagram
 direction TB
 
 class AOperations
-class Product
-class OriginalSaleAccess
-class StockEntry
-class MoneyEntry
-class SubmissionPort
-class JsonStore
-
+class Pricing {
+    +Quote quote(lines, promotions, now)
+}
 class Promotion {
     +String promotionId
     +Kind kind
@@ -16,25 +12,31 @@ class Promotion {
     +BigDecimal threshold
     +boolean active(Instant now)
 }
-
-class Pricing {
-    +Quote quote(lines, promotions, now)
+class Product
+class StockEntry
+class MoneyEntry
+class OriginalSaleAccess {
+    +readForAftersale(store, op, request) Result
 }
-
 class SaleLineSnapshot {
+    +String saleId
     +String lineId
-    +String productNameSnapshot
-    +BigDecimal unitPriceSnapshot
-    +int quantity
+    +String barcode
+    +String productName
+    +BigDecimal unitPrice
+    +int originalQuantity
+    +BigDecimal paidAmount
 }
-
+class SubmissionPort
+class JsonStore
 
 AOperations ..> Pricing : quote
-Pricing ..> Promotion
-Pricing ..> Product
-AOperations ..> OriginalSaleAccess : original sale
-OriginalSaleAccess ..> SaleLineSnapshot
 AOperations ..> StockEntry
 AOperations ..> MoneyEntry
+AOperations ..> OriginalSaleAccess : original sale
 AOperations ..> SubmissionPort : prepare / submit
+Pricing ..> Product
+Pricing ..> Promotion
+Pricing ..> SaleLineSnapshot
+OriginalSaleAccess ..> SaleLineSnapshot
 SubmissionPort <|.. JsonStore

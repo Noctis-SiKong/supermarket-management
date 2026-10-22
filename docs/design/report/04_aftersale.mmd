@@ -1,25 +1,31 @@
 classDiagram
 direction TB
 
-class AftersaleEngine
-
-class OriginalSaleAccess {
-    +readForAftersale(...) Result
+class SharedOperations
+class AftersaleEngine {
+    +create(wc, clock, key) AftersaleService
+}
+class AftersaleService {
+    +apply(command, wc) AftersaleResult
+}
+class AftersaleSubmissionService {
+    +submit(...) Result
+    +prepare(...) Result
+}
+class AftersaleChangeSetAssembler {
+    +assemble(...) ChangeSet
 }
 class AftersaleCommitValidator {
     +validate(...) Result
 }
 class AftersaleIntegrityValidator
-class AftersaleChangeSetAssembler {
-    +assemble(...) ChangeSet
-}
 class AftersaleDraftService {
     +create(...) Result
     +recordRead(...) Result
     +cancel(...) Result
     +delete(...) Result
 }
-class QuotaView
+class OriginalSaleReader
 class Redemption {
     +String redemptionId
     +String sourceLineId
@@ -31,18 +37,16 @@ class Replacement {
     +String barcode
     +int quantity
 }
-class Effect {
-    <<enumeration>>
-    CONSUME
-    RELEASE
-}
+class QuotaView
 
-AftersaleEngine ..> OriginalSaleAccess
-AftersaleEngine ..> AftersaleCommitValidator
-AftersaleEngine ..> AftersaleChangeSetAssembler
-AftersaleEngine ..> AftersaleDraftService
-AftersaleCommitValidator ..> AftersaleIntegrityValidator
-AftersaleChangeSetAssembler ..> Redemption
-AftersaleChangeSetAssembler ..> Replacement
-AftersaleChangeSetAssembler ..> QuotaView
-Redemption ..> Effect
+SharedOperations ..> AftersaleDraftService : draft lifecycle
+SharedOperations ..> AftersaleEngine : create service
+SharedOperations ..> AftersaleSubmissionService : submit
+AftersaleEngine ..> AftersaleService : creates
+AftersaleSubmissionService ..> AftersaleService : apply
+AftersaleSubmissionService ..> AftersaleChangeSetAssembler : assemble
+AftersaleCommitValidator ..> AftersaleIntegrityValidator : review
+AftersaleService ..> OriginalSaleReader
+AftersaleService ..> Redemption
+AftersaleService ..> Replacement
+AftersaleService ..> QuotaView

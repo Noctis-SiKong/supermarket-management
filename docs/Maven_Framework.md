@@ -4,7 +4,7 @@
 
 ## 2026-10-20 历史底座：范围与文件
 
-- `pom.xml`：单一Maven项目、Java release 17、构建/报告UTF-8、JUnit 4.13.2、Jackson databind 2.21.2；编译器、资源、测试和JAR插件固定版本。Enforcer拒绝非JDK17构建。
+- `pom.xml`：单一Maven项目、Java release 17、构建/报告UTF-8、JUnit 4.13.2、Jackson databind 2.21.2；编译器、资源、测试和JAR插件固定版本。Enforcer拒绝低于JDK17的构建（JDK17及以上均可）。
 - `mvnw`、`mvnw.cmd`、`.mvn/wrapper/maven-wrapper.properties`：官方Maven Wrapper 3.3.4，Maven 3.9.11，分发文件SHA-256校验；无需系统安装Maven。脚本来自官方only-script分发，不包含Wrapper JAR。
 - `src/main/java/`：标准业务源码位置，当时只用`.gitkeep`保留空目录；包所有权见[交接包§2.2](./process/Handoff_Package_For_B.md#22-代码包与公共类型边界)，领域类与接口待设计，不在底座阶段批量创建空类/空接口。
 - `src/test/java/nz/ac/aut/pdc/build/FrameworkSmokeTest.java`：仅验证JDK17执行、JUnit发现和Jackson中文UTF-8往返；不实现存储、认证或库存等业务。
@@ -23,7 +23,7 @@
 
 Linux/macOS计划用法为`sh ./mvnw --batch-mode --no-transfer-progress clean verify`，本轮未在这些平台执行。首次Wrapper及依赖下载需网络；核心业务离线约束不代表首次工程依赖可凭空获得。缓存齐全后Windows可用`./mvnw.cmd --offline --batch-mode --no-transfer-progress clean verify`。
 
-默认终端若是Java8，不代表项目改用Java8；应选择JDK17。构建文件明确强制JDK17。资源/源码UTF-8与测试JVM文件编码在工程设置，不依赖Windows默认编码。
+默认终端若是Java8，不代表项目改用Java8；应选择JDK17或更高版本。构建文件强制不低于JDK17。资源/源码UTF-8与测试JVM文件编码在工程设置，不依赖Windows默认编码。
 
 ## 2026-10-20 历史验证与交接状态
 

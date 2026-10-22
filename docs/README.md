@@ -37,7 +37,7 @@ facts and dates were not changed.
 | `design/report/` | **Current class diagrams for the report** (8 PNG + Mermaid sources, generated from the delivered code) |
 | `design/final/` | Full generated class diagram (`system.mmd`/`system.svg`), abstract-validator detail, type inventory |
 | `design/use_cases/` | P1 use-case diagrams (`use_case_v1.svg`, `use_case_v2.svg`) |
-| `design/IF11_Proposal_A.md` | IF-11 read-and-trace proposal (approved rules, implementation still gated) |
+| `design/IF11_Proposal_A.md` | IF-11 read-and-trace proposal: approved rules, kept as a historical proposal; the delivered flow is implemented in `AftersaleDraftAccess`, `AftersaleDraftService` and `OriginalSaleAccess` |
 | `erd/` | ERD Mermaid sources (common, receipt/stock, sale/promotion, aftersale) |
 | `archive/design_member_b/` | Superseded design set: V1/V2/V2.1 class diagrams, rendered PNGs, design notes, IF-07 draft |
 

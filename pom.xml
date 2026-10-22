@@ -33,7 +33,7 @@
         <version>3.5.0</version>
         <executions><execution><id>require-jdk17</id><goals><goal>enforce</goal></goals>
           <configuration><rules>
-            <requireJavaVersion><version>[17,18)</version><message>Build with JDK 17 (JAVA_HOME).</message></requireJavaVersion>
+            <requireJavaVersion><version>[17,)</version><message>Build with JDK 17 or newer (JAVA_HOME).</message></requireJavaVersion>
             <requireMavenVersion><version>[3.9,4)</version></requireMavenVersion>
           </rules></configuration>
         </execution></executions>
@@ -47,6 +47,12 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.14.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.4</version>
+        <configuration><mainClass>nz.ac.aut.pdc.supermarket.app.Main</mainClass></configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -1,31 +1,39 @@
 classDiagram
 direction TB
 
-class AOperations
-class AttachmentStore
-class SubmissionPort
-class JsonStore
-
-class Product {
-    +String barcode
-    +String name
-    +String unit
-    +BigDecimal sellingPrice
+namespace catalog {
+    class Product {
+        +String barcode
+        +String name
+        +String unit
+        +BigDecimal sellingPrice
+    }
 }
 
-class DocumentHeader {
-    +String documentId
-    +String kind
-    +String status
-    +String confirmedBy
-    +Instant confirmedAt
+namespace receipt {
+    class AOperations
+    class AttachmentStore
+    class DocumentHeader {
+        +String documentId
+        +String kind
+        +String status
+        +String confirmedBy
+        +String confirmedAt
+    }
+    class DocumentLine {
+        +String lineId
+        +String documentId
+        +String barcode
+        +int quantity
+    }
 }
 
-class DocumentLine {
-    +String lineId
-    +String documentId
-    +String barcode
-    +int quantity
+namespace contracts {
+    class SubmissionPort
+}
+
+namespace infrastructure {
+    class JsonStore
 }
 
 AOperations ..> Product : price

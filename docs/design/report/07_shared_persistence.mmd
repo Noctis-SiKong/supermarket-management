@@ -2,15 +2,20 @@ classDiagram
 direction TB
 
 class SubmissionPort {
-    +open(ctx) WorkingCopy
-    +submit(op, request, wc, changes) CommitReceipt
-    +lookupResult(op, request) CommitReceipt
+    +open(op) Result~WorkingCopy~
+    +submit(op, request, wc, changes) Result~CommitReceipt~
+    +lookupResult(op, request) Result~CommitReceipt~
+}
+class CommitValidator {
+    +validate(op, actor, request, wc, changes, acceptedAt) Result~Void~
 }
 class AbstractReconstructingCommitValidator {
-    +validate(op, actor, request, wc, changes, acceptedAt) Result
-    #reconstruct(...) Result
-    #mismatch() Result
+    +validate(...) Result~Void~
+    #reconstruct(...) Result~ChangeSet~
+    #mismatch() Result~Void~
 }
+class StockOperationValidator
+class ReversalCommitValidator
 class JsonStore
 class WorkingCopy {
     +baseLast() long
@@ -23,19 +28,15 @@ class ChangeSet {
     +patches() List
     +removals() List
 }
-class RecordData
 class SubmissionTime {
     +assign(baseline, changes, acceptedAt) ChangeSet
 }
-class AttachmentStore
-class DraftDeletionGuard
 
 SubmissionPort <|.. JsonStore
+CommitValidator <|.. AbstractReconstructingCommitValidator
+AbstractReconstructingCommitValidator <|-- StockOperationValidator
+AbstractReconstructingCommitValidator <|-- ReversalCommitValidator
+AbstractReconstructingCommitValidator ..> SubmissionTime
 JsonStore ..> WorkingCopy
 WorkingCopy ..> ChangeSet
-ChangeSet ..> RecordData
-JsonStore ..> SubmissionTime
 SubmissionTime ..> ChangeSet
-AbstractReconstructingCommitValidator ..> SubmissionTime
-JsonStore ..> AttachmentStore
-JsonStore ..> DraftDeletionGuard

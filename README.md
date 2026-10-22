@@ -4,25 +4,27 @@ A single-store offline Java CUI course project. The existing monolith is already
 
 ## Project Demonstration Video
 
-[Watch or download the Project 1 demonstration video](./Project1-Demonstration-Video.mp4) (4 minutes 37 seconds, 1080p).
+[Watch or download the Project 1 demonstration video](./Project1-Demonstration-Video.mp4) (4 minutes 41 seconds, 1080p).
 
 The MP4 includes English narration and burned-in English subtitles; original Chinese development prompts are retained as evidence. It demonstrates system functionality, AI-assisted development and prompt engineering, human review, and the overall code structure. No separate audio or subtitle files are needed.
 
 ## Quick Start
 
-Applies to Windows + JDK 17; full instructions are in [Build and run](#build-and-run) below.
+Applies to Windows + JDK 17 or newer; full instructions are in [Build and run](#build-and-run) below. Run everything from the project root: startup requires `pom.xml`, `README.md` and `docs/` to be present in the working directory.
 
 For Chinese terminal input, configure UTF-8 input/output as shown in the language section below.
 
-1. Make sure `JAVA_HOME` points to JDK 17 (Enforcer rejects Java 8 and other major versions; the `java` on `PATH` is not necessarily 17).
-2. Build: `.\mvnw.cmd -B --no-transfer-progress clean package`
-3. Initialise the accounts once (**a real terminal is required**, interactive input, no default accounts):
-   `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar --init-accounts`
-   Follow the prompts to set a username and password for ADMIN/MANAGER/CLERK; once creation finishes you **go straight into the CUI** and can log in immediately.
-4. Start it later: `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`
-5. To check storage recovery and registration validation only, without entering the business flow: append `--check` to the start command; to view the options: append `--help`.
+1. Point `JAVA_HOME` at JDK 17 or newer (the Enforcer rejects Java 8 and older; the `java` on `PATH` is not necessarily the right one). JDK 21 also builds and runs the jar.
+2. One command to start with the bundled demo data:
+   `run.cmd`
+   It seeds `data\snapshot.json` from `demo\preset_snapshot_20261022.json` when no snapshot exists, builds the executable jar if needed, and launches the CUI. Log in with `manager01`, `clerk01` or `admin01`; password `demo1234`.
+3. To build without launching: `.\mvnw.cmd -B --no-transfer-progress clean package`.
+   The template's `mvn clean javafx:run` belongs to Project 2 (GUI); this P1 is a CUI. `mvn clean compile exec:java` also works here because the pom declares the exec plugin and main class.
 
-Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR.
+Manual start (after building): `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
+To create accounts from scratch instead of using the demo snapshot, run the same jar with `--init-accounts` in a real terminal (interactive, no default accounts); once creation finishes you go straight into the CUI. To check storage recovery and registration validation only, append `--check`; for options, append `--help`.
+
+Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR. The demo snapshot contains only the seeded demo accounts and sample business records; delete `data\snapshot.json` to start from an empty store.
 
 ## Reading Order
 
@@ -70,7 +72,7 @@ The repository's `docs/` is the single collaborative master copy of the Spec/PRD
 
 ### Planned Paths and Report Arrangements
 
-Code-style paths in the documents such as `docs/evidence/...`, `docs/design/...`, `docs/decisions.md` or `docs/decisions/...` are all **repository-relative paths**. The existing documents comprise the Spec/PRD/ERD/work-distribution list/shared specification, the four diagram sources under `docs/erd/`, and the already created `docs/design/member_b/` and `docs/evidence/member_b/` (containing B's V1/V2, AI review, design evolution and framework reproduction records); only `docs/decisions/` and `docs/decisions.md` remain planned locations that have not been created yet. Empty evidence files are not created just to make the plan "look complete", and no duplicate path-governance record is added.
+Code-style paths in the documents such as `docs/evidence/...`, `docs/design/...`, `docs/decisions.md` or `docs/decisions/...` are all **repository-relative paths**. The existing documents comprise the Spec/PRD/ERD/work-distribution list/shared specification, the four diagram sources under `docs/erd/`, and the already created `docs/archive/design_member_b/` and `docs/evidence/member_b/` (containing B's V1/V2, AI review, design evolution and framework reproduction records); only `docs/decisions/` and `docs/decisions.md` remain planned locations that have not been created yet. Empty evidence files are not created just to make the plan "look complete", and no duplicate path-governance record is added.
 
 During the working phase the English Spec/PRD/ERD in the repository's `docs/` are the collaborative main line (the corresponding Chinese versions are kept in a designated directory outside the repository); before submission the final report is converted to English and the Chinese working drafts are removed from the submission package/final delivery directory, so the Chinese drafts are not a parallel final report. A Chinese working draft is not a submission report and carries no formal §2.6/§3.7 declaration; the formal declaration is completed and signed by the student only in the English final report, following the template requirements, and a Chinese working draft does not replace it. The English final report uses the English report location under the repository root; the final file name is settled when the report is assembled, and this round adds no report subdirectory and does not change the Canvas arrangement; the repository root may contain English working documents, code and build files.
 
@@ -112,7 +114,7 @@ These summaries only support the necessary traceability and do not replace the c
 
 ## Build and Run
 
-Uses JDK 17 and the repository's single Maven project. The PowerShell 7.6.5 run on 2026-10-21 is a historical verification-environment record; the environment and results re-verified during the 2026-10-22 release wrap-up are in the unified implementation log. The scripts aim to be compatible with Windows PowerShell 5.1 and PowerShell 7. One command reproduces the offline build, all tests, executable-package dependency isolation and a real JAR/CUI smoke test:
+Uses JDK 17 or newer (compiled with `--release 17`) and the repository's single Maven project. The PowerShell 7.6.5 run on 2026-10-21 is a historical verification-environment record; the environment and results re-verified during the 2026-10-22 release wrap-up are in the unified implementation log. The scripts aim to be compatible with Windows PowerShell 5.1 and PowerShell 7. One command reproduces the offline build, all tests, executable-package dependency isolation and a real JAR/CUI smoke test:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-p1.ps1 -Offline
@@ -136,9 +138,11 @@ if ($taskJdk17) { $env:JAVA_HOME = $taskJdk17 }
 & "$env:JAVA_HOME/bin/java.exe" "-Dfile.encoding=UTF-8" -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-If the temporary JDK above is not found, choose an installed JDK 17; Enforcer rejects Java 8/other major versions, and the build is not changed to Java 8. The first download of project dependencies may need the network, business runs are offline; add `--offline` once the cache is complete. The platform actually tested this time is Windows; the commands have not been executed on other platforms.
+If the temporary JDK above is not found, choose an installed JDK 17 or newer; the Enforcer rejects Java 8 and older, and the build is not changed to Java 8. The first download of project dependencies may need the network, business runs are offline; add `--offline` once the cache is complete. The platform actually tested this time is Windows; the commands have not been executed on other platforms.
 
-The executable package is the `*-jar-with-dependencies.jar` with dependencies, including Jackson; the plain JAR has no embedded dependencies, and starting it on its own must not be treated as verified. The main class is `nz.ac.aut.pdc.supermarket.app.Main`, which looks for the project marker upwards from the executable's location and does not treat the shell's current directory as DATA_ROOT; when moving the executable, use `--project-root <project-root>`. Use `--help` to view the options, and `--check` to actually wire up and run the full snapshot validation without committing business operations.
+For a one-command start, `run.cmd` seeds the demo snapshot when `data\snapshot.json` is absent, builds the executable jar when missing, and launches the CUI. The template's `mvn clean compile exec:java` also works because the pom declares `exec-maven-plugin` with `mainClass` set; `mvn clean javafx:run` belongs to the Project 2 GUI and is not part of this P1.
+
+The executable package is the `*-jar-with-dependencies.jar` with dependencies, including Jackson; the plain JAR has no embedded dependencies, and starting it on its own must not be treated as verified. The main class is `nz.ac.aut.pdc.supermarket.app.Main`, which looks for the project root upwards from the executable's location (the root must contain `pom.xml`, `README.md` and `docs/`) and does not treat the shell's current directory as DATA_ROOT; when moving the executable, use `--project-root <project-root>`. Use `--help` to view the options, and `--check` to actually wire up and run the full snapshot validation without committing business operations.
 
 A non-interactive start can use `--accounts <local-credentials.json>` to initialise empty storage: the array element fields are `accountId/username/passwordHash/role`, the roles are ADMIN/MANAGER/CLERK, and the hashes are compatible with the existing B Sha256PasswordHasher. It only initialises empty storage and cannot be used to overwrite existing accounts; keep the local file in an ignored directory such as `.local/`, and do not upload passwords, hashes or runtime data. With no accounts, the system clearly reports that login is not configured. `--init-accounts` refuses when a snapshot already exists; aborting password/username input does not install a half set of accounts.
 

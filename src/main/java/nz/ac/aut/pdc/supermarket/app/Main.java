@@ -39,7 +39,7 @@ public final class Main {
             }
             // Exercises the packaged JSON dependency as well as the manifest entry point.
             out.println(texts.text("start.banner", Runtime.version().feature(), JsonCodec.tree(JsonCodec.write(Map.of("schemaVersion",1))).path("schemaVersion").asInt()));
-            if (Runtime.version().feature()!=17) throw new IllegalArgumentException("cli.jdk");
+            if (Runtime.version().feature()<17) throw new IllegalArgumentException("cli.jdk");
             if (project==null) project=locateProject();
             if(initialize && (accountsFile!=null || Files.exists(project.resolve("data/snapshot.json"))))
                 throw new IllegalArgumentException("account.existing");

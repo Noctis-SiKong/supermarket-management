@@ -6,17 +6,24 @@ class DocumentReversalCommand {
     +String targetDocumentId
     +String reason
 }
-class ReversalChangeSetAssembler {
-    +assemble(...) ChangeSet
+class AbstractReconstructingCommitValidator {
+    +validate(...) Result
+    #reconstruct(...) Result
+    #mismatch() Result
 }
 class ReversalCommitValidator {
     #reconstruct(...) Result
 }
-class DependencyChecker
-class EffectiveDependencies
+class ReversalChangeSetAssembler {
+    +assemble(...) ChangeSet
+}
+class EffectiveDependencies {
+    +blocker(wc, documentId) String
+}
 class ChangeSet
 
-DocumentReversalCommand ..> ReversalChangeSetAssembler
+AbstractReconstructingCommitValidator <|-- ReversalCommitValidator
+DocumentReversalCommand ..> ReversalCommitValidator
+ReversalCommitValidator ..> EffectiveDependencies : blocker
+ReversalCommitValidator ..> ReversalChangeSetAssembler : assemble
 ReversalChangeSetAssembler ..> ChangeSet
-ReversalCommitValidator ..> DependencyChecker
-DependencyChecker ..> EffectiveDependencies
