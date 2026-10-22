@@ -310,6 +310,8 @@ Class diagrams may be generated from real code and then checked for attributes/m
 
 ### 11.3 Synchronization and Delivery Checks
 
+2026-10-22 implementation evidence update for Spec CR-07, TC-03 and AC-06: the [complete final implementation diagram and design evolution](./design/final/README.md) record the production CommitValidator interface, shared reconstructing abstract template and stock/reversal subclasses. The implementation log §8 records baseline, targeted and full regression/runtime evidence. This is evidence synchronization, not a requirements change or completed human/course acceptance. Earlier design-stage statements below retain their historical meaning.
+
 At present only the Spec/PRD/ERD documents are updated, historical versions are recorded by Git, and there is no code, diagram, final report or business test. Course materials/templates are read-only; the scoring items have been verified as consistent, and the original scoring names/categories/weights are unchanged. Settled business rules and tools are synchronized into the body/matrix/ACs, and no PRO candidates remain; the Spec is the single status table, and the PRD only references it. All 12 business sub-questions have been closed per U4; actual product data and platform evidence are still unverified and are truthfully retained as subsequent execution checks.
 
 

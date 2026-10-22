@@ -1,6 +1,6 @@
 # P1 Unified Implementation and Local Delivery Log
 
-The historical v3 delivery on 2026-10-21 removed the A/B development boundary under user authorization and completed one monolith. It did not change Spec/PRD/ERD v0.7, shared v1.0.4 or CR07-10/11. Functional delivery was `4a67050`; reproducible verification and the additional cross-document reversal reference check were `08df45a`; delivery documentation was `4328a11`. These were local deliveries, not a new GitHub release. The language implementation of 2026-10-22 is recorded separately in §7.
+The historical v3 delivery on 2026-10-21 removed the A/B development boundary under user authorization and completed one monolith. It did not change Spec/PRD/ERD v0.7, shared v1.0.4 or CR07-10/11. Functional delivery was `4a67050`; reproducible verification and the additional cross-document reversal reference check were `08df45a`; delivery documentation was `4328a11`. These were local deliveries, not a new GitHub release. The language implementation of 2026-10-22 is recorded separately in §7; the behavior-preserving validator refactor is recorded in §8.
 
 ## 1. Historical v3 starting point and WIP protection
 
@@ -144,3 +144,24 @@ The regular verification script cleaned its own guarded temporary roots. Three s
 | AC-100 | Injected missing-text maps in TextsTest; shipped resource key/placeholder parity. No production failure injection or missing-resource configuration is added. |
 
 Statuses are separate: implemented; automated verification passed where recorded; real packaged runtime passed where recorded; manual acceptance pending. Runtime automation is not all-course-AC approval. Remaining manual work includes full human bilingual wording/navigation review, an actual user's terminal/environment check, course report/video/ZIP and personal signing. Linux/macOS were not run. Course originals/Canvas were not re-verified during this feature; the previous document's source records remain historical. No business-rule conflict requires a new user decision. No push, main merge or remote setting change is authorized or performed.
+
+## 8. Reconstructing validator template and final design evidence (2026-10-22)
+
+Start: clean main at `99e2a73d987377b7ae031a685118f296d0c84a2e`, with no staged, unstaged or untracked changes; created independent local branch `member-a/p1-validator-template`. Applicable AGENTS files were checked; none were found. Existing documentation originals and their Git differences were saved outside the repository and SHA-256/readability verified before editing. Existing external Chinese copies were protected separately.
+
+Added `infrastructure.AbstractReconstructingCommitValidator`; migrated only `StockOperationValidator` and `ReversalCommitValidator`. The shared template reconstructs, propagates owner results, applies existing SubmissionTime, strictly compares the complete candidate with shared.CandidateEquality, then invokes domain review. Concrete rules and the original reversal exception boundary remain local. The six-argument public interface, registry and JsonStore call boundary are unchanged. Aftersale/draft/receipt/IF-11 validators remain unchanged; no blanket deletion rule, business change, JSON model, migration, language change or removed-comment restoration was introduced.
+
+Actual verification (JDK 17.0.20.1+1; Maven Wrapper 3.9.11):
+
+| Command | Result |
+|---|---|
+| `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-p1.ps1 -Offline` before edits | Exit 0; 214 tests, zero failures/errors/skips; English/Chinese packaged CUI exit 0, 3 legal business commits |
+| `.\mvnw.cmd --offline -q '-Dtest=ReconstructingValidatorTest,StockOperationValidatorTest,ReversalCommitValidatorTest,AftersaleCommitValidatorTest,DraftDeletionTest,SubmissionTimeTest,FullRuntimeTest' test` after refactor | Exit 0; 42 tests, zero failures/errors/skips |
+| `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-p1.ps1 -Offline` after refactor | Windows PowerShell 5.1.26100.8521; exit 0; 219 tests, zero failures/errors/skips; English/Chinese packaged CUI exit 0, 3 legal business commits |
+| `pwsh -NoProfile -File .\scripts\verify-p1.ps1 -Offline` after refactor | PowerShell 7.6.5; exit 0; 219 tests, zero failures/errors/skips; English/Chinese packaged CUI exit 0, 3 legal business commits |
+
+The five new tests exercise both real validators through CommitValidator, strict deltas/times, permission/exception boundaries, result metadata and post-review ordering. A clearly test-only Probe isolates template behavior; existing DraftDeletionTest also retains its labelled permissive business double. These are not substituted production dependencies. Early targeted runs failed because of fixture mistakes (invalid barcode, an allowed role assumed forbidden, and a deduplicating builder); fixtures were corrected before the passing targeted and full runs. No business implementation was changed to accommodate those mistaken assumptions. Full regression retains dual-quota/allocation, D1/APPROVED receipt/full inverse group, draft/correction deletion, failure/recovery, time and original-key replay coverage. Verification uses temporary data, never real business data.
+
+[Final design evidence](./design/final/README.md) includes the complete system Mermaid source/SVG, source-hashed inventory (128 production files / 206 named types), a supplementary template diagram, rationale and exact video impact. Types are counted by reflection including all nested named types; this is not a replacement for earlier statistics made under different scopes. V1/review/V2 and the finished video are preserved. Actual video frames and matching SRT identify the final-structure segment and the historical 214-test card/voice requiring a limited update if used as current evidence. No video was edited or re-recorded.
+
+Spec AC-06 now links implementation/automatic evidence and explicitly leaves human acceptance pending; PRD links the same evidence. Requirements and ERD remain unchanged. Repository documents are English and corresponding Chinese evidence is retained outside the repository under the established user convention. This supplies factual report material, not reflection/signature or course acceptance. No push, main merge or remote change was performed.

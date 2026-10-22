@@ -1,0 +1,1776 @@
+classDiagram
+direction TB
+class Tc0ba382d054a["infrastructure.AbstractReconstructingCommitValidator"] {
+  <<abstract>>
+  +AbstractReconstructingCommitValidator()
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+  #review(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T21b52b4e5584["infrastructure.AttachmentStore"] {
+  -DataRoot root
+  +AttachmentStore(DataRoot)
+  +importImage(Path, String, int) Result
+  +verify(DataRoot, AttachmentStore.Attachment) void
+}
+class T2513f2534063["infrastructure.AttachmentStore.Attachment"] {
+  <<record>>
+  -String attachmentId
+  -String contentHash
+  -String format
+  -String receiptId
+  -String relativePath
+  -long sizeBytes
+  +Attachment(String, String, String, String, String, long)
+}
+class T71a8d33fe722["infrastructure.DataRoot"] {
+  -Path root
+  -DataRoot(Path)
+  +forProject(Path) DataRoot
+  +path() Path
+  +resolve(String) Path
+}
+class T0bc5e28b8e51["infrastructure.DraftDeletionGuard"] {
+  -Map REFERENCES
+  -DraftDeletionGuard()
+}
+class T3c67e6932c02["infrastructure.JsonStore"] {
+  -JsonStore.BeforeReplace beforeReplace
+  -Supplier businessTime
+  -boolean closed
+  -JsonStore.IntegrityValidator domainIntegrity
+  -Map handles
+  -OperationContext.IdentityResolver identities
+  -FileChannel lockChannel
+  -DataRoot root
+  -JsonStore.Snapshot state
+  -boolean submitting
+  -Map validators
+  -FileLock writerLock
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, Supplier)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace, JsonStore.RecoveryMode, List, Supplier)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace, JsonStore.RecoveryMode, List)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator)
+  +authenticate(OperationContext) Result
+  +authenticationView() List
+  +close() void
+  +importAttachment(Path, String, int) Result
+  +lookupResult(OperationContext, JsonCodec.BusinessRequest) Result
+  +open(OperationContext) Result
+  +submit(OperationContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet) Result
+}
+class T277142f62772["infrastructure.JsonStore.BeforeReplace"] {
+  <<interface>>
+  +run(Path) void
+}
+class T77562225e71e["infrastructure.JsonStore.Credential"] {
+  <<record>>
+  -String accountId
+  -String passwordHash
+  -OperationContext.Role role
+  -String username
+  +Credential(String, String, String, OperationContext.Role)
+}
+class T48eae3acd800["infrastructure.JsonStore.Handle"] {
+  <<record>>
+  -String actor
+  -WorkingCopy copy
+  -String operation
+  -String target
+  -Handle(WorkingCopy, String, String, String)
+}
+class T87c4caca3f39["infrastructure.JsonStore.IntegrityValidator"] {
+  <<interface>>
+  +validate(WorkingCopy) void
+}
+class Tb6484bfbec9a["infrastructure.JsonStore.RecoveryMode"] {
+  <<enum>>
+  +JsonStore.RecoveryMode CURRENT
+  +JsonStore.RecoveryMode PREVIOUS
+  -RecoveryMode(String, int)
+}
+class T30cc0111ba39["infrastructure.JsonStore.SavedResult"] {
+  <<record>>
+  -String accountId
+  -String fingerprint
+  -String operation
+  -SubmissionPort.CommitReceipt receipt
+  +SavedResult(String, String, String, SubmissionPort.CommitReceipt)
+}
+class T4b640d2a02c4["infrastructure.JsonStore.Snapshot"] {
+  <<record>>
+  -List credentials
+  -long lastCommitOrdinal
+  -List records
+  -Map results
+  -int schemaVersion
+  +Snapshot(int, long, List, Map, List)
+}
+class T1d476043461e["infrastructure.SubmissionTime"] {
+  -SubmissionTime()
+  +assign(WorkingCopy, ChangeSet, Instant) ChangeSet
+}
+class T54906662e3e5["shared.AftersaleReadAccess"] {
+  <<record>>
+  -String eventId
+  -List lines
+  -SubmissionPort.CommitReceipt trace
+  -WorkingCopy workingCopy
+  +AftersaleReadAccess(SubmissionPort.CommitReceipt, String, WorkingCopy, List)
+}
+class T33072fec2c09["shared.AftersaleReadRequest"] {
+  <<record>>
+  +String OPERATION
+  -String aftersaleId
+  -List saleLineIds
+  -String voucher
+  +AftersaleReadRequest(String, String, List)
+}
+class T829005e444f3["shared.CandidateEquality"] {
+  -CandidateEquality()
+  +same(ChangeSet, ChangeSet) boolean
+}
+class T3805964ebc12["shared.ChangeSet"] {
+  <<record>>
+  -List inserts
+  -List patches
+  -List removals
+  +ChangeSet(List, List, List)
+  +ChangeSet(List, List)
+  +empty() ChangeSet
+}
+class T2ab84689a27b["shared.ChangeSet.Builder"] {
+  -Map inserts
+  -Map patches
+  -Map removals
+  +Builder()
+  +add(RecordData) ChangeSet.Builder
+  +build() ChangeSet
+  +merge(ChangeSet) ChangeSet.Builder
+  +patch(ChangeSet.Patch) ChangeSet.Builder
+  +remove(ChangeSet.Removal) ChangeSet.Builder
+}
+class T597e7a48285b["shared.ChangeSet.Patch"] {
+  <<record>>
+  -String changedFields
+  -long expectedVersion
+  -String id
+  -String table
+  +Patch(String, String, long, String)
+  +key() String
+}
+class T3f6d008348bc["shared.ChangeSet.Removal"] {
+  <<record>>
+  -long expectedVersion
+  -String id
+  -String table
+  +Removal(String, String, long)
+  +key() String
+}
+class Te414663574b6["shared.DocEvent"] {
+  <<record>>
+  -String action
+  -String actorId
+  -String detailSnapshot
+  -String documentId
+  -String eventId
+  -String occurredAt
+  -long version
+  +DocEvent(String, String, long, String, String, String, String)
+}
+class Tf2141be3219e["shared.DocumentHeader"] {
+  <<record>>
+  -String confirmedAt
+  -String confirmedBy
+  -String createdAt
+  -String createdBy
+  -String documentId
+  -String kind
+  -String reason
+  -String requestFingerprint
+  -String requestKey
+  -String status
+  +DocumentHeader(String, String, String, String, String, String, String, String, String, String)
+}
+class T250c90a93bfc["shared.DocumentLine"] {
+  <<record>>
+  -String barcode
+  -String documentId
+  -String lineId
+  -String lineKind
+  -int quantity
+  +DocumentLine(String, String, String, String, int)
+}
+class T8f95756e9c6d["shared.DraftDeletion"] {
+  <<record>>
+  +String OPERATION
+  -String documentId
+  -long expectedVersion
+  +DraftDeletion(String, long)
+  +DraftDeletion(String)
+}
+class Tb578e1b9c793["shared.IdClock"] {
+  +ZoneId BUSINESS_ZONE
+  -Clock clock
+  +IdClock(Clock)
+  +compareIds(String, String) int
+  +entityId(String, String) String
+  +newRequestKey() String
+  +now() Instant
+}
+class T94c51a7fbce0["shared.JsonCodec"] {
+  -ObjectMapper MAPPER
+  -JsonCodec()
+  +canonical(JsonNode) JsonNode
+  +fingerprint(String, String, JsonCodec.BusinessRequest) String
+  +hash(byte[]) String
+  +read(String, Class) Object
+  +tree(String) JsonNode
+  +write(Object) String
+}
+class T66215c78b7bf["shared.JsonCodec.BusinessRequest"] {
+  <<record>>
+  -String json
+  +BusinessRequest(String)
+  +as(Class) Object
+  +of(Object) JsonCodec.BusinessRequest
+}
+class T294531ca08c2["shared.MoneyEntry"] {
+  <<record>>
+  -BigDecimal amountSigned
+  -String documentId
+  -String moneyEntryId
+  -String requestKey
+  -String reverseOfId
+  +MoneyEntry(String, String, BigDecimal, String, String)
+}
+class Tcc8f533eeb0b["shared.OperationContext"] {
+  <<record>>
+  -String operation
+  -String requestKey
+  -Object sessionRef
+  -String targetId
+  +OperationContext(Object, String, String, String)
+}
+class T7236fb42f16d["shared.OperationContext.ActorContext"] {
+  <<record>>
+  -String accountId
+  -OperationContext.Role role
+  +ActorContext(String, OperationContext.Role)
+}
+class T576746fdd832["shared.OperationContext.IdentityResolver"] {
+  <<interface>>
+  +resolve(Object) Result
+}
+class T91a25c54f4bd["shared.OperationContext.Role"] {
+  <<enum>>
+  +OperationContext.Role ADMIN
+  +OperationContext.Role CLERK
+  +OperationContext.Role MANAGER
+  -Role(String, int)
+}
+class Td7beffef28a6["shared.RecordData"] {
+  <<record>>
+  -String id
+  -String json
+  -String table
+  -long version
+  +RecordData(String, String, long, String)
+  +as(Class) Object
+  +data() JsonNode
+  +key() String
+  +of(String, String, Object) RecordData
+}
+class T3248f0880940["shared.Result"] {
+  <<record>>
+  -String code
+  -String detail
+  -String field
+  -String recordId
+  -Result.Status status
+  -Object value
+  +Result(Result.Status, Object, String, String, String, String)
+  +failed(String, String) Result
+  +failure() Result
+  +hasValue() boolean
+  +prepared(Object) Result
+  +rejected(String, String) Result
+}
+class T15e0c372fd79["shared.Result.Status"] {
+  <<enum>>
+  +Result.Status FAILED
+  +Result.Status NOT_FOUND
+  +Result.Status PREPARED
+  +Result.Status REJECTED
+  +Result.Status SUCCESS
+  +Result.Status VALUE
+  -Status(String, int)
+}
+class T224a0d706487["shared.SaleLineSnapshot"] {
+  <<record>>
+  -BigDecimal allocatedDiscount
+  -String barcode
+  -BigDecimal grossAmount
+  -String lineId
+  -int originalQuantity
+  -BigDecimal paidAmount
+  -String productName
+  -String promotionSnapshot
+  -String saleId
+  -String soldAt
+  -BigDecimal unitPrice
+  +SaleLineSnapshot(String, String, String, String, BigDecimal, int, String, BigDecimal, BigDecimal, BigDecimal, String)
+}
+class T0d8be0aad77f["shared.StockEntry"] {
+  <<record>>
+  -long commitOrdinal
+  -String eventKey
+  -StockEntry.Position position
+  -int quantityDelta
+  -String receiptReviewId
+  -String reverseOfId
+  -String sourceLineId
+  -String stockEntryId
+  -String transferKey
+  +StockEntry(String, String, StockEntry.Position, int, String, String, String, String, long)
+}
+class T08b3b85fafe7["shared.StockEntry.Position"] {
+  <<enum>>
+  +StockEntry.Position S
+  +StockEntry.Position W
+  -Position(String, int)
+}
+class Te9a341722903["shared.SubmissionPort"] {
+  <<interface>>
+  +lookupResult(OperationContext, JsonCodec.BusinessRequest) Result
+  +open(OperationContext) Result
+  +submit(OperationContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet) Result
+}
+class T329948472143["shared.SubmissionPort.CommitReceipt"] {
+  <<record>>
+  -long commitOrdinal
+  -boolean replayed
+  -String requestKey
+  -List resultIds
+  +CommitReceipt(String, List, long, boolean)
+  +replay() SubmissionPort.CommitReceipt
+}
+class T4c29b358a7cf["shared.SubmissionPort.CommitValidator"] {
+  <<interface>>
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T707710bae972["shared.WorkingCopy"] {
+  -long baseLast
+  -String id
+  -Map records
+  +WorkingCopy(String, long, Collection)
+  +allRecords() List
+  +baseLast() long
+  +find(String, String) Optional
+  +overlay(ChangeSet) WorkingCopy
+  +records(String) List
+  +workingCopyId() String
+}
+class T4082909501eb["supermarket.aftersale.AftersaleAssembler"] {
+  -StockPorts.IdGenerator idGenerator
+  +AftersaleAssembler(StockPorts.IdGenerator)
+  +assembleRedemption(String, String, OriginalSaleLine, AftersaleCommandLine, BigDecimal, String) Redemption
+  +assembleRedemption(String, String, OriginalSaleLine, AftersaleCommandLine, BigDecimal) Redemption
+  +assembleReplacement(String, OriginalSaleLine, AftersaleCommandLine, Redemption, ProductSnapshot, BigDecimal) Replacement
+}
+class T044e6dd50d4f["supermarket.aftersale.AftersaleChangeSetAssembler"] {
+  +String OPERATION
+  +AftersaleChangeSetAssembler()
+  +assemble(AftersaleResult.Prepared, String, OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest) ChangeSet
+  +assembleForDraft(AftersaleResult.Prepared, String, WorkingCopy, OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest) ChangeSet
+}
+class Td32e928e9543["supermarket.aftersale.AftersaleCommand"] {
+  <<record>>
+  -String customerVoucher
+  -List lines
+  -String requestKey
+  +AftersaleCommand(String, String, List)
+}
+class T1d82c643e172["supermarket.aftersale.AftersaleCommandLine"] {
+  <<record>>
+  -RedemptionKind kind
+  -boolean opened
+  -boolean qualityPair
+  -boolean qualityProblem
+  -int quantity
+  -AftersaleReasonKind reasonKind
+  -String reasonText
+  -String replacementBarcode
+  -int replacementQty
+  -String saleLineId
+  +AftersaleCommandLine(String, RedemptionKind, int, boolean, boolean, AftersaleReasonKind, String, String, int, boolean)
+}
+class Tcc4d05d5ad39["supermarket.aftersale.AftersaleCommitValidator"] {
+  -SharedStockAdapter stock
+  +AftersaleCommitValidator(SharedStockAdapter)
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T56572709bbb1["supermarket.aftersale.AftersaleDraftAccess"] {
+  +AftersaleDraftAccess()
+  +prepareTarget(OperationContext, OperationContext.ActorContext, AftersaleReadRequest, WorkingCopy) Result
+  +reviewTarget(OperationContext, OperationContext.ActorContext, AftersaleReadRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T2338648373f8["supermarket.aftersale.AftersaleDraftDeletionValidator"] {
+  -Set ALLOWED_REMOVAL_TABLES
+  -Set POSTED_TABLES
+  +AftersaleDraftDeletionValidator()
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class Td45984c5d864["supermarket.aftersale.AftersaleDraftOperations"] {
+  +String CANCEL
+  +String CREATE
+  +String READ
+  -AftersaleDraftOperations()
+}
+class T7aacc18f7b52["supermarket.aftersale.AftersaleDraftService"] {
+  -JsonStore store
+  +AftersaleDraftService(JsonStore)
+  +cancel(OperationContext, OperationContext.ActorContext) Result
+  +create(OperationContext, OperationContext.ActorContext) Result
+  +delete(OperationContext, OperationContext.ActorContext) Result
+  +recordRead(OperationContext, OperationContext.ActorContext, OriginalSaleLine) Result
+}
+class Td346de2ebd7c["supermarket.aftersale.AftersaleDraftValidator"] {
+  -String operation
+  +AftersaleDraftValidator(String)
+  +requireOwnedDraft(OperationContext, OperationContext.ActorContext, WorkingCopy) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validateTargetCreation(OperationContext, OperationContext.ActorContext, WorkingCopy, ChangeSet) Result
+}
+class T7ef09042393d["supermarket.aftersale.AftersaleEngine"] {
+  -AftersaleEngine()
+  +create(WorkingCopy, IdClock, String) AftersaleService
+}
+class T1a239c02725d["supermarket.aftersale.AftersaleIntegrityValidator"] {
+  +AftersaleIntegrityValidator()
+  +validate(WorkingCopy) void
+}
+class T3fd880e15fde["supermarket.aftersale.AftersaleReasonKind"] {
+  <<enum>>
+  +AftersaleReasonKind OTHER
+  +AftersaleReasonKind QUALITY
+  -AftersaleReasonKind(String, int)
+}
+class T4104820540c2["supermarket.aftersale.AftersaleResult"] {
+  <<interface>>
+}
+class Tdf218038348b["supermarket.aftersale.AftersaleResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class T031b6c4f3e02["supermarket.aftersale.AftersaleResult.Prepared"] {
+  <<record>>
+  -List redemptions
+  -List replacements
+  -List settlements
+  -List stockEntries
+  +Prepared(List, List, List, List)
+}
+class T206c0de17b59["supermarket.aftersale.AftersaleResult.Rejected"] {
+  <<record>>
+  -String code
+  -String field
+  -String message
+  +Rejected(String, String, String)
+}
+class Tce643062b399["supermarket.aftersale.AftersaleResult.StockEntryView"] {
+  <<record>>
+  -String barcode
+  -int delta
+  -String eventKey
+  -String id
+  -Position position
+  -String transferKey
+  +StockEntryView(String, String, Position, int, String, String)
+}
+class T41e9bd2345c8["supermarket.aftersale.AftersaleService"] {
+  -int RETURN_WINDOW_DAYS
+  -ZoneId ZONE
+  -AftersaleAssembler assembler
+  -StockPorts.IdGenerator idGenerator
+  -OriginalSaleReader originalSaleReader
+  -ProductSnapshotReader productSnapshotReader
+  -QualityPairValidator qualityPairValidator
+  -QuotaCalculator quotaCalculator
+  -QuotaLedgerReader quotaLedgerReader
+  -QuotaViewBuilder quotaViewBuilder
+  -SettlementCalculator settlementCalculator
+  -StockOperations stockOperations
+  +AftersaleService(OriginalSaleReader, QuotaLedgerReader, ProductSnapshotReader, StockOperations, QuotaViewBuilder, QuotaCalculator, QualityPairValidator, AftersaleAssembler, StockPorts.IdGenerator, SettlementCalculator)
+  +AftersaleService(OriginalSaleReader, QuotaLedgerReader, ProductSnapshotReader, StockOperations, QuotaViewBuilder, QuotaCalculator, QualityPairValidator, AftersaleAssembler, StockPorts.IdGenerator)
+  +apply(StockPorts.WorkingCopyView, AftersaleCommand, Role, String) AftersaleResult
+  +apply(StockPorts.WorkingCopyView, AftersaleCommand, Role) AftersaleResult
+}
+class T6a1e7ad93feb["supermarket.aftersale.AftersaleService.Planned"] {
+  <<record>>
+  -String id
+  -AftersaleCommandLine line
+  -Planned(AftersaleCommandLine, String)
+}
+class T13eed88cbff9["supermarket.aftersale.AftersaleSubmissionService"] {
+  -AftersaleService aftersaleService
+  -AftersaleChangeSetAssembler assembler
+  -SubmissionPort store
+  +AftersaleSubmissionService(AftersaleService, AftersaleChangeSetAssembler, SubmissionPort)
+  +prepare(AftersaleCommand, WorkingCopy, OperationContext, OperationContext.ActorContext) Result
+  +submit(AftersaleCommand, WorkingCopy, OperationContext, OperationContext.ActorContext) Result
+}
+class Tb3af7b6e53c6["supermarket.aftersale.AftersaleSubmissionService.Prepared"] {
+  <<record>>
+  -ChangeSet changes
+  -JsonCodec.BusinessRequest request
+  -AftersaleResult.Prepared summary
+  -WorkingCopy workingCopy
+  +Prepared(WorkingCopy, JsonCodec.BusinessRequest, ChangeSet, AftersaleResult.Prepared)
+}
+class Tfb77ee0edb3c["supermarket.aftersale.BCommitValidators"] {
+  -BCommitValidators()
+  +create(SharedStockAdapter) Map
+}
+class T9e31ee013037["supermarket.aftersale.Effect"] {
+  <<enum>>
+  +Effect CONSUME
+  +Effect RELEASE
+  -Effect(String, int)
+}
+class T2a80388eb022["supermarket.aftersale.OriginalSaleLine"] {
+  <<record>>
+  -String barcode
+  -BigDecimal paidAmount
+  -int quantity
+  -String saleLineId
+  -Instant saleTime
+  +OriginalSaleLine(String, String, int, BigDecimal, Instant)
+}
+class Tb72917c8892c["supermarket.aftersale.OriginalSaleReader"] {
+  <<interface>>
+  +readLine(String) Optional
+}
+class T24275786bbc0["supermarket.aftersale.ProductSnapshot"] {
+  <<record>>
+  -String name
+  -BigDecimal unitPrice
+  +ProductSnapshot(String, BigDecimal)
+}
+class T76c14e7391bb["supermarket.aftersale.ProductSnapshotReader"] {
+  <<interface>>
+  +find(String) Optional
+}
+class T77327e84715c["supermarket.aftersale.QualityPairValidator"] {
+  +QualityPairValidator()
+  +validate(OriginalSaleLine, Redemption, Replacement) Optional
+}
+class T9257cfd18ee2["supermarket.aftersale.QuotaCalculator"] {
+  +QuotaCalculator()
+  +allocate(int, QuotaView, SettlementContext) BigDecimal
+}
+class T75857082fa79["supermarket.aftersale.QuotaLedgerReader"] {
+  <<interface>>
+  +effectiveFor(String) List
+}
+class T549eb71e0caa["supermarket.aftersale.QuotaView"] {
+  <<record>>
+  -BigDecimal exchangedAmount
+  -int exchangedQty
+  -BigDecimal originalPaid
+  -int originalQty
+  -BigDecimal remainingAmount
+  -int remainingQty
+  -BigDecimal returnedAmount
+  -int returnedQty
+  -String saleLineId
+  +QuotaView(String, int, BigDecimal, int, BigDecimal, int, BigDecimal, int, BigDecimal)
+}
+class T1a7a7c27dbb8["supermarket.aftersale.QuotaViewBuilder"] {
+  +QuotaViewBuilder()
+  +build(OriginalSaleLine, List) QuotaView
+}
+class Tdda4d9626f9a["supermarket.aftersale.Redemption"] {
+  <<record>>
+  -String aftersaleId
+  -BigDecimal amount
+  -Effect effect
+  -RedemptionKind kind
+  -boolean opened
+  -String originalBarcode
+  -String originalSaleLineId
+  -boolean qualityProblem
+  -int quantity
+  -String reasonText
+  -String redemptionId
+  -String requestKey
+  -String reverseOfId
+  -String sourceLineId
+  +Redemption(String, String, String, String, String, RedemptionKind, Effect, int, BigDecimal, String, String, boolean, boolean, String)
+  +Redemption(String, String, String, String, String, RedemptionKind, Effect, int, BigDecimal, String, String, boolean, boolean)
+}
+class T9a1b4202a6e5["supermarket.aftersale.RedemptionKind"] {
+  <<enum>>
+  +RedemptionKind EXCHANGE
+  +RedemptionKind RETURN
+  -RedemptionKind(String, int)
+}
+class Td6f21d37907e["supermarket.aftersale.Replacement"] {
+  <<record>>
+  -String aftersaleId
+  -String barcode
+  -String exchangeKind
+  -String lineId
+  -String productNameSnapshot
+  -String qualityRedemptionId
+  -int quantity
+  -String redemptionId
+  -BigDecimal replacementAmount
+  -BigDecimal unitPriceSnapshot
+  +Replacement(String, String, String, String, int, String, BigDecimal, BigDecimal, String, String)
+}
+class Tfed24671fcc9["supermarket.aftersale.Settlement"] {
+  <<record>>
+  -BigDecimal amount
+  -SettlementDirection direction
+  -String redemptionId
+  -String replacementId
+  +Settlement(String, String, SettlementDirection, BigDecimal)
+}
+class Tfd1daeb1d217["supermarket.aftersale.SettlementCalculator"] {
+  +SettlementCalculator()
+  +calculate(Redemption, Replacement) Settlement
+}
+class Tb799b051e48c["supermarket.aftersale.SettlementContext"] {
+  <<record>>
+  -boolean settlesRemaining
+  +SettlementContext(boolean)
+}
+class T29964c00923b["supermarket.aftersale.SettlementDirection"] {
+  <<enum>>
+  +SettlementDirection CHARGE
+  +SettlementDirection NONE
+  +SettlementDirection REFUND
+  -SettlementDirection(String, int)
+}
+class T2ba7dec7d870["supermarket.aftersale.SharedProductSnapshotReader"] {
+  -WorkingCopy workingCopy
+  +SharedProductSnapshotReader(WorkingCopy)
+  +find(String) Optional
+}
+class T3d4ef87c2f71["supermarket.aftersale.SharedQuotaLedgerReader"] {
+  -WorkingCopy workingCopy
+  +SharedQuotaLedgerReader(WorkingCopy)
+  +effectiveFor(String) List
+}
+class T2ee912cfb4dc["supermarket.aftersale.SharedSaleReader"] {
+  -WorkingCopy workingCopy
+  +SharedSaleReader(WorkingCopy)
+  +readLine(String) Optional
+}
+class T975e7744c37c["supermarket.app.AOperations"] {
+  +Set OPERATIONS
+  -OperationContext.IdentityResolver identities
+  -IdClock ids
+  -AOperations.StockDependency stock
+  +AOperations(IdClock, OperationContext.IdentityResolver, AOperations.StockDependency)
+  +prepare(SubmissionPort, OperationContext, JsonCodec.BusinessRequest) Result
+  +product(WorkingCopy, String) Result
+  +readSaleLine(OperationContext, WorkingCopy, String) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validateRecovered(WorkingCopy) void
+  +validators() Map
+}
+class T3bbbf2d56734["supermarket.app.AOperations.Item"] {
+  <<record>>
+  -String barcode
+  -int quantity
+  +Item(String, int)
+}
+class Teffa7a5ed651["supermarket.app.AOperations.Opening"] {
+  <<record>>
+  -AOperations.Item item
+  -StockEntry.Position position
+  -String source
+  +Opening(AOperations.Item, StockEntry.Position, String)
+}
+class Tc00cd81ef607["supermarket.app.AOperations.Prepared"] {
+  <<record>>
+  -ChangeSet changes
+  -JsonCodec.BusinessRequest request
+  -WorkingCopy workingCopy
+  +Prepared(WorkingCopy, JsonCodec.BusinessRequest, ChangeSet)
+}
+class T30af06e3f35e["supermarket.app.AOperations.ProductPut"] {
+  <<record>>
+  -long expectedVersion
+  -Product product
+  +ProductPut(Product, long)
+}
+class Te2427e52c822["supermarket.app.AOperations.PromotionPut"] {
+  <<record>>
+  -long expectedVersion
+  -Promotion promotion
+  +PromotionPut(Promotion, long)
+}
+class T6c7c9e0964f9["supermarket.app.AOperations.Receipt"] {
+  <<record>>
+  -String documentId
+  -String reviewState
+  +Receipt(String, String)
+}
+class T9a37cd6bc004["supermarket.app.AOperations.ReceiptCorrect"] {
+  <<record>>
+  -Map correctedLines
+  -long expectedVersion
+  -String reason
+  -String receiptId
+  +ReceiptCorrect(String, long, Map, String)
+}
+class Tc51003882218["supermarket.app.AOperations.ReceiptCreate"] {
+  <<record>>
+  -List attachments
+  -List items
+  +ReceiptCreate(List, List)
+}
+class T031009f5185c["supermarket.app.AOperations.ReceiptReview"] {
+  <<record>>
+  -boolean approve
+  -List attachments
+  -long expectedVersion
+  -String opinion
+  -String receiptId
+  +ReceiptReview(String, long, boolean, String, List)
+}
+class Td07ffb9d19d0["supermarket.app.AOperations.Review"] {
+  <<record>>
+  -String decision
+  -String opinion
+  -String receiptId
+  -String reviewId
+  -String reviewedAt
+  -long reviewedVersion
+  -String reviewerId
+  +Review(String, String, String, String, long, String, String)
+}
+class T29c142dab9af["supermarket.app.AOperations.RuleFailure"] {
+  -String code
+  -RuleFailure(String, String)
+}
+class T01f7eadc7a5e["supermarket.app.AOperations.Sale"] {
+  <<record>>
+  -List items
+  -boolean paymentCompleted
+  +Sale(List, boolean)
+}
+class Td9ed89a7cf27["supermarket.app.AOperations.SaleRecord"] {
+  <<record>>
+  -String documentId
+  -boolean paidConfirmed
+  -Pricing.Quote quote
+  -String selectedPromotionId
+  +SaleRecord(String, String, Pricing.Quote, boolean)
+}
+class T67ef26a1ee1c["supermarket.app.AOperations.StockDependency"] {
+  <<interface>>
+  +prepare(WorkingCopy, ChangeSet, List) Result
+  +review(WorkingCopy, JsonCodec.BusinessRequest, ChangeSet) Result
+  +validateRecovered(WorkingCopy) void
+}
+class Te3548e587904["supermarket.app.Application"] {
+  -AttachmentStore attachments
+  -IdClock ids
+  -AOperations operations
+  -OriginalSaleAccess sales
+  -JsonStore store
+  +Application(DataRoot, BIntegration, Clock, JsonStore.BeforeReplace)
+  +Application(DataRoot, BIntegration, Clock)
+  +attachments() AttachmentStore
+  +close() void
+  +execute(OperationContext, JsonCodec.BusinessRequest) Result
+  +ids() IdClock
+  +operations() AOperations
+  +originalSales() OriginalSaleAccess
+  +submissions() SubmissionPort
+}
+class T88a02d6d0dac["supermarket.app.BIntegration"] {
+  <<interface>>
+  +drafts() OriginalSaleAccess.DraftAccess
+  +identities(Supplier) OperationContext.IdentityResolver
+  +initialAccounts() List
+  +integrity() JsonStore.IntegrityValidator
+  +run(Application) void
+  +stock() AOperations.StockDependency
+  +validators() Map
+}
+class T6634f46bb5ed["supermarket.app.Main"] {
+  -Main()
+  +main(String[]) void
+  +run(String[], PrintStream, PrintStream) int
+}
+class Tc8607bde09dc["supermarket.app.RepositoryBIntegration"] {
+  -List accounts
+  -AuthService auth
+  -Supplier credentialView
+  -InputStream input
+  -PrintStream output
+  -SharedStockAdapter stock
+  -Texts texts
+  +RepositoryBIntegration(List, Texts, PrintStream, InputStream)
+  +RepositoryBIntegration(List)
+  +auth() AuthService
+  +cuiOperations(Application) Operations
+  +drafts() OriginalSaleAccess.DraftAccess
+  +identities(Supplier) OperationContext.IdentityResolver
+  +initialAccounts() List
+  +integrity() JsonStore.IntegrityValidator
+  +run(Application) void
+  +stock() AOperations.StockDependency
+  +validators() Map
+}
+class T42313f4a8f80["supermarket.auth.AuthResult"] {
+  <<interface>>
+}
+class T451c24b8a519["supermarket.auth.AuthResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class Taddacdb78906["supermarket.auth.AuthResult.Rejected"] {
+  <<record>>
+  -String code
+  -String message
+  +Rejected(String, String)
+}
+class Tcbb58f7e2ba8["supermarket.auth.AuthResult.Success"] {
+  <<record>>
+  -String accountId
+  -Role role
+  -SessionRef session
+  +Success(SessionRef, String, Role)
+}
+class Tea14455142e3["supermarket.auth.AuthService"] {
+  <<interface>>
+  +login(String, char[]) AuthResult
+  +resolve(SessionRef) AuthResult
+}
+class T75ad01a1dcdd["supermarket.auth.CredentialStore"] {
+  <<interface>>
+  +findByUsername(String) Optional
+}
+class T0fcbfdc53966["supermarket.auth.CredentialStore.StoredCredential"] {
+  <<record>>
+  -String accountId
+  -String passwordHash
+  -Role role
+  -String username
+  +StoredCredential(String, String, Role, String)
+}
+class T9385351a716b["supermarket.auth.LocalAuthService"] {
+  -CredentialStore credentialStore
+  -PasswordHasher passwordHasher
+  -Map sessions
+  +LocalAuthService(CredentialStore, PasswordHasher)
+  +login(String, char[]) AuthResult
+  +resolve(SessionRef) AuthResult
+}
+class T5ac9b315125d["supermarket.auth.LocalAuthService.SessionState"] {
+  <<record>>
+  -String accountId
+  -Role role
+  -SessionRef session
+  -SessionState(SessionRef, String, Role)
+}
+class T6141ff74d5e5["supermarket.auth.PasswordHasher"] {
+  <<interface>>
+  +hash(char[]) String
+  +matches(char[], String) boolean
+}
+class T7a10032b65ad["supermarket.auth.Role"] {
+  <<enum>>
+  +Role ADMIN
+  +Role CLERK
+  +Role MANAGER
+  -Role(String, int)
+  +canPerformHighRiskOperation() boolean
+}
+class Tbf1f794848a9["supermarket.auth.SessionRef"] {
+  -String token
+  ~SessionRef(String)
+  +equals(Object) boolean
+  +hashCode() int
+  +toString() String
+  +token() String
+}
+class T02c04355a5fc["supermarket.auth.Sha256PasswordHasher"] {
+  +Sha256PasswordHasher()
+  +hash(char[]) String
+  +matches(char[], String) boolean
+}
+class Tc60944d53a4f["supermarket.auth.SharedCredentialStore"] {
+  -Supplier authenticationView
+  +SharedCredentialStore(Supplier)
+  +SharedCredentialStore(JsonStore)
+  +findByUsername(String) Optional
+}
+class T4e802ca8273a["supermarket.auth.SharedIdentityResolver"] {
+  -AuthService authService
+  +SharedIdentityResolver(AuthService)
+  +resolve(Object) Result
+}
+class T8002158a6b03["supermarket.auth.SharedRoles"] {
+  -SharedRoles()
+  +toLocal(OperationContext.Role) Role
+  +toShared(Role) OperationContext.Role
+}
+class T3483ca03b8ef["supermarket.catalog.Product"] {
+  <<record>>
+  -String barcode
+  -String name
+  -BigDecimal sellingPrice
+  -String unit
+  -String zeroPriceNote
+  +Product(String, String, String, BigDecimal, String)
+}
+class T620f3425d9a8["supermarket.cui.AftersaleRequest"] {
+  <<record>>
+  -RedemptionKind kind
+  -boolean opened
+  -boolean qualityProblem
+  -int quantity
+  -AftersaleReasonKind reasonKind
+  -String reasonText
+  -String replacementBarcode
+  -int replacementQuantity
+  -String requestKey
+  -String saleLineId
+  +AftersaleRequest(String, RedemptionKind, int, boolean, boolean, AftersaleReasonKind, String, String, int, String)
+  +withRequestKey(String) AftersaleRequest
+}
+class T82400850f5f0["supermarket.cui.BApplication"] {
+  -Application app
+  -RepositoryBIntegration integration
+  +BApplication(Path, List, IdClock)
+  +BApplication(Path, List)
+  +authService() AuthService
+  +close() void
+  +operations() Operations
+  +store() JsonStore
+}
+class Td71a7c86b14c["supermarket.cui.CuiActor"] {
+  <<record>>
+  -String accountId
+  -Role role
+  -SessionRef session
+  +CuiActor(String, Role, SessionRef)
+}
+class T2b1e46d03313["supermarket.cui.CuiApp"] {
+  -String EXIT_COMMAND
+  -AuthService authService
+  -BufferedReader input
+  -InputValidator inputValidator
+  -Operations operations
+  -PrintStream output
+  -Texts texts
+  +CuiApp(AuthService, Operations, InputValidator, BufferedReader, PrintStream, Texts)
+  +CuiApp(AuthService, Operations, InputValidator, BufferedReader, PrintStream)
+  +run() void
+}
+class T2fdefca4df35["supermarket.cui.CuiApp.CancelInput"] {
+  -CancelInput()
+}
+class T2e52339cf1dd["supermarket.cui.InputValidator"] {
+  +BigDecimal MAX_MONEY
+  +int MAX_QUANTITY
+  +int MIN_QUANTITY
+  +InputValidator()
+  +parseMoney(String) BigDecimal
+  +parseQuantity(String) int
+}
+class Te63e9fded546["supermarket.cui.InputValidator.InvalidInputException"] {
+  +InvalidInputException(String)
+}
+class T2a98d0b34cdf["supermarket.cui.MaintenanceOperations"] {
+  <<interface>>
+  +aftersaleBatch(CuiActor, List, String) OperationFeedback
+  +attach(CuiActor, String, String, int) Result
+  +executeA(CuiActor, String, Object, String) OperationFeedback
+  +inspect(CuiActor, String, String) OperationFeedback
+  +quoteAftersale(CuiActor, List, String) OperationFeedback
+  +quoteSale(CuiActor, List, String) OperationFeedback
+  +retry(CuiActor, String) OperationFeedback
+}
+class Tc49497bb1e0d["supermarket.cui.MaintenanceOperations.ReceiptEdit"] {
+  <<record>>
+  -List items
+  -String reason
+  -String receiptId
+  +ReceiptEdit(String, List, String)
+}
+class T3470c441c003["supermarket.cui.OperationFeedback"] {
+  <<record>>
+  -Texts.Display display
+  -String message
+  -boolean success
+  +OperationFeedback(boolean, String, Texts.Display)
+  +OperationFeedback(boolean, String)
+  +fail(String) OperationFeedback
+  +ok(String) OperationFeedback
+  +render(Texts) String
+  +shown(boolean, Texts.Display) OperationFeedback
+}
+class T2a01784c6c40["supermarket.cui.Operations"] {
+  <<interface>>
+  +aftersale(CuiActor, AftersaleRequest) OperationFeedback
+  +cancelAftersaleDraft(CuiActor, String) OperationFeedback
+  +deleteAftersaleDraft(CuiActor, String) OperationFeedback
+  +recordLoss(CuiActor, String, Position, int, String) OperationFeedback
+  +recordLoss(CuiActor, String, Position, int) OperationFeedback
+  +replenish(CuiActor, String, int) OperationFeedback
+  +reverseDocument(CuiActor, String, String) OperationFeedback
+}
+class T83cc2a650033["supermarket.cui.SharedIdGenerator"] {
+  -IdClock idClock
+  -String requestKey
+  -AtomicInteger sequence
+  +SharedIdGenerator(IdClock, String)
+  +nextId(String) String
+  +now() Instant
+}
+class T3c1e14fce487["supermarket.cui.SharedOperations"] {
+  -IdClock idClock
+  -Map pending
+  -Map quotes
+  -JsonStore store
+  +SharedOperations(JsonStore, IdClock)
+  +aftersale(CuiActor, AftersaleRequest) OperationFeedback
+  +aftersaleBatch(CuiActor, List, String) OperationFeedback
+  +attach(CuiActor, String, String, int) Result
+  +cancelAftersaleDraft(CuiActor, String) OperationFeedback
+  +deleteAftersaleDraft(CuiActor, String) OperationFeedback
+  +executeA(CuiActor, String, Object, String) OperationFeedback
+  +inspect(CuiActor, String, String) OperationFeedback
+  +quoteAftersale(CuiActor, List, String) OperationFeedback
+  +quoteSale(CuiActor, List, String) OperationFeedback
+  +recordLoss(CuiActor, String, Position, int, String) OperationFeedback
+  +recordLoss(CuiActor, String, Position, int) OperationFeedback
+  +replenish(CuiActor, String, int) OperationFeedback
+  +retry(CuiActor, String) OperationFeedback
+  +reverseDocument(CuiActor, String, String, String) OperationFeedback
+  +reverseDocument(CuiActor, String, String) OperationFeedback
+}
+class Tc6ee285723f1["supermarket.cui.SharedOperations.Pending"] {
+  <<record>>
+  -String accountId
+  -Supplier retry
+  -Pending(String, Supplier)
+}
+class T6edeaae56c33["supermarket.cui.SharedOperations.Quoted"] {
+  <<record>>
+  -String actor
+  -ChangeSet delta
+  -JsonCodec.BusinessRequest request
+  -WorkingCopy wc
+  -Quoted(String, WorkingCopy, JsonCodec.BusinessRequest, ChangeSet)
+}
+class Tf95301656442["supermarket.cui.SharedProductCatalog"] {
+  -WorkingCopy workingCopy
+  +SharedProductCatalog(WorkingCopy)
+  +productName(String) Optional
+}
+class T0c7f8dba807d["supermarket.i18n.Texts"] {
+  +String UNAVAILABLE
+  -Map chinese
+  -Map english
+  -String language
+  +Texts(String, Map, Map)
+  +Texts(String)
+  +data(Object) Texts.Display
+  +error(String) String
+  +inputError(String) String
+  +keys() Set
+  +label(String) String
+  +language() String
+  +message(String, Object[]) Texts.Display
+  +select(String) void
+  +text(String, Object[]) String
+}
+class T17d1872e24d1["supermarket.i18n.Texts.Display"] {
+  <<interface>>
+  +render(Texts) String
+}
+class T00206cbc4ee5["supermarket.promotion.Promotion"] {
+  <<record>>
+  -Set barcodes
+  -String endsOn
+  -Promotion.Kind kind
+  -BigDecimal payPercent
+  -Integer priority
+  -String promotionId
+  -BigDecimal reduction
+  -String startsOn
+  -BigDecimal threshold
+  +Promotion(String, Promotion.Kind, BigDecimal, BigDecimal, BigDecimal, Integer, String, String, Set)
+  +active(Instant) boolean
+}
+class T26e8d9d3b4fc["supermarket.promotion.Promotion.Kind"] {
+  <<enum>>
+  +Promotion.Kind PERCENT
+  +Promotion.Kind REDUCTION
+  -Kind(String, int)
+}
+class Ta1a422feb516["supermarket.query.LossRecordReader"] {
+  <<interface>>
+  +findByBarcode(String) List
+  +findById(String) Optional
+}
+class T3636a7cc3eac["supermarket.query.LossRecordView"] {
+  <<record>>
+  -String barcode
+  -String disposition
+  -LossState dispositionState
+  -String lossId
+  -LossOrigin origin
+  -Position position
+  -int quantity
+  +LossRecordView(String, String, Position, int, LossOrigin, String, LossState)
+}
+class T3ffee827aac8["supermarket.query.QueryOperations"] {
+  <<interface>>
+  +findLossRecord(String) QueryResult
+  +findSaleLine(String) QueryResult
+  +lossRecordsForBarcode(String) QueryResult
+  +quotaView(String) QueryResult
+  +redemptionHistory(String) QueryResult
+}
+class Te2eea3e02750["supermarket.query.QueryResult"] {
+  <<interface>>
+}
+class Ta97320e52188["supermarket.query.QueryResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class Td90450434ae7["supermarket.query.QueryResult.Rejected"] {
+  <<record>>
+  -String code
+  -String message
+  +Rejected(String, String)
+}
+class T3678bb9ada2b["supermarket.query.QueryResult.Value"] {
+  <<record>>
+  -Object value
+  +Value(Object)
+}
+class Te2e59e5826bc["supermarket.query.QueryService"] {
+  -LossRecordReader lossRecordReader
+  -OriginalSaleReader originalSaleReader
+  -QuotaLedgerReader quotaLedgerReader
+  -QuotaViewBuilder quotaViewBuilder
+  +QueryService(OriginalSaleReader, QuotaLedgerReader, QuotaViewBuilder, LossRecordReader)
+  +QueryService(OriginalSaleReader, QuotaLedgerReader, QuotaViewBuilder)
+  +findLossRecord(String) QueryResult
+  +findSaleLine(String) QueryResult
+  +lossRecordsForBarcode(String) QueryResult
+  +quotaView(String) QueryResult
+  +redemptionHistory(String) QueryResult
+}
+class Tb6683a660e02["supermarket.query.QueryService.EmptyLossRecordReader"] {
+  -EmptyLossRecordReader()
+  +findByBarcode(String) List
+  +findById(String) Optional
+}
+class T16b7b0279287["supermarket.query.SaleLineView"] {
+  <<record>>
+  -String barcode
+  -BigDecimal paidAmount
+  -int quantity
+  -String saleLineId
+  -Instant saleTime
+  +SaleLineView(String, String, int, BigDecimal, Instant)
+}
+class T0ad5f9df508f["supermarket.reversal.DependencyChecker"] {
+  +DependencyChecker()
+  +analyze(String, Map) DependencyChecker.DependencyDecision
+}
+class Tde33849383de["supermarket.reversal.DependencyChecker.DependencyDecision"] {
+  <<record>>
+  -boolean blocked
+  -List blockingIds
+  -boolean cycleDetected
+  +DependencyDecision(boolean, List, boolean)
+}
+class T12952cb802a0["supermarket.reversal.DocumentReversalCommand"] {
+  <<record>>
+  -String reason
+  -String requestKey
+  -String targetDocumentId
+  +DocumentReversalCommand(String, String, String)
+}
+class T899ecf592f23["supermarket.reversal.EffectiveDependencies"] {
+  -EffectiveDependencies()
+  +blocker(WorkingCopy, String) String
+  +fullyReversed(WorkingCopy) Set
+}
+class Ta46aefdfd266["supermarket.reversal.ReversalChangeSetAssembler"] {
+  +String OPERATION
+  +ReversalChangeSetAssembler()
+  +assemble(WorkingCopy, String, OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, IdClock) ChangeSet
+}
+class T98405d5048f7["supermarket.reversal.ReversalCommitValidator"] {
+  +ReversalCommitValidator()
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+  #review(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T0a72e2b7d779["supermarket.sales.OriginalSaleAccess"] {
+  -OriginalSaleAccess.DraftAccess drafts
+  -OperationContext.IdentityResolver identities
+  -IdClock ids
+  +OriginalSaleAccess(OperationContext.IdentityResolver, IdClock, OriginalSaleAccess.DraftAccess)
+  +originalLine(WorkingCopy, String) Optional
+  +readForAftersale(SubmissionPort, OperationContext, AftersaleReadRequest) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validateRecovered(WorkingCopy) void
+}
+class Tc908c62c7ed9["supermarket.sales.OriginalSaleAccess.DraftAccess"] {
+  <<interface>>
+  +prepareTarget(OperationContext, OperationContext.ActorContext, AftersaleReadRequest, WorkingCopy) Result
+  +reviewTarget(OperationContext, OperationContext.ActorContext, AftersaleReadRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class Tef38febe5667["supermarket.sales.OriginalSaleAccess.ReadRefusal"] {
+  ~String code
+  ~ReadRefusal(String, String)
+}
+class T6768fc64c9ec["supermarket.sales.Pricing"] {
+  +Pricing()
+  +cents(BigDecimal) long
+  +money(long) BigDecimal
+  +quote(List, Collection, Instant) Pricing.Quote
+}
+class T0dddae7b2526["supermarket.sales.Pricing.Candidate"] {
+  <<record>>
+  -long discount
+  -Promotion promotion
+  -Candidate(Promotion, long)
+}
+class T889816702ddc["supermarket.sales.Pricing.Line"] {
+  <<record>>
+  -String barcode
+  -String lineId
+  -String productName
+  -int quantity
+  -BigDecimal unitPrice
+  +Line(String, String, String, BigDecimal, int)
+  +grossCents() long
+}
+class T75961b0a7588["supermarket.sales.Pricing.Quote"] {
+  <<record>>
+  -BigDecimal discountTotal
+  -BigDecimal grossTotal
+  -List lines
+  -BigDecimal paidTotal
+  -Promotion promotion
+  +Quote(Promotion, BigDecimal, BigDecimal, BigDecimal, List)
+}
+class T9fcc5778be21["supermarket.sales.Pricing.SaleLineSnapshot"] {
+  <<record>>
+  -BigDecimal discountAmount
+  -BigDecimal grossAmount
+  -String lineId
+  -BigDecimal paidAmount
+  -String productNameSnapshot
+  -boolean promotionApplicable
+  -Promotion promotionSnapshot
+  -BigDecimal unitPriceSnapshot
+  +SaleLineSnapshot(String, String, BigDecimal, BigDecimal, Promotion, boolean, BigDecimal, BigDecimal)
+}
+class T2fb8e8542eac["supermarket.stock.LossOrigin"] {
+  <<enum>>
+  +LossOrigin CUSTOMER_RETURN
+  +LossOrigin STORE
+  -LossOrigin(String, int)
+}
+class T80ca8c7d2f1a["supermarket.stock.LossRecord"] {
+  <<record>>
+  -String barcode
+  -String disposition
+  -LossState dispositionState
+  -String lossId
+  -LossOrigin origin
+  -Position position
+  -int quantity
+  -String sourceLineId
+  +LossRecord(String, String, String, Position, int, LossOrigin, String, LossState)
+  +dispose(String) LossRecord
+}
+class Tb37cfc767aca["supermarket.stock.LossResult"] {
+  <<interface>>
+}
+class T661bed116761["supermarket.stock.LossResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class T9095d978745a["supermarket.stock.LossResult.Prepared"] {
+  <<record>>
+  -List balancesAfter
+  -List entries
+  -LossRecord lossRecord
+  +Prepared(LossRecord, List, List)
+}
+class T321f9d38be8a["supermarket.stock.LossResult.Rejected"] {
+  <<record>>
+  -String code
+  -String field
+  -String message
+  +Rejected(String, String, String)
+}
+class T5fa975db029a["supermarket.stock.LossService"] {
+  -StockPorts.IdGenerator idGenerator
+  -StockOperations stockOperations
+  +LossService(StockOperations, StockPorts.IdGenerator)
+  +recordLoss(StockPorts.WorkingCopyView, List, String, Position, int) LossResult
+}
+class T5b5b2af26252["supermarket.stock.LossState"] {
+  <<enum>>
+  +LossState DISPOSED
+  +LossState PENDING
+  -LossState(String, int)
+}
+class T44e8facdc203["supermarket.stock.LossWorkflow"] {
+  +String CORRECT
+  +String DISPOSE
+  +LossWorkflow()
+  +effective(WorkingCopy, String) LossRecord
+  +prepare(OperationContext, OperationContext.ActorContext, LossWorkflow.Request, WorkingCopy, Instant) ChangeSet
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T344a81cce34e["supermarket.stock.LossWorkflow.Correction"] {
+  <<record>>
+  -String beforeAfterSnapshot
+  -long correctionVersion
+  -String documentId
+  -String lossId
+  -int quantityDifference
+  +Correction(String, String, long, int, String)
+}
+class T71712395401f["supermarket.stock.LossWorkflow.Request"] {
+  <<record>>
+  -String disposition
+  -String lossId
+  -int quantity
+  -String reason
+  +Request(String, int, String, String)
+}
+class T9816cd1824d9["supermarket.stock.Position"] {
+  <<enum>>
+  +Position S
+  +Position W
+  -Position(String, int)
+}
+class T0184c0ebbcdb["supermarket.stock.ReplenishmentResult"] {
+  <<interface>>
+}
+class Td9283ec257b3["supermarket.stock.ReplenishmentResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class T7a3420d33a19["supermarket.stock.ReplenishmentResult.Prepared"] {
+  <<record>>
+  -List balancesAfter
+  -List entries
+  -String transferKey
+  +Prepared(String, List, List)
+}
+class Teef4dc1738bf["supermarket.stock.ReplenishmentResult.Rejected"] {
+  <<record>>
+  -String code
+  -String field
+  -String message
+  +Rejected(String, String, String)
+}
+class T25ec3236730f["supermarket.stock.ReplenishmentService"] {
+  -StockPorts.IdGenerator idGenerator
+  -StockOperations stockOperations
+  +ReplenishmentService(StockOperations, StockPorts.IdGenerator)
+  +replenish(StockPorts.WorkingCopyView, List, String, int) ReplenishmentResult
+}
+class Te1c23cf087f1["supermarket.stock.SharedStockAdapter"] {
+  -StockValidator validator
+  +SharedStockAdapter(StockValidator)
+  +SharedStockAdapter()
+  +prepare(WorkingCopy, ChangeSet, List) Result
+  +review(WorkingCopy, JsonCodec.BusinessRequest, ChangeSet) Result
+  +validateRecovered(WorkingCopy) void
+}
+class T6e30d6d2f1ff["supermarket.stock.SharedStockCommitValidator"] {
+  -SharedStockAdapter stockAdapter
+  +SharedStockCommitValidator(SharedStockAdapter)
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T0fa8465e0134["supermarket.stock.SharedStockProjection"] {
+  -SharedStockProjection()
+}
+class T31ffc8e0e8f2["supermarket.stock.SharedWorkingCopyView"] {
+  -WorkingCopy workingCopy
+  +SharedWorkingCopyView(WorkingCopy)
+  +balances(Collection) List
+  +baseLast() long
+}
+class Tf8e6faaacf74["supermarket.stock.StockBalance"] {
+  <<record>>
+  -String barcode
+  -Position position
+  -int quantity
+  +StockBalance(String, Position, int)
+}
+class T13da6119ecd5["supermarket.stock.StockBusiness"] {
+  -StockBusiness()
+  +prepare(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, IdClock) Result
+}
+class T0cbdcba8c9f0["supermarket.stock.StockChangeLine"] {
+  <<record>>
+  -String barcode
+  -int delta
+  -String eventKey
+  -Position position
+  -String receiptReviewId
+  -String reverseOfId
+  -String sourceLineId
+  -String transferKey
+  +StockChangeLine(String, Position, int, String, String, String, String, String)
+  +StockChangeLine(String, Position, int, String, String, String)
+}
+class Tcba42901d54a["supermarket.stock.StockChangeSetAssembler"] {
+  +String LOSS
+  +String REPLENISHMENT
+  +StockChangeSetAssembler()
+  +assembleLoss(LossResult.Prepared, String, String, OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest) ChangeSet
+  +assembleReplenishment(ReplenishmentResult.Prepared, String, String, OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest) ChangeSet
+}
+class T7e854f977fec["supermarket.stock.StockCheckResult"] {
+  <<interface>>
+}
+class T86bb18e9d5ce["supermarket.stock.StockCheckResult.Failed"] {
+  <<record>>
+  -String code
+  -String message
+  +Failed(String, String)
+}
+class T72063378dd9b["supermarket.stock.StockCheckResult.Prepared"] {
+  <<record>>
+  -List balancesAfter
+  -List entries
+  +Prepared(List, List)
+}
+class Te89702c56440["supermarket.stock.StockCheckResult.Rejected"] {
+  <<record>>
+  -String code
+  -String field
+  -String message
+  +Rejected(String, String, String)
+}
+class Tcff4ab8f1a8f["supermarket.stock.StockEntry"] {
+  <<record>>
+  -String barcode
+  -int delta
+  -String eventKey
+  -String id
+  -Position position
+  -String receiptReviewId
+  -String reverseOfId
+  -String sourceLineId
+  -String transferKey
+  +StockEntry(String, String, Position, int, String, String, String, String, String)
+  +StockEntry(String, String, Position, int, String, String, String, String)
+}
+class T8c245e85ec20["supermarket.stock.StockOperationValidator"] {
+  -String operation
+  +StockOperationValidator(String)
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+}
+class Ta6c9bb85964b["supermarket.stock.StockOperations"] {
+  <<interface>>
+  +balances(StockPorts.WorkingCopyView, Collection) List
+  +check(StockPorts.WorkingCopyView, List, List) StockCheckResult
+}
+class Tc0eb9b99e130["supermarket.stock.StockPorts"] {
+  -StockPorts()
+}
+class T740c2fc9c940["supermarket.stock.StockPorts.IdGenerator"] {
+  <<interface>>
+  +nextId(String) String
+  +now() Instant
+}
+class T944fc409bb02["supermarket.stock.StockPorts.ProductCatalog"] {
+  <<interface>>
+  +productName(String) Optional
+}
+class T537de593ec3b["supermarket.stock.StockPorts.WorkingCopyView"] {
+  <<interface>>
+  +balances(Collection) List
+  +baseLast() long
+}
+class Tc189195ed64e["supermarket.stock.StockService"] {
+  -StockPorts.IdGenerator idGenerator
+  -StockPorts.ProductCatalog productCatalog
+  -StockValidator validator
+  +StockService(StockPorts.ProductCatalog, StockPorts.IdGenerator, StockValidator)
+  +balances(StockPorts.WorkingCopyView, Collection) List
+  +check(StockPorts.WorkingCopyView, List, List) StockCheckResult
+}
+class T2c7c4b7e729a["supermarket.stock.StockValidator"] {
+  +int MAX_QUANTITY
+  +int MIN_QUANTITY
+  +StockValidator()
+  +validate(List, Map) Optional
+}
+class Td6b789bbf827["supermarket.stock.StockValidator.BalanceKey"] {
+  <<record>>
+  -String barcode
+  -Position position
+  +BalanceKey(String, Position)
+}
+class Ted6bb8ee17a5["supermarket.stock.StockValidator.StockRejection"] {
+  <<record>>
+  -String code
+  -String field
+  -String message
+  +StockRejection(String, String, String)
+}
+Tc0ba382d054a ..> T1d476043461e : assign
+Tc0ba382d054a ..> T829005e444f3 : same
+Tc0ba382d054a <|-- T98405d5048f7 : inherits
+Tc0ba382d054a <|-- T8c245e85ec20 : inherits
+T21b52b4e5584 --> T71a8d33fe722 : field type
+T3c67e6932c02 --> T71a8d33fe722 : field type
+T3c67e6932c02 --> T277142f62772 : field type
+T3c67e6932c02 --> T48eae3acd800 : field type
+T3c67e6932c02 --> T87c4caca3f39 : field type
+T3c67e6932c02 --> T4b640d2a02c4 : field type
+T3c67e6932c02 --> T576746fdd832 : field type
+T3c67e6932c02 --> T4c29b358a7cf : field type
+T3c67e6932c02 ..> T4c29b358a7cf : validate under lock
+T77562225e71e --> T91a25c54f4bd : field type
+T48eae3acd800 --> T707710bae972 : field type
+T87c4caca3f39 <|.. T1a239c02725d : implements
+T30cc0111ba39 --> T329948472143 : field type
+T4b640d2a02c4 --> T77562225e71e : field type
+T4b640d2a02c4 --> T30cc0111ba39 : field type
+T4b640d2a02c4 --> Td7beffef28a6 : field type
+T54906662e3e5 --> T224a0d706487 : field type
+T54906662e3e5 --> T329948472143 : field type
+T54906662e3e5 --> T707710bae972 : field type
+T3805964ebc12 --> T597e7a48285b : field type
+T3805964ebc12 --> T3f6d008348bc : field type
+T3805964ebc12 --> Td7beffef28a6 : field type
+T2ab84689a27b --> T597e7a48285b : field type
+T2ab84689a27b --> T3f6d008348bc : field type
+T2ab84689a27b --> Td7beffef28a6 : field type
+T7236fb42f16d --> T91a25c54f4bd : field type
+T576746fdd832 <|.. T4e802ca8273a : implements
+T3248f0880940 --> T15e0c372fd79 : field type
+T0d8be0aad77f --> T08b3b85fafe7 : field type
+Te9a341722903 <|.. T3c67e6932c02 : implements
+T4c29b358a7cf <|.. Tc0ba382d054a : implements
+T4c29b358a7cf <|.. Tcc4d05d5ad39 : implements
+T4c29b358a7cf <|.. T2338648373f8 : implements
+T4c29b358a7cf <|.. Td346de2ebd7c : implements
+T4c29b358a7cf <|.. T975e7744c37c : implements
+T4c29b358a7cf <|.. T0a72e2b7d779 : implements
+T4c29b358a7cf <|.. T44e8facdc203 : implements
+T4c29b358a7cf <|.. T6e30d6d2f1ff : implements
+T707710bae972 --> Td7beffef28a6 : field type
+T4082909501eb --> T740c2fc9c940 : field type
+Td32e928e9543 --> T1d82c643e172 : field type
+T1d82c643e172 --> T3fd880e15fde : field type
+T1d82c643e172 --> T9a1b4202a6e5 : field type
+Tcc4d05d5ad39 ..> T7ef09042393d : reconstructs separately
+Tcc4d05d5ad39 --> Te1c23cf087f1 : field type
+T7aacc18f7b52 --> T3c67e6932c02 : field type
+T4104820540c2 <|.. Tdf218038348b : implements
+T4104820540c2 <|.. T031b6c4f3e02 : implements
+T4104820540c2 <|.. T206c0de17b59 : implements
+T031b6c4f3e02 --> Tce643062b399 : field type
+T031b6c4f3e02 --> Tdda4d9626f9a : field type
+T031b6c4f3e02 --> Td6f21d37907e : field type
+T031b6c4f3e02 --> Tfed24671fcc9 : field type
+Tce643062b399 --> T9816cd1824d9 : field type
+T41e9bd2345c8 --> T4082909501eb : field type
+T41e9bd2345c8 --> Tb72917c8892c : field type
+T41e9bd2345c8 --> T76c14e7391bb : field type
+T41e9bd2345c8 --> T77327e84715c : field type
+T41e9bd2345c8 --> T9257cfd18ee2 : field type
+T41e9bd2345c8 --> T75857082fa79 : field type
+T41e9bd2345c8 --> T1a7a7c27dbb8 : field type
+T41e9bd2345c8 --> Tfd1daeb1d217 : field type
+T41e9bd2345c8 --> Ta6c9bb85964b : field type
+T41e9bd2345c8 --> T740c2fc9c940 : field type
+T6a1e7ad93feb --> T1d82c643e172 : field type
+T13eed88cbff9 --> Te9a341722903 : field type
+T13eed88cbff9 --> T044e6dd50d4f : field type
+T13eed88cbff9 --> T41e9bd2345c8 : field type
+Tb3af7b6e53c6 --> T3805964ebc12 : field type
+Tb3af7b6e53c6 --> T66215c78b7bf : field type
+Tb3af7b6e53c6 --> T707710bae972 : field type
+Tb3af7b6e53c6 --> T031b6c4f3e02 : field type
+Tfb77ee0edb3c ..> Tcc4d05d5ad39 : registers
+Tfb77ee0edb3c ..> T2338648373f8 : registers
+Tfb77ee0edb3c ..> T98405d5048f7 : registers
+Tfb77ee0edb3c ..> T8c245e85ec20 : registers
+Tb72917c8892c <|.. T2ee912cfb4dc : implements
+T76c14e7391bb <|.. T2ba7dec7d870 : implements
+T75857082fa79 <|.. T3d4ef87c2f71 : implements
+Tdda4d9626f9a --> T9e31ee013037 : field type
+Tdda4d9626f9a --> T9a1b4202a6e5 : field type
+Tfed24671fcc9 --> T29964c00923b : field type
+T2ba7dec7d870 --> T707710bae972 : field type
+T3d4ef87c2f71 --> T707710bae972 : field type
+T2ee912cfb4dc --> T707710bae972 : field type
+T975e7744c37c --> Tb578e1b9c793 : field type
+T975e7744c37c --> T576746fdd832 : field type
+T975e7744c37c --> T67ef26a1ee1c : field type
+Teffa7a5ed651 --> T08b3b85fafe7 : field type
+Teffa7a5ed651 --> T3bbbf2d56734 : field type
+Tc00cd81ef607 --> T3805964ebc12 : field type
+Tc00cd81ef607 --> T66215c78b7bf : field type
+Tc00cd81ef607 --> T707710bae972 : field type
+T30af06e3f35e --> T3483ca03b8ef : field type
+Te2427e52c822 --> T00206cbc4ee5 : field type
+T9a37cd6bc004 --> T3bbbf2d56734 : field type
+Tc51003882218 --> T2513f2534063 : field type
+Tc51003882218 --> T3bbbf2d56734 : field type
+T031009f5185c --> T2513f2534063 : field type
+T01f7eadc7a5e --> T3bbbf2d56734 : field type
+Td9ed89a7cf27 --> T75961b0a7588 : field type
+T67ef26a1ee1c <|.. Te1c23cf087f1 : implements
+Te3548e587904 --> T21b52b4e5584 : field type
+Te3548e587904 --> T3c67e6932c02 : field type
+Te3548e587904 --> Tb578e1b9c793 : field type
+Te3548e587904 --> T975e7744c37c : field type
+Te3548e587904 --> T0a72e2b7d779 : field type
+T88a02d6d0dac <|.. Tc8607bde09dc : implements
+T6634f46bb5ed ..> Te3548e587904 : assembles
+T6634f46bb5ed ..> Tc8607bde09dc : constructs
+Tc8607bde09dc --> T77562225e71e : field type
+Tc8607bde09dc ..> Tfb77ee0edb3c : validators
+Tc8607bde09dc --> Tea14455142e3 : field type
+Tc8607bde09dc ..> T2b1e46d03313 : run
+Tc8607bde09dc ..> T3c1e14fce487 : adapts
+Tc8607bde09dc --> T0c7f8dba807d : field type
+Tc8607bde09dc --> Te1c23cf087f1 : field type
+T42313f4a8f80 <|.. T451c24b8a519 : implements
+T42313f4a8f80 <|.. Taddacdb78906 : implements
+T42313f4a8f80 <|.. Tcbb58f7e2ba8 : implements
+Tcbb58f7e2ba8 --> T7a10032b65ad : field type
+Tcbb58f7e2ba8 --> Tbf1f794848a9 : field type
+Tea14455142e3 <|.. T9385351a716b : implements
+T75ad01a1dcdd <|.. Tc60944d53a4f : implements
+T0fcbfdc53966 --> T7a10032b65ad : field type
+T9385351a716b --> T75ad01a1dcdd : field type
+T9385351a716b --> T5ac9b315125d : field type
+T9385351a716b --> T6141ff74d5e5 : field type
+T5ac9b315125d --> T7a10032b65ad : field type
+T5ac9b315125d --> Tbf1f794848a9 : field type
+T6141ff74d5e5 <|.. T02c04355a5fc : implements
+Tc60944d53a4f --> T77562225e71e : field type
+T4e802ca8273a --> Tea14455142e3 : field type
+T620f3425d9a8 --> T3fd880e15fde : field type
+T620f3425d9a8 --> T9a1b4202a6e5 : field type
+T82400850f5f0 --> Te3548e587904 : field type
+T82400850f5f0 --> Tc8607bde09dc : field type
+Td71a7c86b14c --> T7a10032b65ad : field type
+Td71a7c86b14c --> Tbf1f794848a9 : field type
+T2b1e46d03313 --> Tea14455142e3 : field type
+T2b1e46d03313 --> T2e52339cf1dd : field type
+T2b1e46d03313 --> T2a01784c6c40 : field type
+T2b1e46d03313 --> T0c7f8dba807d : field type
+T2a98d0b34cdf <|.. T3c1e14fce487 : implements
+Tc49497bb1e0d --> T3bbbf2d56734 : field type
+T3470c441c003 --> T17d1872e24d1 : field type
+T2a01784c6c40 <|-- T2a98d0b34cdf : extends
+T83cc2a650033 --> Tb578e1b9c793 : field type
+T3c1e14fce487 --> T3c67e6932c02 : field type
+T3c1e14fce487 ..> T3c67e6932c02 : open lookup submit
+T3c1e14fce487 --> Tb578e1b9c793 : field type
+T3c1e14fce487 --> Tc6ee285723f1 : field type
+T3c1e14fce487 --> T6edeaae56c33 : field type
+Tc6ee285723f1 --> T3470c441c003 : field type
+T6edeaae56c33 --> T3805964ebc12 : field type
+T6edeaae56c33 --> T66215c78b7bf : field type
+T6edeaae56c33 --> T707710bae972 : field type
+Tf95301656442 --> T707710bae972 : field type
+T00206cbc4ee5 --> T26e8d9d3b4fc : field type
+Ta1a422feb516 <|.. Tb6683a660e02 : implements
+T3636a7cc3eac --> T2fb8e8542eac : field type
+T3636a7cc3eac --> T5b5b2af26252 : field type
+T3636a7cc3eac --> T9816cd1824d9 : field type
+T3ffee827aac8 <|.. Te2e59e5826bc : implements
+Te2eea3e02750 <|.. Ta97320e52188 : implements
+Te2eea3e02750 <|.. Td90450434ae7 : implements
+Te2eea3e02750 <|.. T3678bb9ada2b : implements
+Te2e59e5826bc --> Tb72917c8892c : field type
+Te2e59e5826bc --> T75857082fa79 : field type
+Te2e59e5826bc --> T1a7a7c27dbb8 : field type
+Te2e59e5826bc --> Ta1a422feb516 : field type
+T98405d5048f7 ..> T899ecf592f23 : blocker
+T98405d5048f7 ..> Ta46aefdfd266 : assemble
+T98405d5048f7 ..> Te1c23cf087f1 : review
+T0a72e2b7d779 --> Tb578e1b9c793 : field type
+T0a72e2b7d779 --> T576746fdd832 : field type
+T0a72e2b7d779 --> Tc908c62c7ed9 : field type
+Tc908c62c7ed9 <|.. T56572709bbb1 : implements
+T0dddae7b2526 --> T00206cbc4ee5 : field type
+T75961b0a7588 --> T00206cbc4ee5 : field type
+T75961b0a7588 --> T9fcc5778be21 : field type
+T9fcc5778be21 --> T00206cbc4ee5 : field type
+T80ca8c7d2f1a --> T2fb8e8542eac : field type
+T80ca8c7d2f1a --> T5b5b2af26252 : field type
+T80ca8c7d2f1a --> T9816cd1824d9 : field type
+Tb37cfc767aca <|.. T661bed116761 : implements
+Tb37cfc767aca <|.. T9095d978745a : implements
+Tb37cfc767aca <|.. T321f9d38be8a : implements
+T9095d978745a --> T80ca8c7d2f1a : field type
+T9095d978745a --> Tf8e6faaacf74 : field type
+T9095d978745a --> Tcff4ab8f1a8f : field type
+T5fa975db029a --> Ta6c9bb85964b : field type
+T5fa975db029a --> T740c2fc9c940 : field type
+T0184c0ebbcdb <|.. Td9283ec257b3 : implements
+T0184c0ebbcdb <|.. T7a3420d33a19 : implements
+T0184c0ebbcdb <|.. Teef4dc1738bf : implements
+T7a3420d33a19 --> Tf8e6faaacf74 : field type
+T7a3420d33a19 --> Tcff4ab8f1a8f : field type
+T25ec3236730f --> Ta6c9bb85964b : field type
+T25ec3236730f --> T740c2fc9c940 : field type
+Te1c23cf087f1 --> T2c7c4b7e729a : field type
+T6e30d6d2f1ff --> Te1c23cf087f1 : field type
+T31ffc8e0e8f2 --> T707710bae972 : field type
+Tf8e6faaacf74 --> T9816cd1824d9 : field type
+T0cbdcba8c9f0 --> T9816cd1824d9 : field type
+T7e854f977fec <|.. T86bb18e9d5ce : implements
+T7e854f977fec <|.. T72063378dd9b : implements
+T7e854f977fec <|.. Te89702c56440 : implements
+T72063378dd9b --> Tf8e6faaacf74 : field type
+T72063378dd9b --> Tcff4ab8f1a8f : field type
+Tcff4ab8f1a8f --> T9816cd1824d9 : field type
+T8c245e85ec20 ..> T13da6119ecd5 : prepare
+Ta6c9bb85964b <|.. Tc189195ed64e : implements
+T740c2fc9c940 <|.. T83cc2a650033 : implements
+T944fc409bb02 <|.. Tf95301656442 : implements
+T537de593ec3b <|.. T31ffc8e0e8f2 : implements
+Tc189195ed64e --> T740c2fc9c940 : field type
+Tc189195ed64e --> T944fc409bb02 : field type
+Tc189195ed64e --> T2c7c4b7e729a : field type
+Td6b789bbf827 --> T9816cd1824d9 : field type

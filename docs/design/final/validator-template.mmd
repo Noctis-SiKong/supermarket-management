@@ -1,0 +1,61 @@
+classDiagram
+direction TB
+class Tc0ba382d054a["infrastructure.AbstractReconstructingCommitValidator"] {
+  <<abstract>>
+  +AbstractReconstructingCommitValidator()
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+  #review(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T3c67e6932c02["infrastructure.JsonStore"] {
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, Supplier)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace, JsonStore.RecoveryMode, List, Supplier)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace, JsonStore.RecoveryMode, List)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator, JsonStore.BeforeReplace)
+  +JsonStore(DataRoot, OperationContext.IdentityResolver, Map, JsonStore.IntegrityValidator)
+  +authenticate(OperationContext) Result
+  +authenticationView() List
+  +close() void
+  +importAttachment(Path, String, int) Result
+  +lookupResult(OperationContext, JsonCodec.BusinessRequest) Result
+  +open(OperationContext) Result
+  +submit(OperationContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet) Result
+}
+class T1d476043461e["infrastructure.SubmissionTime"] {
+  -SubmissionTime()
+  +assign(WorkingCopy, ChangeSet, Instant) ChangeSet
+}
+class T829005e444f3["shared.CandidateEquality"] {
+  -CandidateEquality()
+  +same(ChangeSet, ChangeSet) boolean
+}
+class T4c29b358a7cf["shared.SubmissionPort.CommitValidator"] {
+  <<interface>>
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class Tfb77ee0edb3c["supermarket.aftersale.BCommitValidators"] {
+  -BCommitValidators()
+  +create(SharedStockAdapter) Map
+}
+class T98405d5048f7["supermarket.reversal.ReversalCommitValidator"] {
+  +ReversalCommitValidator()
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+  #review(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+  +validate(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, ChangeSet, Instant) Result
+}
+class T8c245e85ec20["supermarket.stock.StockOperationValidator"] {
+  +StockOperationValidator(String)
+  #mismatch() Result
+  #reconstruct(OperationContext, OperationContext.ActorContext, JsonCodec.BusinessRequest, WorkingCopy, Instant) Result
+}
+Tc0ba382d054a ..> T1d476043461e : assign
+Tc0ba382d054a ..> T829005e444f3 : same
+Tc0ba382d054a <|-- T98405d5048f7 : inherits
+Tc0ba382d054a <|-- T8c245e85ec20 : inherits
+T3c67e6932c02 --> T4c29b358a7cf : field type
+T3c67e6932c02 ..> T4c29b358a7cf : validate under lock
+T4c29b358a7cf <|.. Tc0ba382d054a : implements
+Tfb77ee0edb3c ..> T98405d5048f7 : registers
+Tfb77ee0edb3c ..> T8c245e85ec20 : registers
