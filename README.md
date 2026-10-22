@@ -2,6 +2,12 @@
 
 A single-store offline Java CUI course project. The existing monolith is already wired with real JSON storage, authentication, products, receiving, promotions, sales, stock, after-sales and whole-order reversal; for run status and the verification status of this round, see the [unified implementation log](./docs/P1_Implementation_Log.md). Automated verification does not replace user acceptance, the course report, the video or the student's own signature.
 
+## Project Demonstration Video
+
+[Watch or download the Project 1 demonstration video](./Project1-Demonstration-Video.mp4) (4 minutes 37 seconds, 1080p).
+
+The MP4 includes English narration and burned-in English subtitles; original Chinese development prompts are retained as evidence. It demonstrates system functionality, AI-assisted development and prompt engineering, human review, and the overall code structure. No separate audio or subtitle files are needed.
+
 ## Quick Start
 
 Applies to Windows + JDK 17; full instructions are in [Build and run](#build-and-run) below.
