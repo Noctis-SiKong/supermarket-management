@@ -14,15 +14,17 @@ Applies to Windows + JDK 17 or newer; full instructions are in [Build and run](#
 
 For Chinese terminal input, configure UTF-8 input/output as shown in the language section below.
 
-1. Point `JAVA_HOME` at JDK 17 or newer (the Enforcer rejects Java 8 and older; the `java` on `PATH` is not necessarily the right one). JDK 21 also builds and runs the jar.
+1. Install a full JDK 17 or newer (the Enforcer rejects Java 8 and older; JDK 21 also builds and runs the jar). `JAVA_HOME` is honoured first when set, but the launchers below also find a suitable JDK on their own.
 2. One command to start with the bundled demo data:
-   `run.cmd`
-   It seeds `data\snapshot.json` from `demo\preset_snapshot_20261022.json` when no snapshot exists, builds the executable jar if needed, and launches the CUI. Log in with `manager01`, `clerk01` or `admin01`; password `demo1234`.
-   `run.cmd` is Windows-only and auto-detects a full JDK 17+ (it prefers `JAVA_HOME`, then a `javac`-capable `java` on `PATH`, then common install folders such as `%TEMP%\p1-jdk*`, `%LOCALAPPDATA%\pdc-build-tools`, `Program Files\Eclipse Adoptium`, `Program Files\Java` and `%USERPROFILE%\.jdks`), prints the selected JDK, and stops with a clear error if none is found. There is no `run.sh`: on macOS/Linux run `./mvnw -B --no-transfer-progress clean package` and start the jar with `java -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
+   - Windows: `run.cmd`
+   - macOS: double-click `run.command`, or run `./run.sh`
+   - Linux: `./run.sh`
+
+   Each launcher seeds `data/snapshot.json` from `demo/preset_snapshot_20261022.json` when no snapshot exists, builds the executable jar if needed, and launches the CUI. Log in with `manager01`, `clerk01` or `admin01`; password `demo1234`. They share the same JDK discovery: `JAVA_HOME` first, then a `javac`-capable `java` on `PATH`, then common install folders (`~/.jdks`, `~/.sdkman`, `/usr/lib/jvm`, `/Library/Java/JavaVirtualMachines`, Homebrew `openjdk*`, `%TEMP%\p1-jdk*`, `Program Files\Eclipse Adoptium`, ...). Each prints the selected JDK and stops with a clear error if no full JDK 17+ is found. The git checkout stores the executable bit for `run.sh`/`run.command`; if your copy lost it, run `chmod +x run.sh run.command`.
 3. To build without launching: `.\mvnw.cmd -B --no-transfer-progress clean package`.
    The template's `mvn clean javafx:run` belongs to Project 2 (GUI); this P1 is a CUI. `mvn clean compile exec:java` also works here because the pom declares the exec plugin and main class.
 
-Manual start (after building): `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
+Manual start (after building): Windows `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`; macOS/Linux `java -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
 To create accounts from scratch instead of using the demo snapshot, run the same jar with `--init-accounts` in a real terminal (interactive, no default accounts); once creation finishes you go straight into the CUI. To check storage recovery and registration validation only, append `--check`; for options, append `--help`.
 
 Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR. The demo snapshot contains only the seeded demo accounts and sample business records; delete `data\snapshot.json` to start from an empty store.
