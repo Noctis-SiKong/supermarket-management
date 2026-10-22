@@ -3,7 +3,8 @@
 > **CR07-10（2026-10-20）**：CR07-09店长资格例外已撤销。以下“含CR07-09同步”仅指历史图集；V2实现/图应删除AFTERSALE.exception_*，在REDEMPTION使用reason_text，不能继续按店长授权例外设计。
 
 版本/日期：v1，2026-10-20（Asia/Shanghai）
-权威源：`docs/design/member_b/class_v2.mmd`（约 50 个类/接口/枚举，含 CR07-09 同步）
+设计基线：`docs/design/member_b/class_v2.mmd`（约 50 个类/接口/枚举，含 CR07-09 同步）
+当前实现图：[`docs/design/final/`](../../final/README.md)（2026-10-22，由源码生成）；本目录是设计阶段的历史图集，不是最终实现快照。
 本目录：报告/演示用分图（PNG，由 B 在 mermaid.live 按 `theme: base, layout: elk, fontSize: 18` 渲染后导出）。
 
 ## 图清单

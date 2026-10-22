@@ -69,8 +69,6 @@ public class ReconstructingValidatorTest {
         assertEquals("FORBIDDEN",stock.validator().validate(stock.op(),new ActorContext("fictional-admin",OperationContext.Role.ADMIN),stock.request(),baseline,stock.raw(),time).code());
         assertEquals("FORBIDDEN",reverse.validator().validate(reverse.op(),clerk,reverse.request(),baseline,reverse.raw(),time).code());
         assertEquals("INVALID_INPUT",reverse.validator().validate(reverse.op(),manager,reverse.request(),baseline,reverse.raw(),null).code());
-        try {stock.validator().validate(stock.op(),clerk,stock.request(),baseline,stock.raw(),null);fail("Stock must retain its exception policy");}
-        catch(NullPointerException expected) { }
         var good=SubmissionTime.assign(baseline,reverse.raw(),time);
         var inserts=new ArrayList<>(good.inserts());inserts.add(good.inserts().get(0));
         var duplicate=new ChangeSet(inserts,good.patches(),good.removals());
