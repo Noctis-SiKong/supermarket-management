@@ -24,6 +24,8 @@ the archived design documents to match new code.
 | Path | Content |
 |------|---------|
 | `evidence/member_a/implementation_validation.md` | Member A implementation evidence, verification commands and limits |
+| `evidence/member_a/gpt/` | Member A GPT session exports: per-role transcripts, tool-call logs and raw `rollout-*.jsonl` sessions (2026-10-19 … 2026-10-21) |
+| `evidence/member_a/deepseek/` | Member A DeepSeek main-line audit archives (zip) for the deadlock and audit-2.0 rounds |
 | `evidence/member_b/` | Member B design review, AC coverage/execution, AI usage log, implementation log and design evolution |
 
 Evidence files are snapshots of work performed on the dates they state. Paths inside

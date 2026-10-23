@@ -1,0 +1,138 @@
+[
+  {
+    "name": "总设计师",
+    "thread_id": "01a154f7-1780-78a2-810e-85aa7a107aef",
+    "messages": 221,
+    "tool_records": 230,
+    "files": [
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T00-20-41-01a154f7-1780-78a2-810e-85aa7a107aef.jsonl",
+        "export": "sessions\\总设计师\\sessions\\2026\\10\\20\\rollout-2026-10-20T00-20-41-01a154f7-1780-78a2-810e-85aa7a107aef.jsonl",
+        "bytes": 910516,
+        "sha256": "66955f570319ea9d2dd2d73f29d7e90e1be6fcbc25ecf4c1db4840b08ddd87c1"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T00-28-16-01a154f7-1780-78a2-810e-85aa7a107aef_01a154fe-082e-7580-ac7e-62a671d3a2e2.jsonl",
+        "export": "sessions\\总设计师\\sessions\\2026\\10\\20\\rollout-2026-10-20T00-28-16-01a154f7-1780-78a2-810e-85aa7a107aef_01a154fe-082e-7580-ac7e-62a671d3a2e2.jsonl",
+        "bytes": 2387068,
+        "sha256": "16e624c1ae4730e82b5293650b695e9fe455351c2268c9fe18fbf7d3169fea86"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T06-16-22-01a154f7-1780-78a2-810e-85aa7a107aef_01a1563c-b939-7822-88b4-66d4a4c95440.jsonl",
+        "export": "sessions\\总设计师\\sessions\\2026\\10\\20\\rollout-2026-10-20T06-16-22-01a154f7-1780-78a2-810e-85aa7a107aef_01a1563c-b939-7822-88b4-66d4a4c95440.jsonl",
+        "bytes": 6555462,
+        "sha256": "65e39e25c9ff285beccb168d7df64f0ccdd1bdc0c28a5550a94068289c1797de"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\21\\rollout-2026-10-21T16-22-06-01a154f7-1780-78a2-810e-85aa7a107aef_01a15d8d-a76e-7493-af07-3382d2beeafd.jsonl",
+        "export": "sessions\\总设计师\\sessions\\2026\\10\\21\\rollout-2026-10-21T16-22-06-01a154f7-1780-78a2-810e-85aa7a107aef_01a15d8d-a76e-7493-af07-3382d2beeafd.jsonl",
+        "bytes": 1995574,
+        "sha256": "69e9496c82a28dc32a83b47ea22b8050958c5f5b278e774c2b45cf38c96cbb1e"
+      }
+    ]
+  },
+  {
+    "name": "开发手套",
+    "thread_id": "01a15997-b9c2-7f42-8b80-27394a1e38f6",
+    "messages": 64,
+    "tool_records": 576,
+    "files": [
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T21-54-38-01a15997-b9c2-7f42-8b80-27394a1e38f6.jsonl",
+        "export": "sessions\\开发手套\\sessions\\2026\\10\\20\\rollout-2026-10-20T21-54-38-01a15997-b9c2-7f42-8b80-27394a1e38f6.jsonl",
+        "bytes": 11165402,
+        "sha256": "7dd6eaa78544b970669c358448bb0fd45c29810cc18c0b6b95574eacb664233c"
+      }
+    ]
+  },
+  {
+    "name": "文本手套",
+    "thread_id": "01a1540b-b029-77f2-8db7-c77d9121638c",
+    "messages": 170,
+    "tool_records": 548,
+    "files": [
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T20-03-34-01a1540b-b029-77f2-8db7-c77d9121638c.jsonl",
+        "export": "sessions\\文本手套\\sessions\\2026\\10\\19\\rollout-2026-10-19T20-03-34-01a1540b-b029-77f2-8db7-c77d9121638c.jsonl",
+        "bytes": 14001409,
+        "sha256": "056a15a745f5df6e57680e878b074fb97ebe5a06f6c667a97beaa9496d59426b"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T05-13-25-01a1540b-b029-77f2-8db7-c77d9121638c_01a15603-17fe-7002-bb80-6f932d7a1bff.jsonl",
+        "export": "sessions\\文本手套\\sessions\\2026\\10\\20\\rollout-2026-10-20T05-13-25-01a1540b-b029-77f2-8db7-c77d9121638c_01a15603-17fe-7002-bb80-6f932d7a1bff.jsonl",
+        "bytes": 4336821,
+        "sha256": "c0427e6e464ee3e05ec0e667ac115e3c7fa4512384e45f54701fa33057b9a197"
+      }
+    ]
+  },
+  {
+    "name": "提示词工程",
+    "thread_id": "01a15352-a41f-7dc1-8ff7-63f02b1f143a",
+    "messages": 136,
+    "tool_records": 22,
+    "files": [
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-41-27-01a15352-a41f-7dc1-8ff7-63f02b1f143a.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-41-27-01a15352-a41f-7dc1-8ff7-63f02b1f143a.jsonl",
+        "bytes": 195852,
+        "sha256": "637522f44e941d9af163b8dc547e480e0d2f8251bae684e52e3f218841ab97fd"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-56-38-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a15360-8ce9-7cd0-8441-944cd51b80f3.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-56-38-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a15360-8ce9-7cd0-8441-944cd51b80f3.jsonl",
+        "bytes": 474208,
+        "sha256": "5e36a3c60cbc07308952aafcc3e0aab6b1a53e97cd9b3db7d724fa1b598d5fae"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T22-27-28-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a1548f-6e7a-7983-ba28-15c2ed6cdb26.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\19\\rollout-2026-10-19T22-27-28-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a1548f-6e7a-7983-ba28-15c2ed6cdb26.jsonl",
+        "bytes": 90499,
+        "sha256": "dedf04f9327bb307959f0f25738f094ec699c264ed9d2df0ce27263e14147f47"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T23-06-05-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a154b2-ca54-7ae0-8330-1bfb1cbcfcbe.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\19\\rollout-2026-10-19T23-06-05-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a154b2-ca54-7ae0-8330-1bfb1cbcfcbe.jsonl",
+        "bytes": 972792,
+        "sha256": "b86599cc6b8537b1b92b5bbe979a3371352a5f3e5c5fa41d6d69dc33035c71d1"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T01-02-57-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a1551d-c676-7f70-b469-5c95b03c420a.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\20\\rollout-2026-10-20T01-02-57-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a1551d-c676-7f70-b469-5c95b03c420a.jsonl",
+        "bytes": 2632653,
+        "sha256": "fb7f6dc83c9af7650ec4defb4b94b567e8e004531a3fe56ba44a7ba0c705c739"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T04-46-40-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a155ea-9ab8-7c20-a47a-e49a299c045a.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\20\\rollout-2026-10-20T04-46-40-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a155ea-9ab8-7c20-a47a-e49a299c045a.jsonl",
+        "bytes": 2360729,
+        "sha256": "bef32cde52b540406b0bfaeb8c44544c58064840d53ac9cfda98d48439ef78d5"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\20\\rollout-2026-10-20T19-51-42-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a15927-2d5b-77d2-b302-e20f234a7a20.jsonl",
+        "export": "sessions\\提示词工程\\sessions\\2026\\10\\20\\rollout-2026-10-20T19-51-42-01a15352-a41f-7dc1-8ff7-63f02b1f143a_01a15927-2d5b-77d2-b302-e20f234a7a20.jsonl",
+        "bytes": 2801309,
+        "sha256": "ee2c3aef33c50f92d74a254d6d080048cc44ece5ff9107118a0fe4038ffe85e9"
+      }
+    ]
+  },
+  {
+    "name": "提示词审计",
+    "thread_id": "01a15353-29be-7732-b547-1c0d8fbc6e49",
+    "messages": 58,
+    "tool_records": 22,
+    "files": [
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-42-01-01a15353-29be-7732-b547-1c0d8fbc6e49.jsonl",
+        "export": "sessions\\提示词审计\\sessions\\2026\\10\\19\\rollout-2026-10-19T16-42-01-01a15353-29be-7732-b547-1c0d8fbc6e49.jsonl",
+        "bytes": 216600,
+        "sha256": "bebae2c47bfe27d16f79f3e0c83cf3e9937803185a653e987a21f0c6c3defc43"
+      },
+      {
+        "source": "D:\\AI-chatgpt\\UserData\\sessions\\2026\\10\\19\\rollout-2026-10-19T19-55-42-01a15353-29be-7732-b547-1c0d8fbc6e49_01a15404-7d1c-7d32-a15b-e94eea8efa49.jsonl",
+        "export": "sessions\\提示词审计\\sessions\\2026\\10\\19\\rollout-2026-10-19T19-55-42-01a15353-29be-7732-b547-1c0d8fbc6e49_01a15404-7d1c-7d32-a15b-e94eea8efa49.jsonl",
+        "bytes": 2546063,
+        "sha256": "8f6bf55513d30bd582f039c10eb1c3a36c6096aa009dbf400b5bc7be93e03de7"
+      }
+    ]
+  }
+]
