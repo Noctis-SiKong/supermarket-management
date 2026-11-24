@@ -1,5 +1,7 @@
 # P1 Unified Implementation and Local Delivery Log
 
+> **Video record update (2026-11-24):** The repository video matches the V11 cut by SHA-256 (`99566eb2725bc23f37f187e999f8298fd3bd1b4c6cd3f29db52d2d27fbf6f0e2`). V11's validation records source commit `78def5855f0416c9e3452a129783a15350bd0041`; it is an ancestor of the then-current HEAD `b1af2987a1097c9ee52b347fd818c7cbb0460060`, but source, resource, test and build files changed afterwards. The §8 video-editing handoff and 214-test video description record the earlier V10 state. V11's 219-test statement remains dated evidence, not verification of the later HEAD; the owner confirmed on 2026-11-24 that the uploaded V11 video is the final cut. This confirmation does not establish that its recorded test result verifies a later HEAD.
+
 The historical v3 delivery on 2026-10-21 removed the A/B development boundary under user authorization and completed one monolith. It did not change Spec/PRD/ERD v0.7, shared v1.0.4 or CR07-10/11. Functional delivery was `4a67050`; reproducible verification and the additional cross-document reversal reference check were `08df45a`; delivery documentation was `4328a11`. These were local deliveries, not a new GitHub release. The language implementation of 2026-10-22 is recorded separately in §7; the behavior-preserving validator refactor is recorded in §8.
 
 ## 1. Historical v3 starting point and WIP protection

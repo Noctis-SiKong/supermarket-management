@@ -4,6 +4,8 @@ This directory holds the project's current documents, evidence and archived mate
 Read this page first; it says which copy is authoritative and which copies are only
 history.
 
+The Spec/PRD/ERD contain a frozen requirements baseline and dated change records, not a live implementation dashboard. Planning, release receipts and evidence retain the state at their recorded dates. For delivered implementation and verification by date, start with [the implementation log](P1_Implementation_Log.md); check the actual Git state separately. The preliminary work-distribution document is a historical draft, not the current implementation status.
+
 ## 1. Current requirements and contracts (authoritative)
 
 | File | Role |
@@ -13,7 +15,6 @@ history.
 | `Project_ERD.md` | Data model, tables, keys and persistence constraints |
 | `Shared_Boundaries_and_Interface_Spec.md` | Current cross-module contract (submission port, working copy, change sets, error codes) |
 | `Maven_Framework.md` | Build/verification setup, JDK and Maven Wrapper notes |
-| `P1_Preliminary_Work_Distribution_and_Interface_List.md` | Work packages and shared-asset ownership (v0.3) |
 | `P1_Implementation_Log.md` | Delivered scope, verification records and evidence pointers (current) |
 
 When a requirement changes, update the Spec/PRD through the CR process; do not edit
@@ -53,6 +54,7 @@ Choose diagrams by purpose:
 
 | Path | Content |
 |------|---------|
+| `P1_Preliminary_Work_Distribution_and_Interface_List.md` | Historical work-distribution draft (v0.3); subsequent delivery status is in [the implementation log](P1_Implementation_Log.md) |
 | `process/Handoff_Package_For_B.md` | Handoff package used to start Member B work |
 | `process/Member_A_Implementation_Handoff.md` | Member A implementation handoff |
 | `process/coordination/` | A/B alignment messages (2026-10-21) |
@@ -67,7 +69,8 @@ under `..\docs\` (repository parent), so they are not part of a submission archi
 
 - `..\docs\zh\` — Chinese translations of the Spec/PRD/ERD/README and the P1 log.
 - `..\docs\notes\` — planning prompts, review notes, issue summaries.
-- `..\docs\_backups\` — pre-change backups.
+- `..\docs\_backups\` — historical pre-change backups.
+- `..\backups\` — the user-designated current local document backup location; it is outside the repository. Historical files are not moved. Runtime data backups are separate.
 
 The English documents in this directory are the versions intended for submission.
 

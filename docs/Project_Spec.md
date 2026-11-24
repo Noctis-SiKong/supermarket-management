@@ -1,5 +1,7 @@
 # Supermarket Management System Project Spec
 
+> **Reading note:** This is the frozen requirements baseline and its dated changes. Statements about a document-only deliverable, incomplete design or implementation describe the drafting stage; current delivery and verification records are in [P1 Implementation Log](P1_Implementation_Log.md). This note does not change requirements or approval status.
+
 ## 1 Document Information and Evidence Status
 
 | Item | Content |

@@ -54,7 +54,13 @@ Existing full regression covers after-sale dual caps, stable allocation/amount r
 
 V1/review/V2 remain genuine historical design evidence. This final evolution removes duplicated commit-validation orchestration from two concrete validators and makes polymorphism/abstraction visible in a real saving path. It does not retrospectively claim that this abstract base existed in V1/V2 or that the preceding review approved this new implementation. This section supplies factual report material, not personal reflection or a signature.
 
-The tracked `Project1-Demonstration-Video.mp4` was read only; SHA-256 `af1dc9f7e297a5ff1a4c0e7ac8955660c4f015af28f81fd0b610e6f0cf50f462` matches the existing final cut `10-project1-final-human-ai.mp4`. Its matching English SRT and actual frames at 03:39, 03:55 and 04:12 were checked. Required local editing handoff (no video was changed):
+**Historical V10 record (2026-10-22):** The then-tracked `Project1-Demonstration-Video.mp4` was read only; SHA-256 `af1dc9f7e297a5ff1a4c0e7ac8955660c4f015af28f81fd0b610e6f0cf50f462` matches the existing final cut `10-project1-final-human-ai.mp4`. Its matching English SRT and actual frames at 03:39, 03:55 and 04:12 were checked. Required local editing handoff (no video was changed):
+
+**V11 record correction (date unverified; checked 2026-11-24):** the repository MP4 at that check has SHA-256 `99566eb2725bc23f37f187e999f8298fd3bd1b4c6cd3f29db52d2d27fbf6f0e2` ; an earlier record reports a match with `video_shots/成片/仓库跟踪版_V11/11-project1-final-human-ai.mp4` and a 219-test card. The external copy and V11 frames were not rechecked on 2026-11-24; this is not the V10 hash above. Its validation records source commit `78def5855f0416c9e3452a129783a15350bd0041`, while the checked main commit was `b1af2987a1097c9ee52b347fd818c7cbb0460060`. Later source, resource, test and build changes exist; do not treat its result as verification of a later HEAD. The earlier V10/214 wording below is historical.
+
+**Owner confirmation (2026-11-24):** the uploaded repository V11 video is the final cut. The V10 suggestions below are retained solely as historical records and do not request further editing or re-recording. This confirmation does not change the source-commit and test-evidence limitations stated above.
+
+**Historical V10 editing suggestions:** the following 214-test references and proposals describe the earlier cut, not instructions verified against V11.
 
 | Existing interval / shot | Effect and proposed limited replacement |
 |---|---|
@@ -63,4 +69,4 @@ The tracked `Project1-Demonstration-Video.mp4` was read only; SHA-256 `af1dc9f7e
 | 03:51.717–04:04.734, Result and collections | Existing code/meaning remains valid; no compulsory re-recording. A template inset may be added if needed for OOP evidence. |
 | 04:06.117–04:20.872, durable boundary and 214-test card; 04:16.192–04:20.872 spoken number | The old 214 count is authentic historical evidence. If presented as the current final verification, replace only the card/number with the new 219 result; otherwise label it explicitly as the pre-refactor run. |
 
-Video editing/re-recording and final human acceptance require the owner's subsequent work. This change does not overwrite the existing video, its narration, historical diagrams or other evidence. No push, main merge or remote change was performed.
+The owner has confirmed the uploaded V11 video as the final cut; no further editing or re-recording is requested by the historical handoff. This change does not overwrite the existing video, its narration, historical diagrams or other evidence. No push, main merge or remote change was performed.

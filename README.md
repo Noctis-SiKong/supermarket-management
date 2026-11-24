@@ -1,6 +1,6 @@
 # Supermarket Management System
 
-A single-store offline Java CUI course project. The existing monolith is already wired with real JSON storage, authentication, products, receiving, promotions, sales, stock, after-sales and whole-order reversal; for run status and the verification status of this round, see the [unified implementation log](./docs/P1_Implementation_Log.md). Automated verification does not replace user acceptance, the course report, the video or the student's own signature.
+A single-store offline Java CUI course project. The existing monolith is already wired with real JSON storage, authentication, products, receiving, promotions, sales, stock, after-sales and whole-order reversal; for run status and the dated verification records, see the [unified implementation log](./docs/P1_Implementation_Log.md). Automated verification does not replace user acceptance, the course report, the video or the student's own signature.
 
 ## Project Demonstration Video
 
@@ -27,7 +27,7 @@ For Chinese terminal input, configure UTF-8 input/output as shown in the languag
 Manual start (after building): Windows `& "$env:JAVA_HOME\bin\java.exe" -jar target\supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`; macOS/Linux `java -jar target/supermarket-management-0.1.0-SNAPSHOT-jar-with-dependencies.jar`.
 To create accounts from scratch instead of using the demo snapshot, run the same jar with `--init-accounts` in a real terminal (interactive, no default accounts); once creation finishes you go straight into the CUI. To check storage recovery and registration validation only, append `--check`; for options, append `--help`.
 
-Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR. The demo snapshot contains only the seeded demo accounts and sample business records; delete `data\snapshot.json` to start from an empty store.
+Note: `--init-accounts` only initialises empty storage, refuses to run when a snapshot already exists, and never overwrites existing accounts; passwords are not echoed and only the SHA-256 hash is stored. IDEs and redirected environments have no console, so use `--accounts <local-credentials.json>` to pre-provision accounts instead. Only the JAR with dependencies can be started on its own; do not use the plain JAR. The demo snapshot contains only the seeded demo accounts and sample business records. To start with an empty store, back up the entire `data/` directory and follow the [isolated startup instructions](./demo/README.md).
 
 ## Reading Order
 
@@ -36,7 +36,7 @@ Note: `--init-accounts` only initialises empty storage, refuses to run when a sn
 3. [ERD: logical entities, relationships and data dictionary](./docs/Project_ERD.md) (v0.7, in sync with the requirements baseline; design review items are in section 8).
 4. [P1 preliminary work distribution and interface list](./docs/P1_Preliminary_Work_Distribution_and_Interface_List.md) (v0.3, work packages and shared-asset ownership; the current cross-module conventions and local coding gates are in the formal interface specification).
 
-5. [Shared boundaries and interface specification](./docs/Shared_Boundaries_and_Interface_Spec.md) (v1.0.4 formal release plus the code-delivery appendix; the IF-11 admission and cancellation retention for CR07-11 are approved, with interface implementation / audit / integration delivered separately).
+5. [Shared boundaries and interface specification](./docs/Shared_Boundaries_and_Interface_Spec.md) (v1.0.4 formal release plus the code-delivery appendix; IF-11 is implemented, with verification history in the implementation log).
 
 The core ERD review items are in section 8 of the ERD; the work packages are in item 4, and the formal cross-module calling conventions are maintained only in item 5.
 
@@ -60,7 +60,7 @@ The ERD body contains four `mermaid` code blocks. Prefer opening the [ERD Markdo
 
 ## Path Baseline and Maintenance Rules
 
-The definitions below apply only to this repository. **The repository root is the top-level directory containing `README.md`, `.gitignore` and `docs/`; after cloning there is no extra `Project1` level.** Code-style paths in all documents are repository-relative paths; directories outside the repository are neither recorded nor managed.
+**The repository root is the top-level directory containing `README.md`, `.gitignore` and `docs/`; after cloning there is no extra `Project1` level.** Code-style paths in repository documents are repository-relative unless explicitly identified as local workspace guidance.
 
 | Name | Logical definition and ownership |
 |---|---|
@@ -71,15 +71,24 @@ The definitions below apply only to this repository. **The repository root is th
 
 ### Document Master Copies
 
-The repository's `docs/` is the single collaborative master copy of the Spec/PRD/ERD; no copies outside the repository are maintained, and external archive or backup locations are not recorded in the documents. Requirement/design changes are reviewed directly in the repository, and Git records historical versions.
+The repository's `docs/` is the single collaborative master copy of the Spec/PRD/ERD. Requirement/design changes are reviewed directly in the repository, and Git records historical versions; local translations and backups are reference copies.
+
+### File Changes and Recovery
+
+- Keep one clear current location for each source, document and deliverable; update its existing entry rather than creating successive `final2` or `final3` files. A filename alone does not establish approval or submission status.
+- Before overwriting a file, preserve the version being replaced. Git history is sufficient for a committed version; separately back up uncommitted changes, untracked files and material that Git cannot restore. The current user-designated local document backup location is `Project_1/backups/`; older backups also exist in `Project_1/docs/_backups/` as historical records and are not moved. In the local course workspace, place necessary new backups in the existing `Project_1/backups/` directory, in a dated, purpose-named folder retaining original filenames and relative paths. A standalone clone should use a designated backup location outside its repository.
+- Backups are local by default and must not be committed or uploaded to GitHub. Upload a specific important backup only when the user explicitly requests it; first review the selected files and personal information. Do not upload the entire backup directory. The repository-root `/backups/` is ignored, but Git ignore rules do not remove files already tracked.
+- Preserve original course materials and evidence; create edited or generated derivatives separately. Keep runtime recovery files under `DATA_ROOT` according to the storage contract below, separate from document backups.
+- Before moving or archiving files, check imports, scripts, links and worktree metadata; update affected references and confirm the files can still be found. Compare a backup with the current file before restoring it, so later edits are not overwritten.
+- Back up only affected material; reuse a verified unchanged snapshot and avoid copying dependencies, caches or rebuildable outputs. Check the Git status and diff before committing or distributing changes.
 
 ### Planned Paths and Report Arrangements
 
 Code-style paths in the documents such as `docs/evidence/...`, `docs/design/...`, `docs/decisions.md` or `docs/decisions/...` are all **repository-relative paths**. The existing documents comprise the Spec/PRD/ERD/work-distribution list/shared specification, the four diagram sources under `docs/erd/`, and the already created `docs/archive/design_member_b/` and `docs/evidence/member_b/` (containing B's V1/V2, AI review, design evolution and framework reproduction records); only `docs/decisions/` and `docs/decisions.md` remain planned locations that have not been created yet. Empty evidence files are not created just to make the plan "look complete", and no duplicate path-governance record is added.
 
-During the working phase the English Spec/PRD/ERD in the repository's `docs/` are the collaborative main line (the corresponding Chinese versions are kept in a designated directory outside the repository); before submission the final report is converted to English and the Chinese working drafts are removed from the submission package/final delivery directory, so the Chinese drafts are not a parallel final report. A Chinese working draft is not a submission report and carries no formal §2.6/§3.7 declaration; the formal declaration is completed and signed by the student only in the English final report, following the template requirements, and a Chinese working draft does not replace it. The English final report uses the English report location under the repository root; the final file name is settled when the report is assembled, and this round adds no report subdirectory and does not change the Canvas arrangement; the repository root may contain English working documents, code and build files.
+During the working phase the English Spec/PRD/ERD in the repository's `docs/` are the collaborative main line (the corresponding Chinese versions are kept in a designated directory outside the repository); before submission the final report is converted to English and the Chinese working drafts are removed from the submission package/final delivery directory, so the Chinese drafts are not a parallel final report. A Chinese working draft is not a submission report and carries no formal §2.6/§3.7 declaration; the formal declaration is completed and signed by the student only in the English final report, following the template requirements, and a Chinese working draft does not replace it. The English final report uses the English report location under the repository root; the final file name is settled when the report is assembled, and the relevant historical revision adds no report subdirectory and does not change the Canvas arrangement; the repository root may contain English working documents, code and build files.
 
-Document history is recorded by Git, and this document does not define backup locations outside the repository. The previous-version JSON snapshot of runtime data, temporary write files and attachment recovery copies are runtime storage, use the implemented `DATA_ROOT` sub-layout described below, and **must not be copied into the repository**. The ZIP/report/demo evidence submitted for the course assignment is not runtime data, so do not ignore it with global log or archive wildcards.
+Document history is recorded by Git, with local backup guidance above. The previous-version JSON snapshot of runtime data, temporary write files and attachment recovery copies are runtime storage, use the implemented `DATA_ROOT` sub-layout described below, and **must not be copied into the repository**. The ZIP/report/demo evidence submitted for the course assignment is not runtime data, so do not ignore it with global log or archive wildcards.
 
 ### Runtime Data and Attachments: Current Layout and Security Contract
 
@@ -93,15 +102,15 @@ Chinese characters and spaces are legal filename characters; do not split on spa
 
 ### Ignore Rules and Pre-Submission Checks
 
-No tracked business JSON, image attachments, course PDF/DOCX or local backups have been found so far. `.gitignore` applies only to untracked files and will not clear paths/personal references that are already committed; this round does not rewrite history or untrack files. Older commits may still retain references to the original text, and handling history requires separate explicit authorisation.
+No tracked business JSON, image attachments, course PDF/DOCX or local backups have been found so far. `.gitignore` applies only to untracked files and will not clear paths/personal references that are already committed; that historical check did not rewrite history or untrack files. Older commits may still retain references to the original text, and handling history requires separate explicit authorisation.
 
 The runtime data root is set to `data/` under the repository root; the ignore rules cover only in-repository paths, so checks are still required before submission. A narrow defence line is currently kept for data mistakenly generated inside the repository: the root-level `data/`, `runtime/`, `attachments/`, `logs/`, `tmp/`, `backups/`, `.local/`, plus build outputs and explicit machine-local settings. Course source files are guarded against accidental copying only by known filenames; PDF/DOCX are not ignored globally. Put samples in the explicitly tracked `docs/examples/` or in the later test-sample location, using fictitious/desensitised data; there are currently no such sample files. Do not keep unique evidence that needs to be tracked inside a real runtime data directory.
 
-Before release, check the Git diff, the pending-commit list, relative links, paths/personal information and data files; `.gitignore` is not a sensitive-information scanner, and changes are not uploaded to GitHub automatically. The final state of the post-release errata commits for this round's v1.02 release is determined by verification with `git status`, `git log` and `git ls-remote`.
+Before release, check the Git diff, the pending-commit list, relative links, paths/personal information and data files; `.gitignore` is not a sensitive-information scanner, and changes are not uploaded to GitHub automatically. The final state of the historical 2026-10-20 v1.02 release errata is determined by verification with `git status`, `git log` and `git ls-remote`.
 
-### Git Verification Record for This Round
+### Historical Git Verification Record (2026-10-20)
 
-v1.02 has been released: main commit `4d7b1f28c6d9caa0473092e77ab27aa1e724b983`, `git ls-remote origin refs/heads/main` returns the same commit, and the working tree is clean; B's design results and the formal shared specification are both included. The post-release errata commits are located through Git history and do not change the release receipt above.
+The v1.02 release record identified main commit `4d7b1f28c6d9caa0473092e77ab27aa1e724b983` and a matching remote at that time. Later work advanced main; use `git status`, `git log` and `git ls-remote origin refs/heads/main` to check the actual current state. The historical receipt does not describe the present working tree.
 
 ## Course Material Reference Archive (Source Text Not Distributed)
 
@@ -111,7 +120,7 @@ v1.02 has been released: main commit `4d7b1f28c6d9caa0473092e77ab27aa1e724b983`,
 | Assignment 1 report template, `Assignment1_Report_Template_CJLU2026.docx` | §1 build/credentials; §2.2 requirement ID/acceptance/E-D; §3.2–3.6 scope, the two class diagrams and the real review/evolution; §2.6/3.7 own reflection and declaration; appendices A/B log/contribution | Not included in the repository; the whole template is not copied |
 | U2/U3 and the later U4/U5/U6 session decisions | Retain the Spec's source codes, confirmed rules and original section locators; do not claim, on the basis of an undistributed attachment, that collaborators have read the source text | Not included in the repository; personal paths/attachment UUIDs are not recorded |
 
-This round completed the path/Git checks and the document sync, reusing the course locators already recorded, and does not pass off earlier full-text reading notes as a fresh reading in this round.
+The earlier path/Git and document synchronization record reused the course locators already recorded; it does not establish a fresh reading of the course materials.
 
 These summaries only support the necessary traceability and do not replace the course source text or extend the business requirements; no course source files/session attachments were added.
 
@@ -157,9 +166,9 @@ When the outcome of a request is unknown, look up the original key first. Menu 1
 
 After the 2026-10-21 v3 authorization, a single owner maintains the complete monolith; the original A/B division of work and design are retained as historical contribution and provenance, and waiting for the other party to connect is no longer treated as an implementation status. B's V1/V2 have been audited and are included in the baseline; the design phase is not redone.
 
-This round covers local development and verification only. Any upload to GitHub, push, or merge into main must first present the specific diff for human review, then obtain explicit approval for that specific operation; there is no automatic publishing. An independent worktree protects in-flight changes from other sessions; the actual branch and local delivery record are in the unified implementation log.
+For local development and verification, Any upload to GitHub, push, or merge into main must first present the specific diff for human review, then obtain explicit approval for that specific operation; there is no automatic publishing. An independent worktree protects in-flight changes from other sessions; the actual branch and local delivery record are in the unified implementation log.
 
-Document history is recorded by Git; this document does not define backup locations outside the repository. Runtime data backups follow the above sub-layout under `DATA_ROOT` (the `data/` directory at the repository root) and must not be mixed. Course delivery remains governed by the PDF, template, and Canvas requirements.
+Document history and local backup handling follow the file-management guidance above. Runtime data backups follow the `DATA_ROOT` sub-layout and must not be mixed with document backups. Course delivery remains governed by the PDF, template, and Canvas requirements.
 
 ## Maven Framework and Build
 

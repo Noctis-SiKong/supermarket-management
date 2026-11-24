@@ -1,5 +1,7 @@
 # Supermarket Management System Functional PRD
 
+> **Reading note:** This document preserves the frozen functional baseline and its dated drafting history. References below to no code or to document-only work describe that earlier stage; see [P1 Implementation Log](P1_Implementation_Log.md) for subsequent implementation and verification. Requirements and approval status are unchanged.
+
 ## 1 Document Information and Authority
 
 | Item | Content |

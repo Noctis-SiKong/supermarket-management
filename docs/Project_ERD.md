@@ -1,5 +1,7 @@
 # Supermarket Management System Logical ERD
 
+> **Reading note:** This is the logical data baseline with dated design records. Drafting-stage statements about implementation or delivery are historical; see [P1 Implementation Log](P1_Implementation_Log.md) for subsequent work. This note does not change the data model.
+
 ## 1 Document Status, Sources and Authority Boundaries
 
 | Item | Content |
